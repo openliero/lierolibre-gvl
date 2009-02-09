@@ -53,10 +53,8 @@ struct gvl_list_node : gvl_list_node
 template<typename ListT>
 inline void move_to(gvl_list_node* self, ListT& dest);
 
-inline void unlink(gvl_list_node* self)
-{
-	gvl_list_unlink(self);
-}
+template<typename Tag>
+inline void unlink(gvl_list_node* self);
 
 // NOTE: The behaviour of relink is only defined if the
 // nodes that were immediately left and right of this node when
@@ -69,6 +67,26 @@ inline void relink(gvl_list_node* self)
 		"Adjacent nodes must be consecutive");
 	self->prev->next = self;
 	self->next->prev = self;
+}
+
+inline void unlink(gvl_list_node* self)
+{
+	gvl_list_unlink(self);
+}
+
+inline void relink(gvl_list_node* x, gvl_list_node* p)
+{
+	gvl_list_link_before(x, p);
+}
+
+inline void relink_before(gvl_list_node* x, gvl_list_node* p)
+{
+	gvl_list_link_before(x, p);
+}
+
+inline void relink_after(gvl_list_node* x, gvl_list_node* p)
+{
+	gvl_list_link_after(x, p);
 }
 
 /*
@@ -90,12 +108,19 @@ struct list_node : gvl_list_node
 	{
 		return static_cast<T*>(static_cast<list_node<T, Tag>*>(p));
 	}*/
+	
+	list_node()
+	{
+		next = this;
+		prev = this;
+	}
 
 	template<typename T>
 	static list_node<Tag>* upcast(T* p)
 	{
 		return static_cast<list_node<Tag>*>(p);
 	}
+	
 /*
 	void relink(T* p)
 	{
@@ -132,6 +157,12 @@ struct list_node : gvl_list_node
 
 // NOTE: Be very careful with these! They assume the list you insert
 // into hold a base class of T (or T itself).
+
+template<typename Tag, typename T>
+inline void unlink(T* self)
+{
+	gvl_list_unlink(list_node<Tag>::upcast(self));
+}
 
 template<typename Tag, typename T>
 inline void relink(T* x, T* p)

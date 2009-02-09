@@ -184,25 +184,28 @@ void basic_obitstream<DerivedT, WordT>::put_rice(uint32_t v, uint32_t shift)
 }
 #endif
 
+template<typename DerivedT, typename WordT>
+void basic_obitstream<DerivedT, WordT>::put_debug_mark()
+{
+	put_uint((1<<15)|1, 16);
+}
+
 
 template<typename DerivedT, typename WordT>
 void basic_ibitstream<DerivedT, WordT>::ignore(uint32_t bits)
 {
-	for(; bits >= word_bits; )
-	{
-		bits -= word_bits;
-		(void)derived().get_byte(); // Ignore
-	}
+	uint32_t cursor = word_bits - in_bits_left;
+	cursor += bits;
 	
-	if(bits > in_bits_left)
+	uint32_t bytes_to_read = cursor / word_bits;
+	
+	if(bytes_to_read >= 1)
 	{
-		in_bits_left = (in_bits_left + word_bits) - bits;
+		derived().ignore_bytes(bytes_to_read - 1);
 		in_bits = derived().get_byte();
 	}
-	else
-	{
-		in_bits_left -= bits;
-	}
+	
+	in_bits_left = word_bits - (cursor % word_bits);
 }
 
 template<typename DerivedT, typename WordT>
@@ -237,19 +240,19 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_uint(uint32_t bits)
 		/* If in_bits_left is 0 and orig_bits is 32, then bits
 		** will be 32 at this point. The normal << is not guaranteed to work as intended. */
 		//v = gvl::shl_1_32(in_bits, bits);
-		v = in_bits >> in_bits_left;
+		v = in_bits;
 		
 		for(; bits >= word_bits; )
 		{
 			bits -= word_bits; /* bits is now the amount to left shift (bits left to read afterwards) */
-			v |= derived().get_byte() << bits;
+			v = (v << word_bits) | derived().get_byte();
 		}
 		
 		if(bits > 0)
 		{
 			in_bits_left = word_bits - bits;
 			in_bits = derived().get_byte();
-			v |= (in_bits >> in_bits_left);
+			v = (v << bits) | (in_bits >> in_bits_left);
 		}
 		else
 			in_bits_left = 0;
@@ -378,6 +381,13 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_rice(uint32_t shift)
 #endif
 
 template<typename DerivedT, typename WordT>
+void basic_ibitstream<DerivedT, WordT>::get_debug_mark()
+{
+	uint32_t m = get_uint(16);
+	passert(m == ((1<<15)|1), "Debug mark not found");
+}
+
+template<typename DerivedT, typename WordT>
 void basic_ibitstream<DerivedT, WordT>::resetg()
 {
 	in_bits_left = 0;
@@ -391,6 +401,7 @@ void basic_obitstream<DerivedT, WordT>::resetp()
 	out_bits = 0;
 }
 
+/*
 template<typename DerivedT, typename WordT>
 void basic_obitstream<DerivedT, WordT>::clear()
 {
@@ -403,7 +414,7 @@ void basic_ibitstream<DerivedT, WordT>::clear()
 {
 	resetg();
 	derived().clear();
-}
+}*/
 
 template<typename DerivedT, typename WordT>
 void basic_obitstream<DerivedT, WordT>::finish()

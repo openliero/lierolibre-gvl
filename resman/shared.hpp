@@ -11,7 +11,7 @@ struct shared
 	friend struct weak_ptr_common;
 	
 	shared()
-	: _ref_count(1), _first(0)
+	: _ref_count(0), _first(0)
 	{
 
 	}
@@ -26,6 +26,7 @@ struct shared
 		--_ref_count;
 		if(_ref_count == 0)
 		{
+			_clear_weak_ptrs();
 			_delete();
 		}
 	}
@@ -38,7 +39,13 @@ struct shared
 	}
 	
 private:
-	void _delete();
+	void _delete()
+	{
+		delete this;
+	}
+	
+	void _clear_weak_ptrs();
+	
 	
 	int _ref_count;
 	weak_ptr_common* _first;

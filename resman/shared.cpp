@@ -3,7 +3,7 @@
 namespace gvl
 {
 
-void shared::_delete()
+void shared::_clear_weak_ptrs()
 {
 #if 0 // TODO
 	for(weak_ptr_common* p = _first; p; )
@@ -15,8 +15,6 @@ void shared::_delete()
 		p = n;
 	}
 #endif
-	
-	delete this;
 }
 
 } // namespace gvl

@@ -31,9 +31,15 @@ struct tt800
 		return y;
 	}
 	
+	/*
 	int32_t range(int32_t a, int32_t b)
 	{
 		return a + int32_t((b - a) * uint64_t(operator()()) >> 32);
+	}*/
+	
+	uint32_t range(uint32_t a, uint32_t b)
+	{
+		return a + uint32_t((b - a) * uint64_t(operator()()) >> 32);
 	}
 	
 	template<typename Archive>

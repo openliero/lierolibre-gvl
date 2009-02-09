@@ -65,7 +65,8 @@ struct basic_ibitstream // : common_ibitstream
 	void get_block(void* ptr_, size_t len);
 	uint32_t get_lim(uint32_t low, uint32_t high);
 	void resetg();
-	void clear();
+	
+	void get_debug_mark();
 	
 	uint32_t get_trunc(uint32_t count);
 	uint32_t get_unary();
@@ -123,7 +124,8 @@ struct basic_obitstream : common_obitstream
 	
 	void resetp();
 	void finish();
-	void clear();
+	
+	void put_debug_mark();
 	
 	void put_trunc(uint32_t v, uint32_t count);
 	void put_unary(uint32_t v);
@@ -159,6 +161,8 @@ struct dummy_obitstream
 	void put_unary(uint32_t) { not_supported(); }
 	void put_golomb(uint32_t, uint32_t) { not_supported(); }
 	void put_rice(uint32_t, uint32_t) { not_supported(); }
+	
+	void put_debug_mark() { not_supported(); }
 };
 
 } // namespace gvl

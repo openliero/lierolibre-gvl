@@ -1,141 +1,132 @@
-#ifndef UUID_0C9C2A832513404AD6879FA554E66DA6
-#define UUID_0C9C2A832513404AD6879FA554E66DA6
+#ifndef UUID_957E3642BB06466DB21A21AFD72FAFAF
+#define UUID_957E3642BB06466DB21A21AFD72FAFAF
 
 #include "../containers/list.hpp"
-#include "../containers/pod_vector.hpp"
-#include "../containers/linked_vector.hpp"
 #include "../support/debug.hpp"
 #include "../support/cstdint.hpp"
 #include "../resman/shared_ptr.hpp"
 #include <memory>
+#include <vector>
+#include <new>
 
 namespace gvl
 {
 
-struct bucket_mem;
 struct bucket;
 struct brigade;
 
 typedef std::size_t bucket_size;
 
-struct bucket_source
+struct stream : shared
 {
 	typedef bucket_size size_type;
 	
-	enum status
+	enum read_status
 	{
-		ok,
-		blocking,
-		eos,
-		error
+		read_ok,
+		read_blocking,
+		read_eos,
+		read_error,
+		
+		read_none_done // Special for filters
+	};
+	
+	enum write_status
+	{
+		write_ok,
+		write_part,
+		write_would_block,
+		write_error
 	};
 	
 	struct read_result
 	{
-		explicit read_result(status s)
+		explicit read_result(read_status s)
 		: s(s)
 		, b(0)
 		{
 		}
 		
-		read_result(status s, bucket* b)
+		read_result(read_status s, bucket* b)
 		: s(s)
 		, b(b)
 		{
 		}
 		
-		status s;
+		read_status s;
 		bucket* b;
 	};
 	
-	// IMPORTANT: TODO: std::auto_ptr isn't necessarily safe
-	// to have in a struct that is meant to be copied. How
-	// do we fix this? Temporarily, we have a copy ctor that
-	// does const_cast.
-	struct auto_read_result
+	struct write_result
 	{
-		auto_read_result(auto_read_result const& other)
-		: s(other.s)
-		, b(const_cast<std::auto_ptr<bucket>&>(other.b))
-		{
-		}
-		
-		explicit auto_read_result(status s)
+		explicit write_result(write_status s, bool consumed)
 		: s(s)
+		, consumed(consumed)
 		{
+		
 		}
 		
-		auto_read_result(status status, bucket* b)
-		: s(s)
-		, b(b)
-		{
-		}
-		
-		/// IMPORTANT: Don't use the read_result passed
-		/// after constructing this.
-		auto_read_result(read_result const& other)
-		: s(other.s)
-		, b(other.b)
-		{
-		}
-		
-		status s;
-		std::auto_ptr<bucket> b;
+		write_status s;
+		bool consumed;
 	};
 	
-	virtual read_result read(size_type amount = 0, bucket* dest = 0) = 0;
-	
-	virtual ~bucket_source()
-	{ }
-};
-
-struct bucket_sink
-{
-	typedef bucket_size size_type;
-	
-	enum status
+	virtual read_result read(size_type amount = 0, bucket* dest = 0)
 	{
-		ok,
-		part,
-		would_block,
-		error
-	};
+		return read_result(read_blocking);
+	}
 	
 	/// Writes a bucket to a sink. If bucket_sink::ok is returned,
 	/// takes ownership of 'b' and unlinks it from it's list<bucket>.
-	/// NOTE: 'b' must be inserted into a list<bucket>
-	virtual status write(bucket* b) = 0;
-	
-	virtual ~bucket_sink()
-	{ }
+	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
+	virtual write_result write(bucket* b)
+	{
+		return write_result(write_would_block, false);
+	}
 };
 
-struct bucket_data : bucket_source
+typedef shared_ptr<stream> stream_ptr;
+
+struct bucket_data : shared
 {
+	typedef bucket_size size_type;
+	static size_type const nsize = size_type(-1);
+	
 	bucket_data()
-	: ref_count_(1)
 	{
 	}
 	
-	void add_ref()
+	virtual size_type size() const = 0;
+	
+	
+	virtual uint8_t const* get_ptr(bucket& owner_bucket, size_type offset) = 0;
+	
+	// Placement-new
+	void* operator new(std::size_t, void* p)
 	{
-		++ref_count_;
+		return p;
 	}
 	
-	void release()
+	// To shut up the compiler
+	void operator delete(void*, void*)
 	{
-		if (--ref_count_ <= 0)
-			delete this;
 	}
 	
+	// Allocation is overloaded in order to allow arbitrary sized objects
+	void* operator new(std::size_t n)
+	{
+		return new char[n];
+	}
 	
-	
-	int ref_count_;
+	void operator delete(void* m)
+	{
+		delete [] static_cast<char*>(m);
+	}
 };
 
-/// Abstract bucket base
-struct bucket : bucket_source, list_node<bucket>
+struct bucket : list_node<>
 {
+	typedef bucket_size size_type;
+	
 	bucket()
 	: begin_(0)
 	, end_(-1)
@@ -143,18 +134,33 @@ struct bucket : bucket_source, list_node<bucket>
 	}
 	
 	bucket(bucket const& b, long begin, long end)
-	: begin_(begin)
+	: data_(b.data_)
+	, begin_(begin)
+	, end_(end)
+	{
+		
+	}
+	
+	bucket(bucket_data* data)
+	: data_(data)
+	, begin_(0)
+	, end_(0)
+	{
+		end_ = data_->size();
+		if(end_ == bucket_data::nsize)
+		{
+			end_ = 0;
+			begin_ = 1;
+		}
+	}
+	
+	bucket(bucket_data* data, size_type begin, size_type end)
+	: data_(data)
+	, begin_(begin)
 	, end_(end)
 	{
 	}
-	
-	bucket(size_type size)
-	: size_(size)
-	, size_known_(true)
-	{
-		
-	}
-		
+			
 	bool size_known() const { return begin_ <= end_; }
 	
 	size_type begin() const
@@ -186,7 +192,7 @@ struct bucket : bucket_source, list_node<bucket>
 		// Insert before
 		// TODO: We should actually let the bucket split itself.
 		// It should at least know when it's being copied.
-		relink_after(new bucket(*this, begin_ + point, end_));
+		relink_after(this, new bucket(*this, begin_ + point, end_));
 		end_ -= (size() - point);
 	}
 	
@@ -200,18 +206,24 @@ struct bucket : bucket_source, list_node<bucket>
 		passert(!size_known_, "Buckets with known size must define get_ptr()");
 		throw "TODO: get_ptr() not implemented";
 	}*/
+	
+	uint8_t const* get_ptr()
+	{
+		return data_->get_ptr(*this, begin_);
+	}
 		
 	void cut_front(size_type amount)
 	{
 		passert(size_known(), "Size is unknown");
 		begin_ += amount;
+		passert(begin_ <= end_, "Underflow");
 	}
 	
 	void cut_back(size_type amount)
 	{
 		passert(size_known(), "Size is unknown");
-		end_ += amount;
-		passert(begin_ <= end_, "");
+		end_ -= amount;
+		passert(begin_ <= end_, "Underflow");
 	}
 	
 	bucket* clone() const
@@ -226,75 +238,103 @@ struct bucket : bucket_source, list_node<bucket>
 	
 protected:
 
-	std::auto_ptr<bucket_data> data_;
+	shared_ptr<bucket_data> data_;
 	long begin_;
 	long end_;
 };
 
 struct bucket_data_mem : bucket_data
 {
-	bucket_data_mem(bucket_mem const& other)
+/*
+	bucket_data_mem(bucket_data_mem const& other)
 	: bucket(other)
 	, vec(other.vec)
 	{
+	}*/
+	
+	//struct swap_tag {};
+	
+	static std::size_t compute_size(bucket_size n)
+	{
+		return sizeof(bucket_data_mem) + n*sizeof(uint8_t) - 1*sizeof(uint8_t);
 	}
 	
-	bucket_data_mem(linked_vector<uint8_t> const& other)
-	: bucket(other.size())
-	, vec(other)
+	static bucket_data_mem* create(bucket_size capacity, bucket_size size)
+	{
+		sassert(size <= capacity);
+		void* mem = new char[compute_size(capacity)];
+		return new (mem) bucket_data_mem(size);
+	}
+	
+	/*
+	bucket_data_mem(std::vector<uint8_t> const& other)
+	: vec(other)
 	{
 	}
 	
-	bucket_data_mem(move_holder<linked_vector<uint8_t> > other)
-	: bucket(other->size())
-	, vec(other)
+	bucket_data_mem(std::vector<uint8_t>& other, swap_tag)
+	{
+		vec.swap(other);
+	}
+	*/
+	
+	bucket_data_mem(bucket_size size)
+	: size_(size)
 	{
 	}
 	
-	bucket_data_mem(std::size_t s)
-	: bucket(s)
-	, vec(s)
+	uint8_t const* get_ptr(bucket& owner_bucket, size_type offset)
 	{
+		return data + offset;
 	}
 	
-	bucket_data_mem(char const* p, std::size_t s)
-	: bucket(s)
-	, vec(reinterpret_cast<uint8_t const*>(p), s)
+	size_type size() const
 	{
+		return size_;
 	}
 	
-	uint8_t const* get_ptr();
-	void get_vector(linked_vector<uint8_t>& dest);
-	read_result read(size_type amount = 0, bucket* dest = 0);
-	void cut_front(size_type amount);
-	bucket* clone();
+	void unsafe_push_back(uint8_t el)
+	{
+		data[size_] = el;
+		++size_;
+	}
 	
-	//pod_vector<uint8_t> vec;
-	linked_vector<uint8_t> vec;
+	void unsafe_push_back(uint8_t const* p, bucket_size len)
+	{
+		std::memcpy(&data[size_], p, len);
+		size_ += len;
+	}
+		
+	bucket_data_mem* enlarge(bucket_size n)
+	{
+		bucket_data_mem* new_data = create(n, 0);
+		std::memcpy(new_data->data, data, size_);
+		new_data->size_ = size_;
+		return new_data;
+	}
+	
+	std::size_t size_;
+	uint8_t data[1];
 };
 
-void sequence(list<bucket>& l, std::size_t amount, linked_vector<uint8_t>& res);
+//void sequence(list<bucket>& l, std::size_t amount, linked_vector<uint8_t>& res);
 
 // Provides functions for extracting data
 // from a brigade in a convenient and
 // efficient manner.
 // NOTE: You are not allowed to modify buckets
 // that are buffered.
-template<typename DerivedT>
 struct bucket_reader
 {
 	typedef bucket::size_type size_type;
 	
-	bucket_reader(bucket_source* source)
+	bucket_reader(shared_ptr<stream> source)
 	: bucket_list_size_(0)
 	, cur_(0)
 	, end_(0)
 	, source_(source)
 	{
 	}
-	
-	DerivedT* derived()
-	{ return static_cast<DerivedT*>(this); }
 	
 /*
 	// Different naming to avoid infinite recursion if
@@ -303,8 +343,9 @@ struct bucket_reader
 	{ return derived()->source(); }
 	*/
 	
-	bucket_source* get_source()
-	{ return source_; }
+	/*
+	shared_ptr<stream> get_source()
+	{ return source_; }*/
 	
 	size_type read_size()
 	{
@@ -320,21 +361,21 @@ struct bucket_reader
 	
 	// TODO: A get that returns a special value for EOF
 		
-	bucket::status buffer(size_type amount)
+	stream::read_status buffer(size_type amount)
 	{
 		size_type cur_read = read_size();
 		while(cur_read < amount)
 		{
-			bucket::status s = read_bucket_(amount - cur_read);
-			if(s != bucket::ok)
+			stream::read_status s = read_bucket_(amount - cur_read);
+			if(s != stream::read_ok)
 				return s;
 			cur_read = read_size();
 		}
 		
-		return bucket::ok;
+		return stream::read_ok;
 	}
 	
-	
+	/* TODO
 	bucket::status buffer_sequenced(size_type amount, linked_vector<uint8_t>& res)
 	{
 		bucket::status s = buffer(amount);
@@ -344,34 +385,35 @@ struct bucket_reader
 		
 		sequence(mem_buckets_, amount, res);
 		return bucket::ok;
-	}
+	}*/
 	
-	bucket::auto_read_result get_bucket(size_type amount = 0)
+	// TODO: This returned an auto_read_result before
+	stream::read_result get_bucket(size_type amount = 0)
 	{
 		if(first_.get())
 		{
 			correct_first_bucket_();
-			return bucket::read_result(bucket::ok, first_.release());
+			return stream::read_result(stream::read_ok, first_.release());
 		}
 		else if(!mem_buckets_.empty())
 		{
-			return bucket::read_result(bucket::ok, pop_bucket_());
+			return stream::read_result(stream::read_ok, pop_bucket_());
 		}
 		else
 			return read_bucket_and_return_(amount);
 	}
 	
 	// Non-blocking
-	bucket::auto_read_result try_get_bucket(size_type amount = 0)
+	stream::read_result try_get_bucket(size_type amount = 0)
 	{
 		if(first_.get())
 		{
 			correct_first_bucket_();
-			return bucket::read_result(bucket::ok, first_.release());
+			return stream::read_result(stream::read_ok, first_.release());
 		}
 		else if(!mem_buckets_.empty())
 		{
-			return bucket::read_result(bucket::ok, pop_bucket_());
+			return stream::read_result(stream::read_ok, pop_bucket_());
 		}
 		else
 			return try_read_bucket_and_return_(amount);
@@ -384,7 +426,7 @@ private:
 	
 	uint8_t underflow_get_()
 	{
-		if(next_bucket_() != bucket::ok)
+		if(next_bucket_() != stream::read_ok)
 			throw "ffs! unexpected error in underflow_get_";
 		
 		return *cur_++;
@@ -393,7 +435,7 @@ private:
 	/// Discards the current first bucket (if any) and tries to read
 	/// a bucket if necessary.
 	/// Precondition: cur_ == end_
-	bucket::status next_bucket_()
+	stream::read_status next_bucket_()
 	{
 		passert(cur_ == end_, "Still data in the first bucket");
 		
@@ -401,7 +443,7 @@ private:
 		{
 			//first_.reset(pop_bucket_());
 			set_first_bucket_(pop_bucket_());
-			return bucket::ok;
+			return stream::read_ok;
 		}
 		
 		// Need to read a bucket
@@ -412,75 +454,79 @@ private:
 		
 		while(true)
 		{
-			bucket::read_result r(get_source()->read());
+			stream::read_result r(source_->read());
 
-			if(r.s == bucket::ok)
+			if(r.s == stream::read_ok)
 			{
 				// Callers of next_bucket_ expect the result
 				// in first_
 				set_first_bucket_(r.b);
-				return bucket::ok;
+				return stream::read_ok;
 			}
-			else if(r.s == bucket::eos)
+			else if(r.s == stream::read_eos)
 			{
-				return bucket::eos;
+				return stream::read_eos;
 			}
 			
-			derived()->block();
+			// TODO: derived()->block();
 		}
 	}
 	
-	bucket::status read_bucket_(size_type amount)
+	stream::read_status read_bucket_(size_type amount)
 	{
 		while(true)
 		{
-			bucket::read_result r(get_source()->read(amount));
+			stream::read_result r(source_->read(amount));
 		
-			if(r.s == bucket::ok)
+			if(r.s == stream::read_ok)
 			{
 				add_bucket_(r.b);
-				return bucket::ok;
+				return stream::read_ok;
 			}
-			else if(r.s == bucket::eos)
+			else if(r.s == stream::read_eos)
 			{
-				return bucket::eos;
+				return stream::read_eos;
 			}
 			
+			/* TODO:
 			derived()->flush();
 			derived()->block();
+			*/
 		}
 	}
 	
-	bucket::status try_read_bucket_(size_type amount)
+	stream::read_status try_read_bucket_(size_type amount)
 	{
-		bucket::read_result r(get_source()->read(amount));
+		stream::read_result r(source_->read(amount));
 	
-		if(r.s == bucket::ok)
+		if(r.s == stream::read_ok)
 		{
 			add_bucket_(r.b);
-			return bucket::ok;
+			return stream::read_ok;
 		}
 		
 		return r.s;
 	}
 	
-	bucket::read_result read_bucket_and_return_(size_type amount)
+	stream::read_result read_bucket_and_return_(size_type amount)
 	{
 		while(true)
 		{
-			bucket::read_result r(get_source()->read(amount));
+			stream::read_result r(source_->read(amount));
 		
-			if(r.s != bucket::blocking)
+			if(r.s != stream::read_blocking)
 				return r;
 			
+			/* TODO:
 			derived()->flush();
 			derived()->block();
+			*/
 		}
 	}
 	
-	bucket::read_result try_read_bucket_and_return_(size_type amount)
+	stream::read_result try_read_bucket_and_return_(size_type amount)
 	{
-		return get_source()->read(amount);
+		return source_->read(amount);
 	}
 	
 	bucket* pop_bucket_()
@@ -572,15 +618,18 @@ private:
 	uint8_t const* end_; // End of data in first_
 	std::auto_ptr<bucket> first_;
 	list<bucket> mem_buckets_;
-	bucket_source* source_;
+	shared_ptr<stream> source_;
 };
 
 struct brigade;
 
 struct bucket_writer
 {
-	bucket_writer(brigade* sink)
+	bucket_writer(shared_ptr<stream> sink)
 	: sink_(sink)
+	, size_(0)
+	, cap_(32)
+	, buffer_(bucket_data_mem::create(32, 0))
 	{
 	}
 /*
@@ -591,10 +640,14 @@ struct bucket_writer
 	
 	void put(uint8_t b)
 	{
-		if(buffer_.full())
+		sassert(size_ <= cap_);
+		if(size_ == cap_)
 			overflow_put_(b);
 		else
-			buffer_.unsafe_unique_push_back(b);
+		{
+			buffer_->data[size_] = b;
+			++size_;
+		}
 	}
 	
 	void put(bucket* buf);
@@ -602,15 +655,25 @@ struct bucket_writer
 private:
 	void overflow_put_(uint8_t b)
 	{
-		if(buffer_.size() >= 1024)
+		if(size_ >= 1024)
 			flush();
-		buffer_.push_back(b);
+		else
+		{
+			buffer_->size_ = size_; // Correct size
+			cap_ *= 2;
+			buffer_.reset(buffer_->enlarge(cap_));
+			buffer_->unsafe_push_back(b);
+			size_ = buffer_->size_;
+		}
 	}
 
-	linked_vector<uint8_t> buffer_;
-	brigade* sink_;
+	bucket_size size_;
+	bucket_size cap_;
+	std::auto_ptr<bucket_data_mem> buffer_;
+	shared_ptr<stream> sink_;
 };
 
+/*
 /// A sink that forwards to a brigade
 template<typename DerivedT, brigade& (DerivedT::*Get)()>
 struct basic_brigade_sink : bucket_sink
@@ -625,11 +688,13 @@ struct basic_brigade_sink : bucket_sink
 		return bucket_sink::ok;
 	}
 };
+*/
 
-struct brigade : bucket_source
+struct brigade
 {
 	typedef bucket_size size_type;
 	
+	/*
 	read_result read(size_type amount = 0, bucket* dest = 0)
 	{
 		list<bucket>::iterator i = buckets.begin();
@@ -642,7 +707,7 @@ struct brigade : bucket_source
 			buckets.unlink(r.b); // Success, we may unlink the bucket
 			
 		return r;
-	}
+	}*/
 
 	void prepend(bucket* b)
 	{
@@ -654,10 +719,154 @@ struct brigade : bucket_source
 		buckets.relink_back(b);
 	}
 	
+	bool empty() const
+	{
+		return buckets.empty();
+	}
+	
+	bucket* first()
+	{
+		return buckets.first();
+	}
+	
 	list<bucket> buckets;
+};
+
+struct filter : stream
+{
+	struct pump_result
+	{
+		pump_result(read_status r, write_status w)
+		: r(r), w(w)
+		{
+		}
+		
+		read_status r;
+		write_status w;
+	};
+	
+	filter(shared_ptr<stream> source_init, shared_ptr<stream> sink_init)
+	: source(source_init)
+	, sink(sink_init)
+	{
+	}
+	
+	read_result read(size_type amount = 0, bucket* dest = 0)
+	{
+		if(!source)
+			throw "No source to pull";
+		
+		read_status status = apply(true, amount);
+		if(status != read_ok)
+			return read_result(status);
+		read_result res(read_ok, filtered.first());
+		unlink(res.b);
+		return res;
+	}
+	
+	write_result write(bucket* b)
+	{
+		if(!sink)
+			throw "No sink to push";
+		
+		unlink(b);
+		buffer.append(b);
+		apply(false);
+		write_status rstatus = flush_filtered();
+		if(rstatus != write_ok)
+		{
+			return write_result(rstatus, true);
+		}
+		
+		return write_result(write_ok, true);
+	}
+	
+	write_status flush_filtered()
+	{
+		while(!filtered.empty())
+		{
+			write_result res = sink->write(filtered.first());
+			if(res.s != write_ok)
+			{
+				return res.s;
+			}
+		}
+		
+		return write_ok;
+	}
+	
+	
+	
+	pump_result pump()
+	{
+		if(!source)
+			throw "No source to pull";
+		if(!sink)
+			throw "No sink to push";
+			
+		if(filtered.empty())
+		{
+			read_status rstatus = apply(true);
+			if(rstatus != read_ok)
+				return pump_result(rstatus, write_ok);
+		}
+		write_status wstatus = flush_filtered();
+		return pump_result(read_ok, wstatus);
+	}
+	
+protected:
+
+	// Filter buckets in buffer and append the result to filtered	
+	virtual read_status apply(bool can_pull, size_type amount = 0)
+	{
+		if(!buffer.empty())
+		{
+			filtered.buckets.splice(buffer.buckets);
+			return read_ok;
+		}
+		else if(can_pull)
+		{
+			read_result res = source->read(amount);
+			if(res.s == read_ok)
+				filtered.append(res.b);
+			return res.s;
+		}
+		else
+			return read_blocking;
+	}
+		
+	shared_ptr<stream> source;
+	shared_ptr<stream> sink;
+	brigade filtered;
+	brigade buffer;
+};
+
+typedef shared_ptr<filter> filter_ptr;
+
+struct brigade_buffer : stream
+{
+	read_result read(size_type amount = 0, bucket* dest = 0)
+	{
+		if(!buffer.empty())
+		{
+			read_result res(read_ok, buffer.first());
+			unlink(res.b);
+			return res;
+		}
+		
+		return read_result(read_blocking);
+	}
+	
+	write_result write(bucket* b)
+	{
+		unlink(b);
+		buffer.append(b);
+		return write_result(write_ok, true);
+	}
+	
+	brigade buffer;
 };
 
 }
 
-
-#endif // UUID_0C9C2A832513404AD6879FA554E66DA6
+#endif // UUID_957E3642BB06466DB21A21AFD72FAFAF

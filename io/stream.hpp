@@ -12,6 +12,23 @@
 namespace gvl
 {
 
+struct istream
+: bucket_reader<istream>
+{
+	istream()
+	: bucket_reader<stream>(&source_brigade)
+	{
+	}
+	brigade source_brigade;
+};
+
+struct ostream
+: bucket_writer
+{
+	std::auto_ptr<bucket_sink> sink;
+	brigade sink_brigade;
+};
+
 struct stream
 : bucket_reader<stream>
 , bucket_writer

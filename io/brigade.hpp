@@ -112,7 +112,7 @@ struct bucket_sink
 };
 
 /// Abstract bucket base
-struct bucket : bucket_source, list_node<bucket>
+struct bucket : list_node<>
 {
 	bucket()
 	: size_(0)

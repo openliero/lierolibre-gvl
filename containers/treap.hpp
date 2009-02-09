@@ -237,7 +237,10 @@ struct treap : Compare, Random, Deleter
 		if(root)
 			insert_under_(root, el, 0, root);
 		else
+		{
 			root = el;
+			root->parent = 0; // Root has no parent
+		}
 		++n;
 	}
 	

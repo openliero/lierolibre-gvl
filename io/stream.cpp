@@ -1,102 +1,41 @@
 #include "stream.hpp"
 
-#if 0
+#include "../support/log.hpp"
 
-bool stream::in_aint(unsigned int& v)
+namespace gvl
 {
-	read(5);
-	
-	std::size_t max = in_size();
-	byte const* p = in_buffer();
-	
-	v = 0;
-	
-	for(std::size_t i = 0; i < max; ++i)
+
+bucket::bucket(void const* ptr, size_type len)
+{
+	bucket_data_mem* data_init = bucket_data_mem::create(len, len);
+	std::memcpy(data_init->data, ptr, len);
+	data_.reset(data_init);
+	begin_ = 0;
+	end_ = len;
+}
+
+void stream_writer::flush()
+{
+	if(size_ > 0)
 	{
-		byte b = p[i];
-		
-		if((b & 0x80) == 0)
-		{
-			v |= b;
-			return true;
-		}
-		else
-		{
-			v = (v << 7) | (b & 0x7f);
-		}
+		if(!sink_)
+			throw stream_write_error(stream::write_error, "No sink assigned to stream_writer");
+		buffer_->size_ = size_;
+		stream::write_result res = sink_->write(new bucket(buffer_.release(), 0, size_));
+		sassert(res.s == stream::write_ok);
+		// TODO: Check for error/blocking
+		cap_ = 32;
+		size_ = 0;
+		buffer_.reset(bucket_data_mem::create(cap_, size_));
 	}
-	
-	return false;
 }
 
-bool stream::in_int32(unsigned int& dest)
+void stream_writer::put(bucket* buf)
 {
-	if(!in(4))
-		return false;
-	byte const* buf = in_buffer();
-	dest = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
-	in_consume(4);
-	return true;
+	flush();
+	stream::write_result res = sink_->write(buf); // TODO: buf must be singleton
+	sassert(res.s == stream::write_ok);
+	// TODO: Check for error/blocking
 }
 
-bool stream::in_int24(unsigned int& dest)
-{
-	if(!in(3))
-		return false;
-	byte const* buf = in_buffer();
-	dest = buf[0] | (buf[1] << 8) | (buf[2] << 16);
-	in_consume(3);
-	return true;
 }
-
-bool stream::in_int16(unsigned int& dest)
-{
-	if(!in(2))
-		return false;
-	byte const* buf = in_buffer();
-	dest = buf[0] | (buf[1] << 8);
-	in_consume(2);
-	return true;
-}
-
-bool stream::in_int8(unsigned int& dest)
-{
-	if(!in(1))
-		return false;
-	byte const* buf = in_buffer();
-	dest = buf[0];
-	in_consume(1);
-	return true;
-}
-
-bool stream::in_sint16(int& dest)
-{
-	unsigned int v;
-	if(!in_int16(v))
-		return false;
-	dest = v - 0x8000;
-	return true;
-}
-
-bool stream::in_sint32(int& dest)
-{
-	unsigned int v;
-	if(!in_int32(v))
-		return false;
-	dest = v - 0x80000000;
-	return true;
-}
-
-bool stream::in_string16(std::string& dest)
-{
-	unsigned int len;
-	if(!in_int16(len)
-	|| !in(len))
-		return false;
-		
-	dest.assign((char const*)in_buffer(), len);
-	in_consume(len);
-	return true;
-}
-
-#endif

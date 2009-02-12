@@ -674,14 +674,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\io\brigade3.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\io\brigade3.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\io\common_bitstream.hpp"
 				>
 			</File>
@@ -742,11 +734,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\io\devnull.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\io\fstream.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\io\stream.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -754,7 +753,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -774,7 +772,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -789,7 +786,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"

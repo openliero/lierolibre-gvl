@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <utility>
+#include <string>
 
 namespace gvl
 {
@@ -23,6 +24,21 @@ template<typename T1, typename T2>
 inline std::size_t hash(std::pair<T1, T2> const& v)
 {
 	return (hash(v.first) * 2654435761ul) ^ hash(v.second);
+}
+
+inline std::size_t hash(std::string const& v)
+{
+	std::size_t amount = 512;
+	
+	if(amount > v.size())
+		amount = v.size();
+		
+	std::size_t h = 0x77a53b93;
+	for(std::size_t i = 0; i < amount; ++i)
+	{
+		h = h*33 + (unsigned char)v[i];
+	}
+	return h;
 }
 
 template<typename T>

@@ -237,7 +237,7 @@ struct generic_hash_set : Hash, Compare
 
 			h += step; step += 2;
 		}
-		while(step < 64);
+		while(step < 1024);
 		
 		return false;
 	}

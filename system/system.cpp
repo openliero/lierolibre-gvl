@@ -61,7 +61,7 @@ uint32_t get_ticks()
 }
 #endif
 
-#if GVL_LINUX==1
+#if GVL_LINUX
 
 #include <time.h>
 #include <errno.h>

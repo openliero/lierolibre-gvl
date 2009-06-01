@@ -22,6 +22,20 @@ struct dummy_delete
 	}
 };
 
+struct default_compare
+{
+	template<typename T>
+	int operator()(T const& a, T const& b) const
+	{
+		if(a < b)
+			return -1;
+		else if(b < a)
+			return 1;
+		else
+			return 0;
+	}
+};
+
 } // namespace gvl
 
 #endif // UUID_64B1EAC4E4F545FA3B131FA346621126

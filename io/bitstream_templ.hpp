@@ -20,6 +20,8 @@ void basic_obitstream<DerivedT, WordT>::put(uint32_t bit)
 	}
 	else
 	{
+		if(out_bits_left == word_bits)
+			allocate_out_byte(); // Just began on this byte, allocate it
 		out_bits_left = left;
 		out_bits = bits;
 	}
@@ -43,11 +45,15 @@ void basic_obitstream<DerivedT, WordT>::put_uint(uint32_t i, uint32_t bits)
 		/* bits will be in [1, 31] as out_bits_left is at least 1 */
 		out_bits |= i >> bits;
 		derived().put_byte(word(out_bits));
-		
+		if(bits > 0)
+			derived().allocate_out_byte();
+			
 		for(; bits >= word_bits; )
 		{
 			bits -= word_bits; /* bits is now the amount to right shift (bits left to write afterwards) */
 			derived().put_byte(word(i >> bits));
+			if(bits > 0)
+				derived().allocate_out_byte();
 		}
 		
 		/* We know bits < 8, so we can just write in the rest into out_bits */
@@ -88,7 +94,10 @@ void basic_obitstream<DerivedT, WordT>::put_block(void const* ptr_, size_t len)
 		/* Just write
 		** TODO: memcpy */
 		do
+		{
+			derived().allocate_out_byte();
 			derived().put_byte(*ptr);
+		}
 		while(++ptr != end);
 		/* out_bits should be 0 already, since out_bits_left was 8 */
 	}
@@ -106,6 +115,7 @@ void basic_obitstream<DerivedT, WordT>::put_block(void const* ptr_, size_t len)
 			unsigned int b = *ptr++;
 			v += (b >> right);
 			derived().put_byte(word(v));
+			derived().allocate_out_byte();
 			v = (b << left);
 		}
 		while(ptr != end);

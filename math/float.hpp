@@ -21,7 +21,7 @@ inline long lrint(double x)
 	return r;
 }
 
-#elif GVL_GCC && GVL_X86
+#elif GVL_GCC && GVL_ARCH == GVL_X86
 
 // TODO: Not tested at all
 inline long lrint(double x)

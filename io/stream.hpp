@@ -9,6 +9,7 @@
 #include <vector>
 #include <new>
 #include <stdexcept>
+#include <string>
 
 #include <cstdio> // TEMP
 
@@ -165,7 +166,7 @@ struct bucket : list_node<>
 	{
 	}
 	
-	bucket(bucket const& b, long begin, long end)
+	bucket(bucket const& b, std::size_t begin, std::size_t end)
 	: data_(b.data_)
 	, begin_(begin)
 	, end_(end)
@@ -273,8 +274,8 @@ struct bucket : list_node<>
 protected:
 
 	shared_ptr<bucket_data> data_;
-	long begin_;
-	long end_;
+	std::size_t begin_;
+	std::size_t end_;
 };
 
 struct bucket_data_mem : bucket_data
@@ -367,6 +368,14 @@ struct stream_reader
 	, cur_(0)
 	, end_(0)
 	, source_(source_init)
+	{
+	}
+	
+	stream_reader()
+	: bucket_list_size_(0)
+	, cur_(0)
+	, end_(0)
+	, source_()
 	{
 	}
 	
@@ -721,6 +730,14 @@ struct stream_writer
 	{
 	}
 	
+	stream_writer()
+	: sink_()
+	, size_(0)
+	, cap_(0)
+	, buffer_()
+	{
+	}
+	
 	~stream_writer()
 	{
 		flush();
@@ -737,7 +754,11 @@ struct stream_writer
 		sink_ = sink_new;
 	}
 	
+	void flush_buffer();
+	
 	void flush();
+	
+	void partial_flush();
 	
 	void put(uint8_t b)
 	{
@@ -776,9 +797,23 @@ private:
 
 	bucket_size size_;
 	bucket_size cap_;
+	list<bucket> mem_buckets_;
 	std::auto_ptr<bucket_data_mem> buffer_;
 	shared_ptr<stream> sink_;
 };
+
+inline stream_writer& operator<<(stream_writer& writer, char const* str)
+{
+	std::size_t len = std::strlen(str);
+	writer.put(new bucket(str, len));
+	return writer;
+}
+
+inline stream_writer& operator<<(stream_writer& writer, std::string const& str)
+{
+	writer.put(new bucket(str.data(), str.size()));
+	return writer;
+}
 
 /*
 /// A sink that forwards to a brigade

@@ -13,16 +13,16 @@
  */
 
 /* 
- * wrapper atan2(y,x)
+ * wrapper fd_atan2(y,x)
  */
 
 #include "fdlibm.h"
-
+#include "fdlibm_intern.h"
 
 #ifdef __STDC__
-	double atan2(double y, double x)	/* wrapper atan2 */
+	double fd_atan2(double y, double x)	/* wrapper fd_atan2 */
 #else
-	double atan2(y,x)			/* wrapper atan2 */
+	double fd_atan2(y,x)			/* wrapper fd_atan2 */
 	double y,x;
 #endif
 {
@@ -31,9 +31,9 @@
 #else
 	double z;
 	z = __ieee754_atan2(y,x);
-	if(_LIB_VERSION == _IEEE_||isnan(x)||isnan(y)) return z;
+	if(_LIB_VERSION == _IEEE_||fd_isnan(x)||fd_isnan(y)) return z;
 	if(x==0.0&&y==0.0) {
-	        return __kernel_standard(y,x,3); /* atan2(+-0,+-0) */
+	        return __kernel_standard(y,x,3); /* fd_atan2(+-0,+-0) */
 	} else
 	    return z;
 #endif

@@ -12,18 +12,18 @@
  *
  */
 
-/* atan(x)
+/* fd_atan(x)
  * Method
- *   1. Reduce x to positive by atan(x) = -atan(-x).
+ *   1. Reduce x to positive by fd_atan(x) = -fd_atan(-x).
  *   2. According to the integer k=4t+0.25 chopped, t=x, the argument
  *      is further reduced to one of the following intervals and the
  *      arctangent of t is evaluated by the corresponding formula:
  *
- *      [0,7/16]      atan(x) = t-t^3*(a1+t^2*(a2+...(a10+t^2*a11)...)
- *      [7/16,11/16]  atan(x) = atan(1/2) + atan( (t-0.5)/(1+t/2) )
- *      [11/16.19/16] atan(x) = atan( 1 ) + atan( (t-1)/(1+t) )
- *      [19/16,39/16] atan(x) = atan(3/2) + atan( (t-1.5)/(1+1.5t) )
- *      [39/16,INF]   atan(x) = atan(INF) + atan( -1/t )
+ *      [0,7/16]      fd_atan(x) = t-t^3*(a1+t^2*(a2+...(a10+t^2*a11)...)
+ *      [7/16,11/16]  fd_atan(x) = fd_atan(1/2) + fd_atan( (t-0.5)/(1+t/2) )
+ *      [11/16.19/16] fd_atan(x) = fd_atan( 1 ) + fd_atan( (t-1)/(1+t) )
+ *      [19/16,39/16] fd_atan(x) = fd_atan(3/2) + fd_atan( (t-1.5)/(1+1.5t) )
+ *      [39/16,INF]   fd_atan(x) = fd_atan(INF) + fd_atan( -1/t )
  *
  * Constants:
  * The hexadecimal values are the intended ones for the following 
@@ -33,16 +33,17 @@
  */
 
 #include "fdlibm.h"
+#include "fdlibm_intern.h"
 
 #ifdef __STDC__
 static const double atanhi[] = {
 #else
 static double atanhi[] = {
 #endif
-  4.63647609000806093515e-01, /* atan(0.5)hi 0x3FDDAC67, 0x0561BB4F */
-  7.85398163397448278999e-01, /* atan(1.0)hi 0x3FE921FB, 0x54442D18 */
-  9.82793723247329054082e-01, /* atan(1.5)hi 0x3FEF730B, 0xD281F69B */
-  1.57079632679489655800e+00, /* atan(inf)hi 0x3FF921FB, 0x54442D18 */
+  4.63647609000806093515e-01, /* fd_atan(0.5)hi 0x3FDDAC67, 0x0561BB4F */
+  7.85398163397448278999e-01, /* fd_atan(1.0)hi 0x3FE921FB, 0x54442D18 */
+  9.82793723247329054082e-01, /* fd_atan(1.5)hi 0x3FEF730B, 0xD281F69B */
+  1.57079632679489655800e+00, /* fd_atan(inf)hi 0x3FF921FB, 0x54442D18 */
 };
 
 #ifdef __STDC__
@@ -50,10 +51,10 @@ static const double atanlo[] = {
 #else
 static double atanlo[] = {
 #endif
-  2.26987774529616870924e-17, /* atan(0.5)lo 0x3C7A2B7F, 0x222F65E2 */
-  3.06161699786838301793e-17, /* atan(1.0)lo 0x3C81A626, 0x33145C07 */
-  1.39033110312309984516e-17, /* atan(1.5)lo 0x3C700788, 0x7AF0CBBD */
-  6.12323399573676603587e-17, /* atan(inf)lo 0x3C91A626, 0x33145C07 */
+  2.26987774529616870924e-17, /* fd_atan(0.5)lo 0x3C7A2B7F, 0x222F65E2 */
+  3.06161699786838301793e-17, /* fd_atan(1.0)lo 0x3C81A626, 0x33145C07 */
+  1.39033110312309984516e-17, /* fd_atan(1.5)lo 0x3C700788, 0x7AF0CBBD */
+  6.12323399573676603587e-17, /* fd_atan(inf)lo 0x3C91A626, 0x33145C07 */
 };
 
 #ifdef __STDC__
@@ -83,52 +84,52 @@ one   = 1.0,
 huge   = 1.0e300;
 
 #ifdef __STDC__
-	double atan(double x)
+	double fd_atan(double x)
 #else
-	double atan(x)
+	double fd_atan(x)
 	double x;
 #endif
 {
 	double w,s1,s2,z;
 	int ix,hx,id;
 
-	hx = __HI(x);
+	hx = FD_HI(x);
 	ix = hx&0x7fffffff;
 	if(ix>=0x44100000) {	/* if |x| >= 2^66 */
 	    if(ix>0x7ff00000||
-		(ix==0x7ff00000&&(__LO(x)!=0)))
-		return x+x;		/* NaN */
-	    if(hx>0) return  atanhi[3]+atanlo[3];
-	    else     return -atanhi[3]-atanlo[3];
+		(ix==0x7ff00000&&(FD_LO(x)!=0)))
+		return gA(x,x);		/* NaN */
+	    if(hx>0) return gA( atanhi[3],atanlo[3]);
+	    else     return gS(-atanhi[3],atanlo[3]);
 	} if (ix < 0x3fdc0000) {	/* |x| < 0.4375 */
 	    if (ix < 0x3e200000) {	/* |x| < 2^-29 */
-		if(huge+x>one) return x;	/* raise inexact */
+		if(gA(huge,x) > one) return x;	/* raise inexact */
 	    }
 	    id = -1;
 	} else {
-	x = fabs(x);
+	x = fd_fabs(x);
 	if (ix < 0x3ff30000) {		/* |x| < 1.1875 */
 	    if (ix < 0x3fe60000) {	/* 7/16 <=|x|<11/16 */
-		id = 0; x = (2.0*x-one)/(2.0+x); 
+		id = 0; x = gD(gS(gM(2.0,x), one), gA(2.0,x)); 
 	    } else {			/* 11/16<=|x|< 19/16 */
-		id = 1; x  = (x-one)/(x+one); 
+		id = 1; x = gD(gS(x,one),gA(x,one));
 	    }
 	} else {
 	    if (ix < 0x40038000) {	/* |x| < 2.4375 */
-		id = 2; x  = (x-1.5)/(one+1.5*x);
+		id = 2; x = gD(gS(x,1.5), gA(one, gM(1.5,x)));
 	    } else {			/* 2.4375 <= |x| < 2^66 */
-		id = 3; x  = -1.0/x;
+		id = 3; x = gD(-1.0,x);
 	    }
 	}}
     /* end of argument reduction */
-	z = x*x;
-	w = z*z;
+	z = gM(x,x);
+	w = gM(z,z);
     /* break sum from i=0 to 10 aT[i]z**(i+1) into odd and even poly */
-	s1 = z*(aT[0]+w*(aT[2]+w*(aT[4]+w*(aT[6]+w*(aT[8]+w*aT[10])))));
-	s2 = w*(aT[1]+w*(aT[3]+w*(aT[5]+w*(aT[7]+w*aT[9]))));
-	if (id<0) return x - x*(s1+s2);
+	s1 = gM(z,gA(aT[0], gM(w,gA(aT[2], gM(w,gA(aT[4], gM(w,gA(aT[6], gM(w,gA(aT[8], gM(w,aT[10])))))))))));
+	s2 = gM(w,gA(aT[1], gM(w,gA(aT[3], gM(w,gA(aT[5], gM(w,gA(aT[7], gM(w,aT[9])))))))));
+	if (id<0) return gS(x, gM(x,gA(s1, s2)));
 	else {
-	    z = atanhi[id] - ((x*(s1+s2) - atanlo[id]) - x);
+	    z = gS(atanhi[id], gS(gS(gM(x,gA(s1,s2)), atanlo[id]), x));
 	    return (hx<0)? -z:z;
 	}
 }

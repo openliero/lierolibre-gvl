@@ -122,6 +122,11 @@ struct basic_obitstream : common_obitstream
 	void put_block(void const* ptr_, std::size_t len);
 	void put_lim(uint32_t v, uint32_t low, uint32_t high);
 	
+	// Called to allocate a byte just before it's begun.
+	// put_byte() should then write the data to that byte.
+	// By default we don't preallocate bytes.
+	void allocate_out_byte() { }
+	
 	void resetp();
 	void finish();
 	
@@ -140,7 +145,7 @@ struct basic_obitstream : common_obitstream
 // Throws on all output operations.
 struct dummy_obitstream
 {
-	void not_supported()
+	void not_supported() const
 	{ throw std::runtime_error("Not supported"); }
 	
 	void put(uint32_t) { not_supported(); }
@@ -163,6 +168,30 @@ struct dummy_obitstream
 	void put_rice(uint32_t, uint32_t) { not_supported(); }
 	
 	void put_debug_mark() { not_supported(); }
+};
+
+// Dummy ibitstream to allow normalization of interface of bitstreams.
+// Throws on all input operations.
+struct dummy_ibitstream
+{
+	void not_supported() const
+	{ throw std::runtime_error("Not supported"); }
+	
+	std::size_t in_bytes_required(std::size_t bits) const { not_supported(); }
+	
+	void     ignore(uint32_t bits) { not_supported(); }
+	uint32_t get() { not_supported(); }
+	uint32_t get_uint(uint32_t bits) { not_supported(); }
+	void     get_block(void* ptr_, size_t len) { not_supported(); }
+	uint32_t get_lim(uint32_t low, uint32_t high) { not_supported(); }
+	void     resetg() { not_supported(); }
+	
+	uint32_t get_trunc(uint32_t count) { not_supported(); }
+	uint32_t get_unary() { not_supported(); }
+	uint32_t get_golomb(uint32_t m) { not_supported(); }
+	uint32_t get_rice(uint32_t shift) { not_supported(); }
+	
+	void get_debug_mark() { not_supported(); }
 };
 
 } // namespace gvl

@@ -109,11 +109,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="$(ProjectDir)\..\..\.."
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
+				AssemblerOutput="4"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -166,6 +170,10 @@
 				RelativePath="..\containers\list.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\containers\treap.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="io"
@@ -176,6 +184,14 @@
 			</File>
 			<File
 				RelativePath="..\io\stream.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="math"
+			>
+			<File
+				RelativePath="..\math\deterministic_float.cpp"
 				>
 			</File>
 		</Filter>

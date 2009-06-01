@@ -17,6 +17,7 @@ struct socket_state : bucket_sink, flags
 	
 };*/
 
+/*
 struct socketstream;
 
 struct socket_bucket : bucket
@@ -25,11 +26,9 @@ struct socket_bucket : bucket
 	: state(state)
 	{
 	}
-	
-	/*override*/ read_result read(size_type amount = 0, bucket* dest = 0);
-	
+		
 	socketstream* state;
-};
+};*/
 
 struct socketstream : stream, flags
 {
@@ -38,7 +37,7 @@ struct socketstream : stream, flags
 	socketstream(char const* addr, int port)
 	: flags(0)
 	{
-		open(new socket_bucket(this));
+		//open(new socket_bucket(this));
 		
 		connect(addr, port);
 	}
@@ -111,14 +110,19 @@ struct socketstream : stream, flags
 	
 		
 protected:
-	/*override*/ status write(bucket* b)
+	/*override*/ read_result read(size_type amount = 0, bucket* dest = 0);
+	
+	/// Writes a bucket to a sink. If bucket_sink::ok is returned,
+	/// takes ownership of 'b' and unlinks it from it's list<bucket>.
+	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
+	/*override*/ write_result write(bucket* b)
 	{
 		process();
 		
 		if(flags::no(connected))
-			return would_block;
+			return write_result(write_would_block, false);
 			
-		bucket_source::size_type size = b->size();
+		size_type size = b->size();
 		int r = sock.send(b->get_ptr(), size);
 		
 		if(r == size)
@@ -127,7 +131,7 @@ protected:
 			
 			gvl::unlink(b);
 			delete b;
-			return ok;
+			return write_result(write_ok, true);
 		}
 		else
 		{
@@ -135,12 +139,12 @@ protected:
 			{
 				std::cout << "Partial write: " << r << "b" << std::endl;
 				b->cut_front(r);
-				return part;
+				return write_result(write_part, false);
 			}
 			else if(r == socket::would_block)
-				return would_block;
+				return write_result(write_would_block, false);
 		}
-		return error;
+		return write_result(write_error, false);
 	}
 	
 	socket sock;

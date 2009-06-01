@@ -102,6 +102,19 @@ struct hash_set : generic_hash_set<hash_set_index<KeyT>, KeyT, KeyT, Hash, Compa
 	}
 	
 	template<typename SpecKeyT>
+	KeyT& operator[](SpecKeyT const& v)
+	{
+		hash_set_index<KeyT>* index = base::lookup(v);
+		if(index)
+			return *index->ptr;
+		KeyT* k = new KeyT(v); // !exp
+		insert(k);
+		return *k;
+	}
+	
+	
+	
+	template<typename SpecKeyT>
 	KeyT* release(SpecKeyT const& v)
 	{
 		hash_set_index<KeyT>* index = base::lookup(v);

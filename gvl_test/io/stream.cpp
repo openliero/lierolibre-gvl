@@ -2,7 +2,7 @@
 
 //#include <gvl/io/stream.hpp>
 //#include <gvl/sockets/socketstream.hpp>
-#include <gvl/io/brigade3.hpp>
+#include <gvl/io/stream.hpp>
 #include <gvl/math/tt800.hpp>
 //#include <gvl/support/algorithm.hpp>
 #include <functional>
@@ -79,7 +79,7 @@ void object::test<1>()
 	
 	filter_ptr filter(new filter(source, sink));
 	
-	bucket_writer writer(source);
+	stream_writer writer(source);
 	
 	for(int i = 0; i < 10; ++i)
 	{

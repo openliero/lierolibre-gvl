@@ -3,22 +3,22 @@
 namespace gvl
 {
 
-socket_bucket::read_result socket_bucket::read(size_type amount, bucket* dest)
+stream::read_result socketstream::read(size_type amount, bucket* dest)
 {
-	state->process();
+	process();
 	
-	if(state->flags::no(socketstream::connected))
-		return read_result(bucket_source::blocking);
+	if(flags::no(socketstream::connected))
+		return read_result(read_blocking);
 		
 	char buffer[1024];
-	int r = state->sock.recv(buffer, 1024);
+	int r = sock.recv(buffer, 1024);
 	if(r > 0)
-		return read_result(bucket_source::ok, new bucket_mem(buffer, r));
+		return read_result(read_ok, new bucket(buffer, r));
 	else if(r == 0)
-		return read_result(bucket_source::eos);
+		return read_result(read_eos);
 	else if(r == socket::would_block)
-		return read_result(bucket_source::blocking);
-	return read_result(bucket_source::error);
+		return read_result(read_blocking);
+	return read_result(read_error);
 }
 
 } // namespace gvl

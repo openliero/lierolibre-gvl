@@ -466,6 +466,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\containers\deque.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\containers\generic_hash_set.hpp"
 				>
 			</File>
@@ -562,6 +566,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\math\ieee.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\math\ieee.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\math\math.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\math\matrix.hpp"
 				>
 			</File>
@@ -581,6 +597,338 @@
 				RelativePath="..\math\vec.hpp"
 				>
 			</File>
+			<Filter
+				Name="fdlibm"
+				>
+				<File
+					RelativePath="..\math\fdlibm\e_acos.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_acosh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_asin.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_atan2.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_atanh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_cosh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_exp.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_fmod.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_gamma.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_gamma_r.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_hypot.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_j0.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_j1.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_jn.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_lgamma.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_lgamma_r.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_log.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_log10.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_pow.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_rem_pio2.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_remainder.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_scalb.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_sinh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\e_sqrt.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\fdlibm.h"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\fdlibm_intern.h"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\k_cos.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\k_rem_pio2.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\k_sin.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\k_standard.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\k_tan.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_asinh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_atan.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_cbrt.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_ceil.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_copysign.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_cos.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_erf.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_expm1.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_fabs.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_finite.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_floor.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_frexp.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_ilogb.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_isnan.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_ldexp.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_lib_version.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_log1p.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_logb.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_matherr.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_modf.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_nextafter.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_rint.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_scalbn.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_signgam.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_significand.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_sin.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_tan.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\s_tanh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_acos.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_acosh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_asin.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_atan2.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_atanh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_cosh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_exp.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_fmod.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_gamma.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_gamma_r.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_hypot.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_j0.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_j1.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_jn.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_lgamma.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_lgamma_r.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_log.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_log10.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_pow.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_remainder.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_scalb.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_sinh.c"
+					>
+				</File>
+				<File
+					RelativePath="..\math\fdlibm\w_sqrt.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="io"
@@ -605,7 +953,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -625,7 +989,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -645,7 +1025,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -665,7 +1061,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -682,14 +1094,6 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -732,6 +1136,14 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\io\devnull.hpp"
@@ -742,30 +1154,12 @@
 				>
 			</File>
 			<File
+				RelativePath="..\io\range_coder.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\io\stream.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\io\stream.hpp"
@@ -793,7 +1187,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|x64"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -891,29 +1284,12 @@
 			<File
 				RelativePath="..\sockets\socketstream.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\sockets\socketstream.hpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -921,7 +1297,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"

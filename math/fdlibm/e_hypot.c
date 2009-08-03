@@ -65,7 +65,7 @@
 	k=0;
 	if(ha > 0x5f300000) {	/* a>2**500 */
 	   if(ha >= 0x7ff00000) {	/* Inf or NaN */
-	       w = a+b;			/* for sNaN */
+	       w = gA(a,b);			/* for sNaN */
 	       if(((ha&0xfffff)|FD_LO(a))==0) w = a;
 	       if(((hb^0x7ff00000)|FD_LO(b))==0) w = b;
 	       return w;

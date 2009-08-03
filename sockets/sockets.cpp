@@ -12,7 +12,7 @@ socket socket::invalid()
 	return socket();
 }
 
-#if GVL_WIN32==1
+#if GVL_WIN32 || GVL_WIN64
 
 inline int error() { return WSAGetLastError(); }
 int const sckerr_in_progress = WSAEINPROGRESS;

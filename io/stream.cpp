@@ -44,7 +44,7 @@ void stream_writer::partial_flush()
 	}
 }
 
-void stream_writer::put(bucket* buf)
+void stream_writer::put_bucket(bucket* buf)
 {
 	flush_buffer();
 	gvl::unlink(buf);

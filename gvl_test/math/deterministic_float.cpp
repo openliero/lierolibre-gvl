@@ -3,7 +3,12 @@
 #include <gvl/math/tt800.hpp>
 #include <gvl/support/algorithm.hpp>
 #include <gvl/math/fdlibm/fdlibm.h>
+#include <gvl/math/ieee.hpp>
 #include <cmath>
+#include <ctime>
+#include <limits>
+#include <iostream>
+#include <iomanip>
 
 #include <gvl/math/ieee.hpp>
 #include <emmintrin.h>
@@ -82,6 +87,7 @@ template<>
 template<>
 void object::test<2>()
 {
+#if 0
 	gvl::tt800 rnd(1);
 		
 	long trials = 0;
@@ -180,6 +186,106 @@ void object::test<2>()
 	}
 	
 	printf("Total failures: %d out of %d, %d incorrect overflows\n", failures, trials, incorrect_overflows);
+#endif
+}
+
+template<>
+template<>
+void object::test<3>()
+{
+	double computedNaN = gSqrt(-1.0);
+
+	double negZero = -10.0 * 0.0;
+	double zero = 0.0;
+
+	ensure(fd_isnan(computedNaN) != 0);
+
+	ensure("x-x is not optimized", fd_isnan(gS(computedNaN, computedNaN)) != 0);
+	ensure("x*0.0 is not optimized", fd_isnan(gM(computedNaN, 0.0)) != 0);
+	ensure("x/x is not optimized", fd_isnan(gD(computedNaN, computedNaN)) != 0);
+	  
+	ensure("dividing by -0 yields -infinity", gD(1.0, negZero) == -std::numeric_limits<double>::infinity());
+	ensure("dividing by 0 yields infinity", gD(1.0, zero) == std::numeric_limits<double>::infinity());
+	ensure("dividing 0 by 0 yields NaN", fd_isnan(gD(zero, zero)) != 0);
+
+	ensure("double overflow with multiply", gD(gM(1.7e308, 2.0), 2.0) == std::numeric_limits<double>::infinity());
+	ensure("double overflow with add", gD(gA(1.7e308, 1.7e308), 2.0) == std::numeric_limits<double>::infinity());
+
+	ensure("double underflow with divide", gM(gD(4.940656458412e-324, 2.0), 2.0) == 0.0);
+
+	// These fail with round-double-53(round-extended-64(x / y))
+	ensure("division is done with double precision #4", gD(1.0800166971961008e+0238, 5.1489795549339881e-0054) == 2.0975354158498831e+0291);
+	ensure("division is done with double precision #5", gD(7.3289450094340694e+0083, 1.9115748309497579e-0128) == 3.8339827930213510e+0211);
+	ensure("division is done with double precision #6", gD(1.9544203331713143e-0205, 3.5068757973112538e-0184) == 5.5731096455420005e-0022);
+
+	// These fail with round-double-53(round-extended-53(x * y))
+	ensure("multiplication is done with double precision #1", gM(8.5782035936114600e-0256, 9.6044770612653327e-0055) == 8.2389159641705354e-0310);
+	ensure("multiplication is done with double precision #2", gM(1.5033255271664106e-0171, 7.6121384488969229e-0138) == 1.1443522046551671e-0308);
+	ensure("multiplication is done with double precision #3", gM(1.7912119214492215e-0236, 1.0043439961829961e-0072) == 1.7989929391989340e-0308);
+
+	// These fail with round-double-53(round-extended-53(x / y))
+	ensure("division is done with double precision #1", gD(9.9174847050126468e-0179, 6.5505123943214619e+0129) == 1.5140013647802517e-0308);
+	ensure("division is done with double precision #2", gD(6.0531002917684863e-0252, 6.8672903290096396e-0306) == 8.8143940357352393e+0053);
+	ensure("division is done with double precision #3", gD(3.5215930923124385e+0097, 2.6716890617707574e+0068) == 1.3181148744825781e+0029);
+	
+#if 0
+	gvl::tt800 rnd(2);
+
+	for(unsigned long long i = 0; i < 400000000000ull; ++i)
+	{
+		double r1, r2;
+		double x, y;
+		
+		FD_LO(x) = rnd();
+		FD_HI(x) = rnd();
+		FD_LO(y) = rnd();
+		FD_HI(y) = rnd();
+		
+		r1 = gM(x, y);
+		
+		__asm
+		{
+			movsd xmm0, x
+			mulsd xmm0, y
+			movsd r2, xmm0
+		}
+
+		if(!equivalent(r1, r2))
+		{
+			printf("FAIL! %f, %f\n", x, y);
+			return;
+		}
+
+#if 0
+		if(r2 < 1.7e308)
+		{
+			double ratio = fd_nextafter(std::numeric_limits<double>::max() / r2, 0.0);
+			x *= ratio;
+		}
+		else if(r2 == std::numeric_limits<double>::infinity())
+		{
+			if((x * 0.5) * y > 0.9e308)
+			{
+				double ratio = fd_nextafter((0.9e308) / ((x * 0.5) * y), std::numeric_limits<double>::max());
+				y *= ratio;
+			}
+			else
+				y = fd_nextafter(y, 0.0);
+		}
+		else
+		{
+			x = fd_nextafter(x, std::numeric_limits<double>::max());
+		}
+#endif
+
+		if((i & 0xffffff) == 0)
+		{
+			std::cout << "\nTested " << i;
+		}
+
+   }
+#endif
+
 }
 
 } // namespace tut

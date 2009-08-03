@@ -772,7 +772,7 @@ struct stream_writer
 		}
 	}
 	
-	void put(bucket* buf);
+	void put_bucket(bucket* buf);
 	
 private:
 	void overflow_put_(uint8_t b)
@@ -805,13 +805,13 @@ private:
 inline stream_writer& operator<<(stream_writer& writer, char const* str)
 {
 	std::size_t len = std::strlen(str);
-	writer.put(new bucket(str, len));
+	writer.put_bucket(new bucket(str, len));
 	return writer;
 }
 
 inline stream_writer& operator<<(stream_writer& writer, std::string const& str)
 {
-	writer.put(new bucket(str.data(), str.size()));
+	writer.put_bucket(new bucket(str.data(), str.size()));
 	return writer;
 }
 

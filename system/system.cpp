@@ -8,7 +8,7 @@ uint32_t get_ticks();
 void sleep(uint32_t ms);
 }
 
-#if GVL_WIN32==1
+#if GVL_WIN32 || GVL_WIN64
 
 #include <windows.h>
 #include <mmsystem.h>

@@ -113,10 +113,12 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="$(ProjectDir)\..\..\.."
+				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="2"
+				EnableEnhancedInstructionSet="0"
 				AssemblerOutput="4"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -168,6 +170,10 @@
 			>
 			<File
 				RelativePath="..\containers\list.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\containers\pairing_heap.cpp"
 				>
 			</File>
 			<File

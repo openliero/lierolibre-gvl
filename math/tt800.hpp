@@ -11,6 +11,8 @@ struct tt800
 	static unsigned int const N = 25;
 	static unsigned int const M = 7;
 	
+	typedef uint32_t value_type;
+	
 	tt800(uint32_t new_seed)
 	: k(0)
 	{
@@ -18,7 +20,7 @@ struct tt800
 	}
 	
 	void seed(uint32_t new_seed);
-
+	
 	uint32_t operator()()
 	{
 		if(k == N)
@@ -30,7 +32,7 @@ struct tt800
 		
 		return y;
 	}
-	
+
 	/*
 	int32_t range(int32_t a, int32_t b)
 	{
@@ -50,6 +52,7 @@ private:
 	
 	uint32_t x[N];
 	uint32_t k;
+	uint32_t front_;
 };
 
 template<typename Archive>

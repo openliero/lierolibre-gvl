@@ -54,7 +54,7 @@ static double zero = 0.0;
 	hx = FD_HI(x);		/* high word */
 	lx = FD_LO(x);		/* low word */
 	ix = hx&0x7fffffff;
-	if ((ix|((lx|(-lx))>>31))>0x3ff00000) /* |x|>1 */
+	if ((ix|((lx|((0-lx)))>>31))>0x3ff00000) /* |x|>1 */
 	    return gD(gS(x,x), gS(x,x));
 	if(ix==0x3ff00000)
 	    return gD(x,zero);

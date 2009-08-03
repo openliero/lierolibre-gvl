@@ -48,19 +48,19 @@ ln2	= 6.93147180559945286227e-01;  /* 0x3FE62E42, 0xFEFA39EF */
 	int hx;
 	hx = FD_HI(x);
 	if(hx<0x3ff00000) {		/* x < 1 */
-	    return gD(gS(x,x), gS(x,x));
+		return gD(gS(x,x), gS(x,x));
 	} else if(hx >=0x41b00000) {	/* x > 2**28 */
-	    if(hx >=0x7ff00000) {	/* x is inf of NaN */
-	        return gA(x,x);
-	    } else
+		if(hx >=0x7ff00000) {	/* x is inf of NaN */
+			return gA(x,x);
+		} else
 		return gA(__ieee754_log(x), ln2);	/* fd_acosh(huge)=fd_log(2x) */
 	} else if(((hx-0x3ff00000)|FD_LO(x))==0) {
-	    return 0.0;			/* fd_acosh(1) = 0 */
+		return 0.0;			/* fd_acosh(1) = 0 */
 	} else if (hx > 0x40000000) {	/* 2**28 > x > 2 */
-	    t = gM(x,x);
-	    return __ieee754_log(gM(2.0,x) - gD(one,gA(x,gSqrt(gS(t,one)))));
+		t = gM(x,x);
+		return __ieee754_log(gM(2.0,x) - gD(one,gA(x,gSqrt(gS(t,one)))));
 	} else {			/* 1<x<2 */
-	    t = gS(x,one);
-	    return fd_log1p(gA(t, gSqrt(gA(gM(2.0,t), gM(t,t)))));
+		t = gS(x,one);
+		return fd_log1p(gA(t, gSqrt(gA(gM(2.0,t), gM(t,t)))));
 	}
 }

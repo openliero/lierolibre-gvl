@@ -103,11 +103,11 @@ typedef bool (*do_list_compare_func)(void*, gvl_list_node*, gvl_list_node*);
 template<typename Tag = default_list_tag>
 struct list_node : gvl_list_node
 {
-/*
+	template<typename T>
 	static T* downcast(gvl_list_node* p)
 	{
-		return static_cast<T*>(static_cast<list_node<T, Tag>*>(p));
-	}*/
+		return static_cast<T*>(static_cast<list_node<Tag>*>(p));
+	}
 	
 	list_node()
 	{

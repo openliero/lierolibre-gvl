@@ -14,11 +14,12 @@
 namespace gvl
 {
 
+// NOTE: Not quite in working condition right now
 
 struct treap_node_common 
 {
-	static std::size_t const left_bit = 2ul;
-	static std::size_t const right_bit = 1ul;
+	static int const left_bit = 1;
+	static int const right_bit = 2;
 
 	treap_node_common* parent;
 	treap_node_common* ch[2];
@@ -40,7 +41,7 @@ struct treap_node_common
 	template<int Ch>
 	bool has_()
 	{
-		return ((thread_flags >> 1) & 1) != 0;
+		return ((thread_flags >> Ch) & 1) != 0;
 	}
 	
 	template<int Ch> // Ch == 0 => left, Ch == 1 => right
@@ -81,7 +82,7 @@ struct treap_node : treap_node_common
 struct default_random
 {
 	default_random()
-	: r(get_ticks())
+	: r(1) // TEMP r(get_ticks())
 	{
 	}
 	
@@ -304,8 +305,9 @@ struct treap : Compare, Random, Deleter
 			root->ch[1] = &head;
 			head.ch[0] = root;
 			head.ch[1] = root;
+			sassert(n == 0);
+			n = 1;
 		}
-		++n;
 	}
 	
 	void unlink(T* el_)
@@ -487,8 +489,25 @@ struct treap : Compare, Random, Deleter
 		
 		passert(size() == count, "Manual count does not correspond to cached count");
 	}
+	
+	std::size_t depth() const
+	{
+		if(!root)
+			return 0;
+		return depth_(root);
+	}
 
 private:
+
+	std::size_t depth_(treap_node_common* node) const
+	{
+		std::size_t depth = 0;
+		if(node->has_<0>())
+			depth = std::max(depth, depth_(node->child<0>()));
+		if(node->has_<1>())
+			depth = std::max(depth, depth_(node->child<1>()));
+		return 1 + depth;
+	}
 
 	void check_node(T* n_)
 	{
@@ -562,10 +581,22 @@ private:
 		
 		
 		// Copy the threading flag for k1->mchild<Ch>() to n->child<Ch>()
+		/*
 		int kmch = (k1->thread_flags & (2 >> Ch));
 		int mirrored_kmch = (Ch == 0) ? (kmch >> 1) : (kmch << 1);
 		n->thread_flags = (n->thread_flags & (2 >> Ch)) | mirrored_kmch;
-		n->child<Ch>() = k1->mchild<Ch>();
+		*/
+		passert(n->thread_flags & (1 << Ch), "n->child<Ch>() flag must be set");
+		if(k1->thread_flags & (2 >> Ch))
+		{
+			// n->child<Ch>() flag already set (k1 is a child)
+			n->child<Ch>() = k1->mchild<Ch>();
+		}
+		else
+		{
+			n->thread_flags ^= (1 << Ch); // Clear n->child<Ch>() flag
+			n->child<Ch>() = k1; // k1 is the new thread
+		}
 		
 		k1->parent = parent;
 		k1->mchild<Ch>() = n;
@@ -582,11 +613,12 @@ private:
 		treap_node_common* prev_element, // The closest element smaller than all elements under the child
 		treap_node_common* next_element) // The closest element smaller than all elements under the child
 	{
-		treap_node_common* ch = n->child<Ch>();
+		treap_node_common*& chr = n->child<Ch>();
+		
 		if(!n->has_<Ch>())
 		{
 			// If the previous or next element (depending on side) is the head,
-			// the new element is a new extreme.	
+			// the new element is a new extreme.
 			if((Ch == 0 && prev_element == &head) || (Ch == 1 && next_element == &head))
 				head.mchild<Ch>() = el; // New extreme node
 				
@@ -596,16 +628,18 @@ private:
 			el->parent = n;
 			el->ch[0] = prev_element;
 			el->ch[1] = next_element;
-			
+			++this->n;
 		}
 		else
 		{
-			insert_under_(ch, el, n, n->child<Ch>(), prev_element, next_element);
+			insert_under_(chr, el, n, chr, prev_element, next_element);
 		}
 		
+#if 1
 		// NOTE: insert_under_ may change n->child<Ch>(), we must reread it here.
-		if(n->child<Ch>()->priority < n->priority)
+		if(chr->priority < n->priority)
 			return rotate_with_<Ch>(n, parent, child_slot);
+#endif
 	}
 	
 	void insert_under_(
@@ -633,6 +667,32 @@ private:
 		}
 	}
 	
+	/*
+	void insert_under2_(
+		treap_node_common* n,
+		treap_node_common* el,
+		treap_node_common* parent,
+		treap_node_common*& child_slot,
+		treap_node_common* prev_element, // The closest element smaller than all elements under n
+		treap_node_common* next_element) // The closest element larger than all elements under n
+	{
+		sassert(n);
+		
+		if(Compare::operator()(*downcast(el), *downcast(n)))
+		{
+			insert_side_<0>(n, el, parent, child_slot, prev_element, n);
+		}
+		else if(Compare::operator()(*downcast(n), *downcast(el)))
+		{
+			insert_side_<1>(n, el, parent, child_slot, n, next_element);
+		}
+		else
+		{
+			// TODO: Equal to an existing element, throw or return something here?
+			Deleter::operator()(downcast(el));
+		}
+	}*/
+	
 	template<int Ch>
 	void root_unlink_child_(
 		treap_node_common* n,
@@ -653,16 +713,28 @@ private:
 	void root_unlink_(
 		treap_node_common* n,
 		treap_node_common* parent,
-		treap_node_common*& child_slot)
+		treap_node_common*& child_slot,
+		int child_slot_mask)
 	{
 		assert(!n->is_leaf()); // Leafs should be handled before calling this function
 		
 		if(!n->has_<0>())
 		{
+			// TODO: Need to correct the threading flags of child_slot
+			if(parent)
+			{
+				passert((parent->thread_flags & child_slot_mask) != 0, "Thread flag for child_slot must be set");
+				int right_mask = -(n->thread_flags >> 1); // All 1 if right is a child, 0 otherwise
+				
+				// Mask child_slot thread flag if there is no child
+				parent->thread_flags = parent->thread_flags & (right_mask & child_slot_mask);
+			}
 			child_slot = n->child<1>();
 		}
 		else if(!n->has_<1>())
 		{
+			// As the test above failed, we know that there's a child to the left,
+			// we don't need to update the child_slot thread flag.
 			child_slot = n->child<0>();
 		}
 		else if(n->child<0>()->priority < n->child<1>()->priority)

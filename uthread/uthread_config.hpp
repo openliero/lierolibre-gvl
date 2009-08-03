@@ -31,7 +31,7 @@
 
 #define HAS_FIBERS
 
-#if defined(WIN32) && defined(HAS_FIBERS)
+#if (defined(WIN32) || defined(_WIN64)) && defined(HAS_FIBERS)
 
 #define CO_USE_FIBERS
 

@@ -9,6 +9,7 @@ namespace gvl
 template<int R, uint32_t A>
 struct cmwc
 {
+	typedef uint32_t value_type;
 	
 	cmwc()
 	: p(R - 1)
@@ -56,7 +57,7 @@ struct cmwc
 		c = local_c;
 	}
 #endif
-	
+
 	uint32_t operator()()
 	{
 		p = (p+1) & (R - 1);
@@ -71,7 +72,7 @@ struct cmwc
 		
 		return (Q[p] = 0xfffffffe - uint32_t(x & 0xffffffff) - overflow);
 	}
-	
+		
 	uint32_t Q[R];
 	uint32_t c;
 	uint32_t p;
@@ -80,7 +81,7 @@ struct cmwc
 
 struct mwc
 {
-	mwc() : x(time(0))
+	mwc(uint32_t seed) : x(seed), c(1)
 	{
 	}
 

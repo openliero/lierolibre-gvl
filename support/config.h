@@ -1,10 +1,8 @@
 #ifndef UUID_192A557270964917B0263E8050C2E433
 #define UUID_192A557270964917B0263E8050C2E433
 
-#ifdef __cplusplus
-#define INLINE inline
-#else
-#define INLINE static
-#endif
+#include "platform.hpp"
+
+
 
 #endif // UUID_192A557270964917B0263E8050C2E433

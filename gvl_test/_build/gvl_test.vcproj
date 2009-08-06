@@ -173,6 +173,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\containers\pairing_heap.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\containers\treap.cpp"
 				>
 			</File>

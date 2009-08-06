@@ -1,19 +1,17 @@
 #include <gvl/tut/tut.hpp>
 
-#include <gvl/containers/treap.hpp>
 #include <gvl/containers/treap2.hpp>
 #include <gvl/math/tt800.hpp>
 #include <gvl/support/algorithm.hpp>
-#include <gvl/support/profile.hpp>
 #include <functional>
 #include <cmath>
 #include <set>
 #include <ctime>
-#include <iostream>
 
 namespace tut
 {
 
+/*
 struct treap_integer : gvl::treap_node<>
 {
 	treap_integer(int v)
@@ -27,7 +25,7 @@ struct treap_integer : gvl::treap_node<>
 	}
 	
 	int v;
-};
+};*/
 
 struct treap_integer2 : gvl::treap_node2<>
 {
@@ -96,17 +94,18 @@ template<>
 template<>
 void object::test<1>()
 {
-	typedef gvl::treap<treap_integer> l1_t;
+#if 1
+	//typedef gvl::treap<treap_integer> l1_t;
 	typedef std::set<int> l2_t;
 	typedef gvl::treap2<treap_integer2> l3_t;
-	l1_t l1;
+	//l1_t l1;
 	l2_t l2;
 	l3_t l3;
 	
 #if 1
 	gvl::tt800 r(1234);
 	
-	int const iter = 900000/*000*/;
+	int const iter = 1500000/*0000*/;
 	int const limit = iter;
 	
 	printf("\n\n");
@@ -128,10 +127,7 @@ void object::test<1>()
 		
 		for(int repeat = 0; repeat < iter; ++repeat)
 		{
-			uint32_t v = r.range(0, limit);
-			l2.insert(v);
-			l2.insert(v + 1);
-			l2.insert(v + 3);
+			l2.insert(/*repeat*/r.range(0, limit));
 		}
 	}
 
@@ -141,13 +137,76 @@ void object::test<1>()
 		
 		for(int repeat = 0; repeat < iter; ++repeat)
 		{
-			uint32_t v = r.range(0, limit);
-			l3.insert(new treap_integer2(v));
-			l3.insert(new treap_integer2(v + 1));
-			l3.insert(new treap_integer2(v + 3));
+			l3.insert(new treap_integer2(/*repeat*/r.range(0, limit)));
 		}
 	}
 	
+	printf("%f, %f\n", l3.depth() / log2((double)l3.size()), l3.average_depth() / log2((double)l3.size()));
+	printf("%f\n", l3.rotations / (double)l3.size());
+	
+	
+	int sum = 0;
+	
+	{
+		timer _;
+		
+		
+		
+		for(int repeat = 0; repeat < 30; ++repeat)
+		{
+			for(l2_t::iterator iter = l2.begin(); iter != l2.end(); ++iter)
+			{
+				sum += *iter;
+			}
+		}
+	}
+	
+	{
+		timer _;
+		
+		for(int repeat = 0; repeat < 30; ++repeat)
+		{
+			int v = r.range(0, limit);
+			
+			for(l3_t::range iter = l3.all(); !iter.empty(); iter.pop_front())
+			{
+				sum += iter.front().v;
+			}
+		}
+	}
+	
+	printf("%d\n", sum);
+	
+	
+	{
+		timer _;
+		
+		for(int repeat = 0; repeat < iter; ++repeat)
+		{
+			int v = r.range(0, limit);
+			
+			l2_t::iterator iter = l2.find(v);
+			if(iter != l2.end())
+				l2.erase(iter);
+		}
+	}
+	
+	{
+		timer _;
+		
+		for(int repeat = 0; repeat < iter; ++repeat)
+		{
+			int v = r.range(0, limit);
+			
+			l3_t::range iter = l3.find(v);
+			if(!iter.empty())
+				l3.erase_front(iter);
+				
+			//l3.integrity_check();
+		}
+	}
+	
+#if 0
 	{
 		timer _;
 		
@@ -169,11 +228,9 @@ void object::test<1>()
 			l3.find(v);
 		}
 	}
+#endif
 	
-	printf("%f, %f\n", l3.depth() / log2((double)l3.size()), l3.average_depth() / log2((double)l3.size()));
-	printf("%f\n", l3.rotations / (double)l3.size());
 	
-	gvl::present_profile(std::cout);
 	
 #if 0
 	for(int repeat = 0; repeat < 3000000; ++repeat)
@@ -197,6 +254,22 @@ void object::test<1>()
 #endif
 	
 #endif
+
+#endif
+}
+
+template<>
+template<>
+void object::test<2>()
+{
+	typedef gvl::treap2<treap_integer2> l1_t;
+	l1_t l1;
+	
+	gvl::tt800 r(1234);
+	
+	int const iter = 1500000;
+	
+	
 }
 
 } // namespace tut

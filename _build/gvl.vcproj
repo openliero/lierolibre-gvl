@@ -106,7 +106,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;_LIB"
+				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DisableLanguageExtensions="true"
@@ -167,7 +167,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_LIB"
+				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;_WIN64;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -231,7 +231,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;_LIB"
+				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;_WIN64;_LIB;NDEBUG"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DisableLanguageExtensions="true"
@@ -526,6 +526,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\containers\pairing_heap.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\containers\pod_vector.hpp"
 				>
 			</File>
@@ -541,6 +545,14 @@
 				RelativePath="..\containers\treap2.hpp"
 				>
 			</File>
+			<Filter
+				Name="trees"
+				>
+				<File
+					RelativePath="..\containers\node_base.hpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="resman"
@@ -591,10 +603,6 @@
 			</File>
 			<File
 				RelativePath="..\math\ieee.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\math\ieee.h"
 				>
 			</File>
 			<File
@@ -1396,24 +1404,32 @@
 				>
 			</File>
 			<File
+				RelativePath="..\crypt\gash.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\crypt\gciph.hpp"
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="..\ir.txt"
+		<Filter
+			Name="text"
 			>
-		</File>
+			<File
+				RelativePath="..\text\utf8.hpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="serialization"
+			>
+			<File
+				RelativePath="..\serialization\context.hpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\list.hpp"
-			>
-		</File>
-		<File
-			RelativePath="..\pz.txt"
-			>
-		</File>
-		<File
-			RelativePath="..\QuickCheck.txt"
 			>
 		</File>
 		<File

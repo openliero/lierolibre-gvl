@@ -21,7 +21,7 @@
 
 #if !defined(GVL_MSVCPP)
 #if defined(_MSC_VER)
-#define GVL_MSVCPP 1
+#define GVL_MSVCPP _MSC_VER
 #else
 #define GVL_MSVCPP 0
 #endif
@@ -69,10 +69,12 @@
 
 #if defined(__cplusplus)
 #define GVL_INLINE inline
+#elif GVL_GCC
+#define GVL_INLINE static inline
 #elif GVL_MSVCPP
 #define GVL_INLINE __inline
 #else
-#define GVL_INLINE static inline
+#define GVL_INLINE static
 #endif
 
 // Whether or not the compiler may generate x87 code for floating point calculations.

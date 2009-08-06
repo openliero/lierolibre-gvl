@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <ostream>
+#include <ctime>
 
 namespace gvl
 {
@@ -33,9 +34,28 @@ struct profile_timer
 {
 	profile_timer(char const* desc, char const* func, int line);
 		
+	std::clock_t total_time;
 	char const* desc;
 	char const* func;
 	int line;
+};
+
+struct profile_accum_timer
+{
+	profile_accum_timer(profile_timer& timer_init)
+	: timer(timer_init)
+	{
+		start_time = std::clock();
+	}
+	
+	~profile_accum_timer()
+	{
+		std::clock_t end_time = std::clock();
+		timer.total_time += (end_time - start_time);
+	}
+	
+	std::clock_t start_time;
+	profile_timer& timer;
 };
 
 void present_profile(std::ostream& str);

@@ -6,17 +6,20 @@
 namespace
 {
 	
-inline bool cstrComp(char const* a, char const* b)
+struct cstr_comp
 {
-	return strcmp(a, b) < 0;
-}
+	bool operator()(char const* a, char const* b) const
+	{
+		return strcmp(a, b) < 0;
+	}
+};
+
 
 struct log_streams
 {
-	typedef std::map<char const*, std::ostream*, bool(*)(char const* a, char const* b)> stream_map;
+	typedef std::map<char const*, std::ostream*, cstr_comp> stream_map;
 
 	log_streams()
-	: streams(cstrComp)
 	{
 	}
 	

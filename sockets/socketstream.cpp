@@ -3,7 +3,7 @@
 namespace gvl
 {
 
-stream::read_result socketstream::read(size_type amount, bucket* dest)
+stream::read_result socketstream::read_bucket(size_type amount, bucket* dest)
 {
 	process();
 	

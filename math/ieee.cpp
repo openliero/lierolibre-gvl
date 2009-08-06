@@ -18,6 +18,7 @@ extern unsigned char const scaleup[10] = {0,0,0,0,0,0,0,128,255,123};
 // Exact 80-bit floating point little endian representation of 1 / 2^(16383 - 1023)
 extern unsigned char const scaledown[10] = {0,0,0,0,0,0,0,128,255,3};
 
+
 #endif
 
 void gvl_init_ieee()

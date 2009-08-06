@@ -18,8 +18,6 @@ void stream_writer::flush_buffer()
 {
 	if(size_ > 0)
 	{
-		if(!sink_)
-			throw stream_write_error(stream::write_error, "No sink assigned to stream_writer");
 		buffer_->size_ = size_;
 		mem_buckets_.push_back(new bucket(buffer_.release(), 0, size_));
 		cap_ = 32;
@@ -28,21 +26,30 @@ void stream_writer::flush_buffer()
 	}
 }
 
-void stream_writer::flush()
+stream::write_status stream_writer::flush()
 {
 	flush_buffer();
-	partial_flush();
+	stream::write_status res = partial_flush();
+	if(res != stream::write_ok)
+		return res;
+		
+	return sink_->flush();
 }
 
-void stream_writer::partial_flush()
+stream::write_status stream_writer::partial_flush()
 {
+	if(!sink_)
+		throw stream_write_error(stream::write_error, "No sink assigned to stream_writer");
 	while(!mem_buckets_.empty())
 	{
 		stream::write_result res = sink_->write(mem_buckets_.first());
 		if(!res.consumed)
-			break;
+			return res.s;
 	}
+	
+	return stream::write_ok;
 }
+
 
 void stream_writer::put(bucket* buf)
 {

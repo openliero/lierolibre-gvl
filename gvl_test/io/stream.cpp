@@ -34,31 +34,40 @@ std::size_t array_size(T(&)[N])
 	return N;
 }
 
-/*
-// A filter automatically pushes or pulls when pushed or pulled respectively
-filter : sink_t, source_t
+struct inc_filter : gvl::filter
 {
-	put(bucket) // put writes data to sink if possible
-	get(bucket) // get pulls data from source if necessary
-	
-	source_t* source;
-	sink_t* sink;
-}
-
-// A stream pushes data to an unknown place and pulls it from the same place
-stream : sink_t, source_t
-{
-	put(bucket) // 
-	get(bucket) // 
-}
-
-// A brigade works like a filter that never reads/writes on demand, instead buffers all data in an internal structure
-brigade : sink_t, source_t
-{
-	put(bucket) // 
-	get(bucket) // 
-}
-*/
+	read_status apply(bool can_pull, bool flush = false, size_type amount = 0)
+	{
+		if(out_buffer.empty())
+		{
+			if(!can_pull)
+				return read_blocking;
+				
+			read_status res = try_pull(amount);
+			if(res != read_ok)
+				return res;
+		}
+		
+		while(!out_buffer.empty())
+		{
+			gvl::bucket* b = out_buffer.unlink_first();
+			
+			std::size_t s = b->size();
+			gvl::bucket_data_mem* dest = gvl::bucket_data_mem::create(s, s);
+			
+			uint8_t const* p = b->get_ptr();
+			
+			for(std::size_t i = 0; i < s; ++i)
+			{
+				dest->data[i] = p[i] + 1;
+			}
+			
+			in_buffer.append(new gvl::bucket(dest));
+		}
+		
+		return read_ok;
+	}
+};
 
 template<>
 template<>
@@ -77,17 +86,35 @@ void object::test<1>()
 	stream_ptr source(new brigade_buffer());
 	stream_ptr sink(new brigade_buffer());
 	
-	filter_ptr filter(new filter(source, sink));
-	
 	stream_writer writer(source);
 	
 	for(int i = 0; i < 10; ++i)
 	{
-		writer.put(1);
+		writer.put(i);
 	}
+		
 	writer.flush();
 	
-	filter->pump();
+	gvl::shared_ptr<inc_filter> filter(new inc_filter());
+	
+	stream_reader reader(source);
+	
+	int i1 = reader.get();
+	int i2 = reader.get();
+	
+	ensure(i1 == 0);
+	ensure(i2 == 1);
+	
+	// Add a filter
+	stream_ptr end = reader.detach();
+	filter->attach_source(end);
+	reader.attach(filter);
+	
+	int i3 = reader.get();
+	int i4 = reader.get();
+	
+	ensure(i3 == 3);
+	ensure(i4 == 4);
 	
 #if 0
 	char const txt[] = "hello";

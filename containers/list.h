@@ -1,7 +1,7 @@
 #ifndef UUID_BFFA58059B0C49630DD657937FF53E6C
 #define UUID_BFFA58059B0C49630DD657937FF53E6C
 
-#include "../support/config.h"
+#include "../support/platform.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,7 +18,7 @@ typedef struct gvl_list_
 	gvl_list_node sentinel;
 } gvl_list;
 
-INLINE void gvl_list_link_after(gvl_list_node* self, gvl_list_node* new_node)
+GVL_INLINE void gvl_list_link_after(gvl_list_node* self, gvl_list_node* new_node)
 {
 	gvl_list_node* old_self_next = self->next;
 	
@@ -28,7 +28,7 @@ INLINE void gvl_list_link_after(gvl_list_node* self, gvl_list_node* new_node)
 	self->next = new_node;
 }
 
-INLINE void gvl_list_link_before(gvl_list_node* self, gvl_list_node* new_node)
+GVL_INLINE void gvl_list_link_before(gvl_list_node* self, gvl_list_node* new_node)
 {
 	gvl_list_node* old_self_prev = self->prev;
 	
@@ -38,7 +38,7 @@ INLINE void gvl_list_link_before(gvl_list_node* self, gvl_list_node* new_node)
 	self->prev = new_node;
 }
 
-INLINE void gvl_list_unlink(gvl_list_node* self)
+GVL_INLINE void gvl_list_unlink(gvl_list_node* self)
 {
 	gvl_list_node* self_next = self->next;
 	gvl_list_node* self_prev = self->prev;

@@ -69,8 +69,8 @@ pi_lo   = 1.2246467991473531772E-16; /* 0x3CA1A626, 0x33145C07 */
 	lx = FD_LO(x);
 	hy = FD_HI(y); iy = hy&0x7fffffff;
 	ly = FD_LO(y);
-	if(((ix|((lx|-lx)>>31))>0x7ff00000)||
-	   ((iy|((ly|-ly)>>31))>0x7ff00000))	/* x or y is NaN */
+	if(((ix|((lx|(0-lx))>>31))>0x7ff00000)||
+	   ((iy|((ly|(0-ly))>>31))>0x7ff00000))	/* x or y is NaN */
 	   return gA(x,y);
 	if((hx-0x3ff00000|lx)==0) return fd_atan(y);   /* x=1.0 */
 	m = ((hy>>31)&1)|((hx>>30)&2);	/* 2*sign(x)+sign(y) */

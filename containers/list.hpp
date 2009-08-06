@@ -671,6 +671,20 @@ struct list : list_common, protected Deleter, protected Ownership
 		}
 	}
 	
+	void splice_front(list& b)
+	{
+		if(!b.empty())
+		{
+			b.sentinel_.prev->next = sentinel_.next;
+			b.sentinel_.next->prev = &sentinel_;
+			
+			sentinel_.next->prev = b.sentinel_.prev;
+			sentinel_.next = b.sentinel_.next;
+			
+			b.list_common::unlink_all();
+		}
+	}
+	
 	void split(iterator i, list& b)
 	{
 		if(i.ptr_ == &sentinel_)

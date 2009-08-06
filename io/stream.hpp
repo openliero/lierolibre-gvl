@@ -29,95 +29,6 @@ struct stream_error : std::runtime_error
 	}
 };
 
-struct stream : shared
-{
-	typedef bucket_size size_type;
-	
-	enum read_status
-	{
-		read_ok = 0,
-		read_blocking,
-		read_eos,
-		read_error,
-		
-		read_none_done // Special for filters
-	};
-	
-	enum write_status
-	{
-		write_ok = 0,
-		write_part,
-		write_would_block,
-		write_error
-	};
-	
-	struct read_result
-	{
-		explicit read_result(read_status s)
-		: s(s)
-		, b(0)
-		{
-		}
-		
-		read_result(read_status s, bucket* b)
-		: s(s)
-		, b(b)
-		{
-		}
-		
-		read_status s;
-		bucket* b;
-	};
-	
-	struct write_result
-	{
-		explicit write_result(write_status s, bool consumed)
-		: s(s)
-		, consumed(consumed)
-		{
-		
-		}
-		
-		write_status s;
-		bool consumed;
-	};
-	
-	virtual read_result read(size_type amount = 0, bucket* dest = 0)
-	{
-		return read_result(read_blocking);
-	}
-	
-	/// Writes a bucket to a sink. If bucket_sink::ok is returned,
-	/// takes ownership of 'b' and unlinks it from it's list<bucket>.
-	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
-	virtual write_result write(bucket* b)
-	{
-		return write_result(write_would_block, false);
-	}
-};
-
-
-struct stream_read_error : stream_error
-{
-	stream_read_error(stream::read_status s, std::string const& msg)
-	: stream_error(msg), s(s)
-	{
-	}
-	
-	stream::read_status s;
-};
-
-struct stream_write_error : stream_error
-{
-	stream_write_error(stream::write_status s, std::string const& msg)
-	: stream_error(msg), s(s)
-	{
-	}
-	
-	stream::write_status s;
-};
-
-typedef shared_ptr<stream> stream_ptr;
 
 struct bucket_data : shared
 {
@@ -278,6 +189,237 @@ protected:
 	std::size_t end_;
 };
 
+struct brigade
+{
+	typedef bucket_size size_type;
+	
+	/*
+	read_result read(size_type amount = 0, bucket* dest = 0)
+	{
+		list<bucket>::iterator i = buckets.begin();
+		
+		if(i == buckets.end())
+			return read_result(eos);
+			
+		read_result r(i->read(amount, 0));
+		if(r.s == bucket_source::ok)
+			buckets.unlink(r.b); // Success, we may unlink the bucket
+			
+		return r;
+	}*/
+
+	void prepend(bucket* b)
+	{
+		buckets.relink_front(b);
+	}
+	
+	void append(bucket* b)
+	{
+		buckets.relink_back(b);
+	}
+	
+	bool empty() const
+	{
+		return buckets.empty();
+	}
+	
+	bucket* first()
+	{
+		return buckets.first();
+	}
+	
+	bucket* unlink_first()
+	{
+		bucket* ret = buckets.first();
+		buckets.unlink_front();
+		return ret;
+	}
+	
+	bucket* unlink_last()
+	{
+		bucket* ret = buckets.last();
+		buckets.unlink_back();
+		return ret;
+	}
+	
+	list<bucket> buckets;
+};
+
+struct stream : shared
+{
+	typedef bucket_size size_type;
+	
+	enum read_status
+	{
+		read_ok = 0,
+		read_blocking,
+		read_eos,
+		read_error,
+		
+		read_none_done // Special for filters
+	};
+	
+	enum write_status
+	{
+		write_ok = 0,
+		write_part,
+		write_would_block,
+		write_error
+	};
+	
+	struct read_result
+	{
+		explicit read_result(read_status s)
+		: s(s)
+		, b(0)
+		{
+		}
+		
+		read_result(read_status s, bucket* b)
+		: s(s)
+		, b(b)
+		{
+		}
+		
+		read_status s;
+		bucket* b;
+	};
+	
+	struct write_result
+	{
+		explicit write_result(write_status s, bool consumed)
+		: s(s)
+		, consumed(consumed)
+		{
+		
+		}
+		
+		write_status s;
+		bool consumed;
+	};
+	
+	~stream()
+	{
+		close();
+	}
+	
+	virtual read_result read_bucket(size_type amount = 0, bucket* dest = 0) = 0;
+	/*
+	{
+		return read_result(read_blocking);
+	}*/
+	
+	read_result read(size_type amount = 0)
+	{
+		if(!in_buffer.empty())
+			return read_result(read_ok, in_buffer.unlink_first());
+
+		return read_bucket(amount);
+	}
+	
+	// Unread buckets so that subsequent calls to read will
+	// return them.
+	void unread(list<bucket>& buckets)
+	{
+		in_buffer.buckets.splice_front(buckets);
+	}
+	
+	/// Writes a bucket to a sink. If bucket_sink::ok is returned,
+	/// takes ownership of 'b' and unlinks it from it's list<bucket>.
+	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
+	virtual write_result write_bucket(bucket* b) = 0;
+	/*
+	{
+		return write_result(write_would_block, false);
+	}*/
+	
+	write_result write(bucket* b)
+	{
+		write_result res = flush_out_buffer();
+		if(!res.consumed)
+			return res;
+
+		return write_bucket(b);
+	}
+	
+	// Buffer a list of buckets.
+	void write_buffered(list<bucket>& buckets)
+	{
+		out_buffer.buckets.splice(buckets);
+	}
+	
+	write_status flush()
+	{
+		write_result res = flush_out_buffer();
+		if(!res.consumed)
+			return res.s;
+		
+		return propagate_flush();
+	}
+	
+	write_result flush_out_buffer()
+	{
+		while(!out_buffer.empty())
+		{
+			bucket* buffered = out_buffer.first();
+			write_result res = write_bucket(buffered);
+			if(!res.consumed)
+				return res;
+		}
+		
+		return write_result(write_ok, true);
+	}
+	
+	write_status close()
+	{
+		write_result res = flush_out_buffer();
+		if(!res.consumed)
+			return res.s;
+		
+		return propagate_close();
+	}
+		
+	/// This is supposed to propagate a flush to
+	/// the underlying sink. E.g. in a filter, it would
+	/// propagate the flush to the connected sink.
+	virtual write_status propagate_flush()
+	{
+		return write_ok;
+	}
+	
+	virtual write_status propagate_close()
+	{
+		return write_ok;
+	}
+	
+	brigade in_buffer;
+	brigade out_buffer;
+};
+
+
+struct stream_read_error : stream_error
+{
+	stream_read_error(stream::read_status s, std::string const& msg)
+	: stream_error(msg), s(s)
+	{
+	}
+	
+	stream::read_status s;
+};
+
+struct stream_write_error : stream_error
+{
+	stream_write_error(stream::write_status s, std::string const& msg)
+	: stream_error(msg), s(s)
+	{
+	}
+	
+	stream::write_status s;
+};
+
+typedef shared_ptr<stream> stream_ptr;
+
+
 struct bucket_data_mem : bucket_data
 {
 /*
@@ -355,7 +497,7 @@ struct bucket_data_mem : bucket_data
 //void sequence(list<bucket>& l, std::size_t amount, linked_vector<uint8_t>& res);
 
 // Provides functions for extracting data
-// from a brigade in a convenient and
+// from a stream in a convenient and
 // efficient manner.
 // NOTE: You are not allowed to modify buckets
 // that are buffered.
@@ -475,6 +617,7 @@ struct stream_reader
 			return try_read_bucket_and_return_(amount);
 	}
 	
+	/*
 	void assign(shared_ptr<stream> source_new)
 	{
 		bucket_list_size_ = 0;
@@ -482,6 +625,30 @@ struct stream_reader
 		end_ = 0;
 		first_.reset();
 		mem_buckets_.clear();
+		source_ = source_new;
+	}*/
+	
+	shared_ptr<stream> detach()
+	{
+		reinsert_first_bucket();
+
+		shared_ptr<stream> ret = source_;
+		source_->unread(mem_buckets_);
+		
+		bucket_list_size_ = 0;
+		source_.reset();
+		sassert(cur_ == end_);
+		sassert(!first_.get());
+		sassert(mem_buckets_.empty());
+		
+		return ret;
+	}
+	
+	void attach(shared_ptr<stream> source_new)
+	{
+		if(source_)
+			throw stream_error("A source is already attached to this stream_reader");
+		
 		source_ = source_new;
 	}
 	
@@ -745,7 +912,7 @@ struct stream_writer
 /*
 	brigade* sink_brigade()
 	{ return static_cast<DerivedT*>(this)->sink_brigade(); }
-*/
+
 	void assign(shared_ptr<stream> sink_new)
 	{
 		size_ = 0;
@@ -753,12 +920,11 @@ struct stream_writer
 		buffer_.reset(bucket_data_mem::create(cap_, size_));
 		sink_ = sink_new;
 	}
+*/
 	
-	void flush_buffer();
+	stream::write_status flush();
 	
-	void flush();
-	
-	void partial_flush();
+	stream::write_status partial_flush();
 	
 	void put(uint8_t b)
 	{
@@ -774,7 +940,28 @@ struct stream_writer
 	
 	void put(bucket* buf);
 	
+	shared_ptr<stream> detach()
+	{
+		flush_buffer();
+		partial_flush();
+		
+		// Buffer any remaining buckets
+		sink_->write_buffered(mem_buckets_);
+		
+		shared_ptr<stream> ret = sink_;
+		sink_.reset();
+		return ret;
+	}
+	
+	void attach(shared_ptr<stream> new_sink)
+	{
+		if(sink_)
+			throw stream_error("A sink is already attached to the stream_writer");
+	}
+	
 private:
+	void flush_buffer();
+	
 	void overflow_put_(uint8_t b)
 	{
 		if(size_ >= 1024)
@@ -832,47 +1019,7 @@ struct basic_brigade_sink : bucket_sink
 };
 */
 
-struct brigade
-{
-	typedef bucket_size size_type;
-	
-	/*
-	read_result read(size_type amount = 0, bucket* dest = 0)
-	{
-		list<bucket>::iterator i = buckets.begin();
-		
-		if(i == buckets.end())
-			return read_result(eos);
-			
-		read_result r(i->read(amount, 0));
-		if(r.s == bucket_source::ok)
-			buckets.unlink(r.b); // Success, we may unlink the bucket
-			
-		return r;
-	}*/
 
-	void prepend(bucket* b)
-	{
-		buckets.relink_front(b);
-	}
-	
-	void append(bucket* b)
-	{
-		buckets.relink_back(b);
-	}
-	
-	bool empty() const
-	{
-		return buckets.empty();
-	}
-	
-	bucket* first()
-	{
-		return buckets.first();
-	}
-	
-	list<bucket> buckets;
-};
 
 struct filter : stream
 {
@@ -887,32 +1034,35 @@ struct filter : stream
 		write_status w;
 	};
 	
+	filter()
+	{
+	}
+	
 	filter(shared_ptr<stream> source_init, shared_ptr<stream> sink_init)
 	: source(source_init)
 	, sink(sink_init)
 	{
 	}
 	
-	read_result read(size_type amount = 0, bucket* dest = 0)
+	read_result read_bucket(size_type amount = 0, bucket* dest = 0)
 	{
 		if(!source)
 			throw stream_error("No source to pull in filter");
 		
-		read_status status = apply(true, amount);
+		read_status status = apply(true, false, amount);
 		if(status != read_ok)
 			return read_result(status);
-		read_result res(read_ok, filtered.first());
-		unlink(res.b);
+		read_result res(read_ok, in_buffer.unlink_first());
 		return res;
 	}
 	
-	write_result write(bucket* b)
+	write_result write_bucket(bucket* b)
 	{
 		if(!sink)
 			throw stream_error("No sink to push in filter");
 		
 		unlink(b);
-		buffer.append(b);
+		filter_buffer.append(b);
 		apply(false);
 		write_status rstatus = flush_filtered();
 		if(rstatus != write_ok)
@@ -923,21 +1073,23 @@ struct filter : stream
 		return write_result(write_ok, true);
 	}
 	
-	write_status flush_filtered()
+	
+	
+	write_status propagate_flush()
 	{
-		while(!filtered.empty())
-		{
-			write_result res = sink->write(filtered.first());
-			if(res.s != write_ok)
-			{
-				return res.s;
-			}
-		}
+		sassert(out_buffer.empty());
 		
+		if(!sink)
+			throw stream_error("No sink to push in filter");
+		
+		apply(false, true);
+		write_status res = flush_filtered();
+		if(res != write_ok)
+			return res;
+		if(!filter_buffer.empty())
+			return write_would_block; // Still data that has not been filtered
 		return write_ok;
 	}
-	
-	
 	
 	pump_result pump()
 	{
@@ -946,7 +1098,7 @@ struct filter : stream
 		if(!sink)
 			throw stream_error("No sink to push in filter");
 			
-		if(filtered.empty())
+		if(in_buffer.empty())
 		{
 			read_status rstatus = apply(true);
 			if(rstatus != read_ok)
@@ -956,57 +1108,92 @@ struct filter : stream
 		return pump_result(read_ok, wstatus);
 	}
 	
+	void attach_source(shared_ptr<stream> source_new)
+	{
+		source = source_new;
+	}
+	
+	void attach_sink(shared_ptr<stream> sink_new)
+	{
+		sink = sink_new;
+	}
+		
 protected:
 
-	// Filter buckets in buffer and append the result to filtered	
-	virtual read_status apply(bool can_pull, size_type amount = 0)
+	write_status flush_filtered()
 	{
-		if(!buffer.empty())
+		while(!in_buffer.empty())
 		{
-			filtered.buckets.splice(buffer.buckets);
+			write_result res = sink->write(in_buffer.first());
+			if(res.s != write_ok)
+			{
+				return res.s;
+			}
+		}
+		
+		return write_ok;
+	}
+
+	// Filter buckets in filter_buffer and append the result to in_buffer.
+	// If flush is false, the filter should make every effort to
+	// filter all buckets in filter_buffer.
+	virtual read_status apply(bool can_pull, bool flush = false, size_type amount = 0)
+	{
+		if(!out_buffer.empty())
+		{
+			in_buffer.buckets.splice(out_buffer.buckets);
 			return read_ok;
 		}
 		else if(can_pull)
 		{
 			read_result res = source->read(amount);
 			if(res.s == read_ok)
-				filtered.append(res.b);
+				in_buffer.append(res.b);
 			return res.s;
 		}
 		else
 			return read_blocking;
 	}
+	
+	read_status try_pull(size_type amount = 0)
+	{
+		read_result res = source->read(amount);
+		if(res.s == read_ok)
+			filter_buffer.append(res.b);
+		return res.s;
+	}
 		
 	shared_ptr<stream> source;
 	shared_ptr<stream> sink;
-	brigade filtered;
-	brigade buffer;
+
+	brigade filter_buffer;
 };
 
 typedef shared_ptr<filter> filter_ptr;
 
 struct brigade_buffer : stream
 {
-	read_result read(size_type amount = 0, bucket* dest = 0)
+	read_result read_bucket(size_type amount = 0, bucket* dest = 0)
 	{
+	/* stream::read already checked in_buffer
 		if(!buffer.empty())
 		{
 			read_result res(read_ok, buffer.first());
 			unlink(res.b);
 			return res;
 		}
-		
+		*/
 		return read_result(read_blocking);
 	}
 	
-	write_result write(bucket* b)
+	write_result write_bucket(bucket* b)
 	{
 		unlink(b);
-		buffer.append(b);
+		in_buffer.append(b);
 		return write_result(write_ok, true);
 	}
 	
-	brigade buffer;
+	//brigade buffer; // TODO: Use stream::in_buffer
 };
 
 template<typename Writer>

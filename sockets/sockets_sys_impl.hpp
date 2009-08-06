@@ -3,7 +3,7 @@
 
 #include "sockets.hpp"
 
-#if GVL_WIN32==1
+#if GVL_WIN32 || GVL_WIN64
 #ifndef NOGDI
 #define NOGDI
 #endif
@@ -15,7 +15,11 @@
 #ifndef POINTER_64
 #define POINTER_64 // Needed for bugged headers
 #endif*/
+
+#if GVL_WIN32
 #define _WIN32_WINDOWS 0x0410
+#endif
+
 #define WINVER 0x0410
 #include <winsock2.h>
 #include <cstdlib>

@@ -8,8 +8,6 @@
 namespace gvl
 {
 
-// TODO: Move profile stuff to a profile.hpp in support
-
 struct profile_counter
 {
 	profile_counter(char const* desc, char const* func, int line);

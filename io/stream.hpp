@@ -267,6 +267,12 @@ struct stream : shared
 		write_error
 	};
 	
+	enum state
+	{
+		state_open,
+		state_closed
+	};
+	
 	struct read_result
 	{
 		explicit read_result(read_status s)
@@ -298,9 +304,14 @@ struct stream : shared
 		bool consumed;
 	};
 	
+	stream()
+	: cur_state(state_open)
+	{
+	}
+	
 	~stream()
 	{
-		close();
+		// We don't close here, because derived objects are already destroyed
 	}
 	
 	virtual read_result read_bucket(size_type amount = 0, bucket* dest = 0) = 0;
@@ -370,8 +381,14 @@ struct stream : shared
 		return write_result(write_ok, true);
 	}
 	
+	// NOTE! This may NEVER throw!
 	write_status close()
 	{
+		if(cur_state != state_open)
+			return write_ok;
+			
+		cur_state = state_closed;
+			
 		write_result res = flush_out_buffer();
 		if(!res.consumed)
 			return res.s;
@@ -394,6 +411,7 @@ struct stream : shared
 	
 	brigade in_buffer;
 	brigade out_buffer;
+	state cur_state;
 };
 
 
@@ -544,6 +562,13 @@ struct stream_reader
 		return (cur_ != end_) ? (*cur_++) : underflow_get_();
 	}
 	
+	void get_c(uint8_t* dest, std::size_t len)
+	{
+		// TODO: Can optimize this
+		for(std::size_t i = 0; i < len; ++i)
+			dest[i] = get();
+	}
+	
 	stream::read_status get(uint8_t& ret)
 	{
 		if(cur_ != end_)
@@ -678,6 +703,7 @@ private:
 	
 	/// Discards the current first bucket (if any) and tries to read
 	/// a bucket if necessary.
+	/// May throw.
 	/// Precondition: cur_ == end_
 	stream::read_status next_bucket_()
 	{
@@ -719,6 +745,7 @@ private:
 		return stream::read_blocking;
 	}
 	
+	// May throw
 	stream::read_status read_bucket_(size_type amount)
 	{
 		check_source();
@@ -751,6 +778,7 @@ private:
 			throw stream_read_error(stream::read_error, "No source assigned to stream_reader");
 	}
 	
+	// May throw
 	stream::read_status try_read_bucket_(size_type amount)
 	{
 		check_source();
@@ -766,6 +794,7 @@ private:
 		return r.s;
 	}
 	
+	// May throw
 	stream::read_result read_bucket_and_return_(size_type amount)
 	{
 		check_source();
@@ -785,6 +814,7 @@ private:
 		return stream::read_result(stream::read_blocking);
 	}
 	
+	// May throw
 	stream::read_result try_read_bucket_and_return_(size_type amount)
 	{
 		check_source();
@@ -809,10 +839,8 @@ private:
 	{
 		if(first_.get())
 		{
-			bucket* b = first_.release();
-			std::size_t old_size = b->size();
-			b->cut_front(old_size - first_left());
-			//mem_buckets_.relink_front(b);
+			std::size_t old_size = first_->size();
+			first_->cut_front(old_size - first_left());
 		}
 	}
 	
@@ -889,25 +917,34 @@ struct brigade;
 
 struct stream_writer
 {
+	static bucket_size const default_initial_bucket_size = 512;
+	static bucket_size const max_bucket_size = 4096;
+	
 	stream_writer(shared_ptr<stream> sink)
 	: sink_(sink)
-	, size_(0)
-	, cap_(32)
-	, buffer_(bucket_data_mem::create(32, 0))
+	, cur_(0)
+	, end_(0)
+	, cap_(default_initial_bucket_size)
+	, buffer_(bucket_data_mem::create(cap_, 0))
 	{
+		read_in_buffer_();
 	}
 	
 	stream_writer()
 	: sink_()
-	, size_(0)
+	//, size_(0)
+	, cur_(0)
+	, end_(0)
 	, cap_(0)
 	, buffer_()
+	, estimated_needed_buffer_size_(default_initial_bucket_size)
 	{
 	}
 	
 	~stream_writer()
 	{
-		flush();
+		if(sink_)
+			flush();
 	}
 /*
 	brigade* sink_brigade()
@@ -921,11 +958,14 @@ struct stream_writer
 		sink_ = sink_new;
 	}
 */
+
 	
-	stream::write_status flush();
 	
+	stream::write_status flush(bucket_size new_buffer_size = 0);
+	stream::write_status weak_flush(bucket_size new_buffer_size = 0);
 	stream::write_status partial_flush();
 	
+#if 0
 	void put(uint8_t b)
 	{
 		sassert(size_ <= cap_);
@@ -937,8 +977,44 @@ struct stream_writer
 			++size_;
 		}
 	}
+#endif
+
+	stream::write_status put(uint8_t b)
+	{
+		// We keep this function small to encourage
+		// inlining
+		return (cur_ != end_) ? (*cur_++ = b, stream::write_ok) : overflow_put_(b);
+	}
 	
-	void put_bucket(bucket* buf);
+	stream::write_status put(uint8_t const* p, std::size_t len)
+	{
+		check_sink();
+		
+		// As long as fitting in the current buffer would make it
+		// too large, write as much as possible and flush.
+		while((cur_ - buffer_->data) + len >= max_bucket_size)
+		{
+			std::size_t left = end_ - cur_;
+			// Copy as much as we can
+			std::memcpy(cur_, p, left);
+			cur_ += left;
+			p += left;
+			len -= left;
+			
+			// Flush and try to allocate a buffer large enough for the rest of the data
+			stream::write_status ret = weak_flush(len);
+			if(ret != stream::write_ok)
+				return ret;
+		}
+		
+		// Write the rest
+		ensure_cap_((cur_ - buffer_->data) + len);
+		std::memcpy(cur_, p, len);
+		cur_ += len;
+		return stream::write_ok;
+	}
+	
+	stream::write_status put_bucket(bucket* buf);
 	
 	shared_ptr<stream> detach()
 	{
@@ -946,47 +1022,97 @@ struct stream_writer
 		partial_flush();
 		
 		// Buffer any remaining buckets
-		sink_->write_buffered(mem_buckets_);
+		// partial_flush already does this: sink_->write_buffered(mem_buckets_);
 		
-		shared_ptr<stream> ret = sink_;
-		sink_.reset();
-		return ret;
+		return sink_.release();
 	}
 	
 	void attach(shared_ptr<stream> new_sink)
 	{
 		if(sink_)
 			throw stream_error("A sink is already attached to the stream_writer");
+		sink_ = new_sink;
+		cap_ = default_initial_bucket_size;
+		buffer_.reset(bucket_data_mem::create(cap_, 0));
+		read_in_buffer_();
+	}
+	
+	void check_sink()
+	{
+		if(!sink_)
+			throw stream_write_error(stream::write_error, "No sink assigned to stream_writer");
 	}
 	
 private:
-	void flush_buffer();
+	void flush_buffer(bucket_size new_buffer_size = 0);
 	
-	void overflow_put_(uint8_t b)
+	std::size_t buffer_size_()
 	{
-		if(size_ >= 1024)
+		return (cur_ - buffer_->data);
+	}
+	
+	void correct_buffer_()
+	{
+		buffer_->size_ = buffer_size_();
+	}
+	
+	void read_in_buffer_()
+	{
+		cur_ = buffer_->data + buffer_->size_;
+		end_ = buffer_->data + cap_;
+	}
+	
+	stream::write_status overflow_put_(uint8_t b)
+	{
+		check_sink();
+		
+		if(buffer_size_() >= max_bucket_size)
 		{
-			flush();
-			sassert(size_ < cap_);
-			buffer_->data[size_] = b;
-			++size_;
+			stream::write_status ret = weak_flush();
+			sassert(cur_ != end_);
+			//sassert(size_ < cap_);
+			//buffer_->data[size_] = b;
+			//++size_;
+			*cur_++ = b;
+			return ret;
 		}
 		else
 		{
-			buffer_->size_ = size_; // Correct size
+			correct_buffer_();
 			cap_ *= 2;
 			buffer_.reset(buffer_->enlarge(cap_));
 			buffer_->unsafe_push_back(b);
-			sassert(size_ + 1 == buffer_->size_);
-			size_ = buffer_->size_;
+			//sassert(size_ + 1 == buffer_->size_);
+			//size_ = buffer_->size_;
+			
+			read_in_buffer_();
+			return stream::write_ok;
+		}
+	}
+	
+	void ensure_cap_(std::size_t s)
+	{
+		if(cap_ < s)
+		{
+			correct_buffer_();
+			while(cap_ < s)
+				cap_ *= 2;
+			buffer_.reset(buffer_->enlarge(cap_));
+			//sassert(size_ == buffer_->size_);
+			cur_ = buffer_->data + buffer_->size_;
+			end_ = buffer_->data + cap_;
+			sassert((cur_ - buffer_->data) == buffer_->size_);
 		}
 	}
 
-	bucket_size size_;
+	//bucket_size size_;
+	shared_ptr<stream> sink_;
+	uint8_t* cur_; // Pointer into buffer_
+	uint8_t* end_; // End of capacity in buffer_
 	bucket_size cap_;
 	list<bucket> mem_buckets_;
 	std::auto_ptr<bucket_data_mem> buffer_;
-	shared_ptr<stream> sink_;
+	std::size_t estimated_needed_buffer_size_;
 };
 
 inline stream_writer& operator<<(stream_writer& writer, char const* str)
@@ -1034,10 +1160,18 @@ struct filter : stream
 		write_status w;
 	};
 	
+	enum apply_mode
+	{
+		am_non_pulling,
+		am_pulling,
+		am_flushing,
+		am_closing
+	};
+	
 	filter()
 	{
 	}
-	
+		
 	filter(shared_ptr<stream> source_init, shared_ptr<stream> sink_init)
 	: source(source_init)
 	, sink(sink_init)
@@ -1047,9 +1181,9 @@ struct filter : stream
 	read_result read_bucket(size_type amount = 0, bucket* dest = 0)
 	{
 		if(!source)
-			throw stream_error("No source to pull in filter");
+			return read_result(read_error);
 		
-		read_status status = apply(true, false, amount);
+		read_status status = apply(am_pulling, amount);
 		if(status != read_ok)
 			return read_result(status);
 		read_result res(read_ok, in_buffer.unlink_first());
@@ -1059,11 +1193,11 @@ struct filter : stream
 	write_result write_bucket(bucket* b)
 	{
 		if(!sink)
-			throw stream_error("No sink to push in filter");
+			return write_result(write_error, false);
 		
 		unlink(b);
 		filter_buffer.append(b);
-		apply(false);
+		apply(am_non_pulling);
 		write_status rstatus = flush_filtered();
 		if(rstatus != write_ok)
 		{
@@ -1077,30 +1211,60 @@ struct filter : stream
 	
 	write_status propagate_flush()
 	{
+		sassert(out_buffer.empty()); // stream should have taken care of this
+		
+		// We don't check sink here so that
+		// we only error on missing sink if there's actually anything
+		// left to write.
+		
+		if(!sink)
+		{
+			if(!out_buffer.empty() || !filter_buffer.empty())
+				return write_error; // Still data to filter or not written
+		}
+		else
+		{
+			apply(am_flushing);
+			write_status res = flush_filtered();
+			if(res != write_ok)
+				return res;
+			if(!filter_buffer.empty())
+				return write_would_block; // Still data that has not been filtered
+		}
+		return write_ok;
+	}
+	
+	write_status propagate_close()
+	{
 		sassert(out_buffer.empty());
 		
 		if(!sink)
-			throw stream_error("No sink to push in filter");
-		
-		apply(false, true);
-		write_status res = flush_filtered();
-		if(res != write_ok)
-			return res;
-		if(!filter_buffer.empty())
-			return write_would_block; // Still data that has not been filtered
+		{
+			if(!out_buffer.empty() || !filter_buffer.empty())
+				return write_error; // Still data to filter or not written
+		}
+		else
+		{
+			apply(am_closing);
+			write_status res = flush_filtered();
+			if(res != write_ok)
+				return res;
+			if(!filter_buffer.empty())
+				return write_would_block; // Still data that has not been filtered
+		}
 		return write_ok;
 	}
 	
 	pump_result pump()
 	{
 		if(!source)
-			throw stream_error("No source to pull in filter");
+			return pump_result(read_error, write_error);
 		if(!sink)
-			throw stream_error("No sink to push in filter");
+			return pump_result(read_error, write_error);
 			
 		if(in_buffer.empty())
 		{
-			read_status rstatus = apply(true);
+			read_status rstatus = apply(am_pulling);
 			if(rstatus != read_ok)
 				return pump_result(rstatus, write_ok);
 		}
@@ -1120,8 +1284,11 @@ struct filter : stream
 		
 protected:
 
+	// Preconditions: sink
 	write_status flush_filtered()
 	{
+		sassert(sink); // Precondition
+		
 		while(!in_buffer.empty())
 		{
 			write_result res = sink->write(in_buffer.first());
@@ -1133,18 +1300,26 @@ protected:
 		
 		return write_ok;
 	}
+	
+	
 
 	// Filter buckets in filter_buffer and append the result to in_buffer.
-	// If flush is false, the filter should make every effort to
+	// If mode is flushing or closing, the filter should make every effort to
 	// filter all buckets in filter_buffer.
-	virtual read_status apply(bool can_pull, bool flush = false, size_type amount = 0)
+	// 
+	// If mode is pulling, the filter should make some effort to produce
+	// at least one filtered bucket.
+	// 
+	// TODO: Return value of this function is quite useless at the moment.
+	virtual read_status apply(apply_mode mode, size_type amount = 0)
 	{
+		// We bypass filter_buffer
 		if(!out_buffer.empty())
 		{
 			in_buffer.buckets.splice(out_buffer.buckets);
 			return read_ok;
 		}
-		else if(can_pull)
+		else if(mode == am_pulling)
 		{
 			read_result res = source->read(amount);
 			if(res.s == read_ok)
@@ -1199,8 +1374,17 @@ struct brigade_buffer : stream
 template<typename Writer>
 inline void write_uint16(Writer& writer, unsigned int v)
 {
+	sassert(v < 0x10000);
 	writer.put(uint8_t((v >> 8) & 0xff));
 	writer.put(uint8_t(v & 0xff));
+}
+
+template<typename Writer>
+inline void write_uint16_le(Writer& writer, unsigned int v)
+{
+	sassert(v < 0x10000);
+	writer.put(uint8_t(v & 0xff));
+	writer.put(uint8_t((v >> 8) & 0xff));
 }
 
 template<typename Writer>
@@ -1212,11 +1396,28 @@ inline void write_uint32(Writer& writer, uint32_t v)
 	writer.put(uint8_t(v & 0xff));
 }
 
+template<typename Writer>
+inline void write_uint32_le(Writer& writer, uint32_t v)
+{
+	writer.put(uint8_t(v & 0xff));
+	writer.put(uint8_t((v >> 8) & 0xff));
+	writer.put(uint8_t((v >> 16) & 0xff));
+	writer.put(uint8_t((v >> 24) & 0xff));
+}
+
 template<typename Reader>
 inline unsigned int read_uint16(Reader& reader)
 {
 	unsigned int ret = reader.get() << 8;
 	ret |= reader.get();
+	return ret;
+}
+
+template<typename Reader>
+inline unsigned int read_uint16_le(Reader& reader)
+{
+	unsigned int ret = reader.get();
+	ret |= reader.get() << 8;
 	return ret;
 }
 
@@ -1227,6 +1428,16 @@ inline uint32_t read_uint32(Reader& reader)
 	ret |= reader.get() << 16;
 	ret |= reader.get() << 8;
 	ret |= reader.get();
+	return ret;
+}
+
+template<typename Reader>
+inline uint32_t read_uint32_le(Reader& reader)
+{
+	unsigned int ret = reader.get();
+	ret |= reader.get() << 8;
+	ret |= reader.get() << 16;
+	ret |= reader.get() << 24;
 	return ret;
 }
 

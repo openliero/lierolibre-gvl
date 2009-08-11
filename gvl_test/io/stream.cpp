@@ -3,6 +3,7 @@
 //#include <gvl/io/stream.hpp>
 //#include <gvl/sockets/socketstream.hpp>
 #include <gvl/io/stream.hpp>
+#include <gvl/io/deflate_filter.hpp>
 #include <gvl/math/tt800.hpp>
 //#include <gvl/support/algorithm.hpp>
 #include <functional>
@@ -36,13 +37,12 @@ std::size_t array_size(T(&)[N])
 
 struct inc_filter : gvl::filter
 {
-	read_status apply(bool can_pull, bool flush = false, size_type amount = 0)
+	read_status apply(apply_mode mode, size_type amount = 0)
 	{
-		if(out_buffer.empty())
+		// TODO: Return value is inaccurate, but nothing cares yet.
+		
+		if(out_buffer.empty() && mode == am_pulling)
 		{
-			if(!can_pull)
-				return read_blocking;
-				
 			read_status res = try_pull(amount);
 			if(res != read_ok)
 				return res;
@@ -83,27 +83,41 @@ void object::test<1>()
 	
 	using namespace gvl;
 	
-	stream_ptr source(new brigade_buffer());
+	//stream_ptr source(new brigade_buffer());
 	stream_ptr sink(new brigade_buffer());
 	
-	stream_writer writer(source);
+	gvl::shared_ptr<deflate_filter> filter(new deflate_filter(true));
+	filter->attach_sink(sink);
 	
-	for(int i = 0; i < 10; ++i)
+	stream_writer writer(filter);
+	
+	for(int i = 0; i < 1000; ++i)
 	{
-		writer.put(i);
+		writer.put(13);
 	}
-		
+	
 	writer.flush();
+	writer.detach();
 	
-	gvl::shared_ptr<inc_filter> filter(new inc_filter());
+	gvl::shared_ptr<deflate_filter> filter2(new deflate_filter(false));
+	filter2->attach_source(sink);
 	
+	stream_reader reader(filter2);
+	for(int i = 0; i < 1000; ++i)
+	{
+		int v = reader.get();
+		ensure(v == 13);
+	}
+	
+	
+	/*
 	stream_reader reader(source);
 	
 	int i1 = reader.get();
 	int i2 = reader.get();
 	
 	ensure(i1 == 0);
-	ensure(i2 == 1);
+	ensure(i2 == 0);
 	
 	// Add a filter
 	stream_ptr end = reader.detach();
@@ -114,44 +128,7 @@ void object::test<1>()
 	int i4 = reader.get();
 	
 	ensure(i3 == 3);
-	ensure(i4 == 4);
-	
-#if 0
-	char const txt[] = "hello";
-	
-	gvl::linked_vector<uint8_t> b;
-	
-	{
-		gvl::linked_vector_temp<uint8_t, 5> b2;
-		std::memcpy(b2.mut_data(), txt, 5);
-		b = b2;
-	}
-	
-	{
-		gvl::stream s(new gvl::bucket_mem(b), 0);
-		
-		for(std::size_t i = 0; i < 3; ++i)
-			ensure(s.get() == txt[i]);
-			
-		s.add_source(new gvl::bucket_mem("world", 5));
-		
-		gvl::linked_vector<uint8_t> d;
-		s.buffer_sequenced(5, d);
-	}
-
-
-	gvl::socketstream ss("se.quakenet.org", 6667);
-#endif
-	
-	//ensure("no leak", b->ref_count() == 1);
-	
-	/*
-	gvl::filter::auto_read_result r(s.get_bucket());
-	
-	if(r.s == gvl::filter::status::ok)
-	{
-		
-	}*/
+	ensure(i4 == 4);*/
 }
 
 } // namespace tut

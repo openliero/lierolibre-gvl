@@ -2,7 +2,7 @@
 #define UUID_0DFC0705C06145FD593785907FBDDF54
 
 #include "../../support/platform.hpp"
-#include "../ieee.h"
+#include "../ieee.hpp"
 
 /* @(#)fdlibm.h 1.5 95/01/18 */
 /*

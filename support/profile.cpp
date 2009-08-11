@@ -57,7 +57,7 @@ profile_counter::profile_counter(char const* desc, char const* func, int line)
 }
 
 profile_timer::profile_timer(char const* desc, char const* func, int line)
-: total_time(0), desc(desc), func(func), line(line)
+: total_time(0), desc(desc), func(func), line(line), count(0)
 {
 	profile_manager::instance().register_timer(this);
 }
@@ -75,7 +75,8 @@ void profile_manager::present(std::ostream& str)
 		str << "Timer Description\n";
 		FOREACH(timer_line_map_t, l, f->second.timers)
 		{
-			str << std::setw(5) << (l->second->total_time / double(CLOCKS_PER_SEC)) << " " << l->second->desc << ", line " << l->first << "\n";
+			double time = l->second->total_time / double(CLOCKS_PER_SEC);
+			str << std::setw(5) << time << " s " << l->second->desc << ", line " << l->first << " (average time: " << (time / l->second->count) * 1000.0 << " ms)\n";
 		}
 		str << "=======\n\n";
 	}

@@ -11,9 +11,22 @@ namespace gvl
 
 struct fstream : stream
 {
-	fstream(FILE* f_init)
-	: f(f_init)
+	fstream(char const* path, char const* mode)
 	{
+		FILE* f_init = std::fopen(path, mode);
+		init(f_init);
+	}
+	
+	fstream(FILE* f_init)
+	{
+		init(f_init);
+	}
+	
+	void init(FILE* f_init)
+	{
+		f = f_init;
+		if(!f)
+			throw stream_error("Couldn't open file");
 	}
 	
 	~fstream()
@@ -24,7 +37,7 @@ struct fstream : stream
 		}
 	}
 	
-	read_result read(size_type amount = 0, bucket* dest = 0)
+	read_result read_bucket(size_type amount = 0, bucket* dest = 0)
 	{
 		if(!f)
 			return read_result(read_error);
@@ -41,7 +54,7 @@ struct fstream : stream
 		return read_result(read_ok, new bucket(mem, 0, read_bytes));
 	}
 	
-	write_result write(bucket* b)
+	write_result write_bucket(bucket* b)
 	{
 		if(!f)
 			return write_result(write_error, false);
@@ -59,6 +72,25 @@ struct fstream : stream
 			b->cut_front(written);
 			return write_result(write_part, false);
 		}
+	}
+	
+	write_status propagate_flush()
+	{
+		if(!f)
+			return write_error;
+		std::fflush(f);
+		return write_ok;
+	}
+	
+	write_status propagate_close()
+	{
+		if(f)
+		{
+			std::fclose(f);
+			f = 0;
+		}
+		
+		return write_ok;
 	}
 	
 	FILE* f;

@@ -33,6 +33,19 @@ struct serialization_context
 			ptr2id.insert(std::make_pair(ptr, id));
 		}
 		
+		void remove(void* ptr)
+		{
+			std::map<void*, uint32_t>::iterator i1 = ptr2id.find(ptr);
+			if(i1 != ptr2id.end())
+			{
+				std::map<uint32_t, void*>::iterator i2 = id2ptr.find(i1->second);
+				
+				ptr2id.erase(i1);
+				if(i2 != id2ptr.end())
+					id2ptr.erase(i2);
+			}
+		}
+		
 		bool try_get(uint32_t id, void*& ptr)
 		{
 			std::map<uint32_t, void*>::iterator i = id2ptr.find(id);
@@ -62,6 +75,10 @@ struct serialization_context
 		std::map<void*, uint32_t> ptr2id;
 		uint32_t next_id;
 	};
+	
+	serialization_context()
+	{
+	}
 	
 	DerivedT& derived()
 	{ return *static_cast<DerivedT*>(this); }
@@ -129,9 +146,34 @@ struct serialization_context
 		}
 	}
 	
+	// Forget about object v.
+	// NOTE: This must be called in the same place for the same object when serializing and deserializing!
+	template<typename T>
+	void unregister(T* v)
+	{
+		type& t = get_type(gvl::type_id<T>());
+		t.remove(v);
+	}
+	
+	~serialization_context()
+	{
+		for(std::map<gvl::type_info, type*>::iterator i = types.begin(); i != types.end(); ++i)
+		{
+			delete i->second;
+		}
+	}
+	
+private:
+	// Non-copyable
+	serialization_context(serialization_context const&);
+	serialization_context& operator=(serialization_context const&);
+	
 	std::map<gvl::type_info, type*> types;
 };
 
+struct default_serialization_context : serialization_context<default_serialization_context>
+{
+};
 
 } // namespace gvl
 

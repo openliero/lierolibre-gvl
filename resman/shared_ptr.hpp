@@ -127,6 +127,14 @@ struct shared_ptr : shared_ptr_common
 	void reset()
 	{ _release(); v = 0; }
 	
+	shared_ptr release()
+	{
+		// TODO: We can do this more efficiently
+		shared_ptr ret = *this;
+		reset();
+		return ret;
+	}
+	
 	void swap(shared_ptr& b)
 	{ std::swap(v, b.v); }
 	

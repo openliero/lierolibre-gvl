@@ -2,13 +2,50 @@
 #define GVL_GASH_HPP
 
 #include "../support/cstdint.hpp"
+#include <utility>
 
 namespace gvl
 {
 
+inline uint64_t rot(uint64_t v, int c)
+{
+	return (v << c) | (v >> (64-c));
+}
+
+template<int Length>
+struct hash_value
+{
+	static int const size = Length;
+	
+	uint64_t value[Length];
+	
+	hash_value()
+	{
+		for(int i = 0; i < Length; ++i)
+			value[i] = 0;
+	}
+	
+	bool operator!=(hash_value const& b) const
+	{
+		for(int i = 0; i < Length; ++i)
+		{
+			if(value[i] != b.value[i])
+				return true;
+		}
+		return false;
+	}
+	
+	bool operator==(hash_value const& b) const
+	{
+		return !operator!=(b);
+	}
+};
+
 struct gash
 {
-	int const block_size = 8;
+	static int const block_size = 8;
+	
+	typedef hash_value<block_size> value_type;
 	
 	gash()
 	{
@@ -65,13 +102,23 @@ struct gash
 		std::swap(d[3], d[7]);
 	}
 	
-	uint64_t d[8];
+	value_type final() const
+	{
+		value_type ret;
+		for(int i = 0; i < block_size; ++i)
+		{
+			ret.value[i] = d[i];
+		}
+		return ret;
+	}
+	
+	uint64_t d[block_size];
 };
 
 template<typename Hash>
 struct hash_accumulator
 {
-	void ui8(uint8_t v)
+	void put(uint8_t v)
 	{
 		bit_n -= 8;
 		cur |= (uint64_t(v) << bit_n);
@@ -81,6 +128,12 @@ struct hash_accumulator
 		}
 	}
 	
+	void put(uint8_t const* p, std::size_t len)
+	{
+		for(std::size_t i = 0; i < len; ++i)
+			put(p[i]);
+	}
+	
 	void dump_cur()
 	{
 		bit_n = 64;
@@ -88,11 +141,12 @@ struct hash_accumulator
 		cur = 0;
 		if(word_n == Hash::block_size)
 		{
-			hash.process(buf);
+			hash_.process(buf);
 			word_n = 0;
 		}
 	}
 	
+#if 0 // Untested
 	void ui32(uint32_t v)
 	{
 		if(bit_n >= 32)
@@ -111,11 +165,12 @@ struct hash_accumulator
 			cur = uint64_t(v) << bit_n;
 		}
 	}
+#endif
 	
 	void flush()
 	{
 		// Pad with one followed by zeroes
-		ui8(0x80);
+		put(0x80);
 
 		// Flush cur
 		if(bit_n < 64)
@@ -131,16 +186,32 @@ struct hash_accumulator
 			{
 				buf[i] = 0;
 			}
-			hash.process(buf);
+			hash_.process(buf);
 		}
+		
+		bit_n = 64;
+		word_n = 0;
+		cur = 0;
+	}
+	
+	typename Hash::value_type final() const
+	{
+		return hash_.final();
 	}
 	
 	hash_accumulator()
 	: cur(0)
+	, bit_n(64)
+	, word_n(0)
 	{
 	}
 	
-	Hash hash;
+	Hash& hash()
+	{
+		return hash_;
+	}
+	
+	Hash hash_;
 	uint64_t buf[Hash::block_size];
 	int bit_n;
 	int word_n;

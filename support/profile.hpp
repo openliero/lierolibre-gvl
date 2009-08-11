@@ -36,6 +36,7 @@ struct profile_timer
 	char const* desc;
 	char const* func;
 	int line;
+	std::size_t count;
 };
 
 struct profile_accum_timer
@@ -49,6 +50,7 @@ struct profile_accum_timer
 	~profile_accum_timer()
 	{
 		std::clock_t end_time = std::clock();
+		++timer.count;
 		timer.total_time += (end_time - start_time);
 	}
 	

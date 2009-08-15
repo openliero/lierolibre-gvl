@@ -352,6 +352,53 @@ struct out_archive
 	Context& context;
 };
 
+template<typename Archive>
+struct versioned_archive
+{
+	versioned_archive(Archive const& base, int version_at_least)
+	: base(base), enable(base.context.version() >= version_at_least)
+	{
+	}
+	
+	versioned_archive(Archive const& base, bool enable)
+	: base(base), enable(enable)
+	{
+	}
+	
+	#define FUNC(name) template<typename T> \
+	versioned_archive& name(T& v, T const& def) { \
+		if(enable) base.name(v); \
+		else v = def; \
+		return *this; \
+	}
+	
+	FUNC(ui32)
+	FUNC(ui16)
+	FUNC(ui8)
+	FUNC(i32)
+	FUNC(i16)
+	FUNC(i8)
+	FUNC(str)
+	FUNC(b)
+	
+	#undef FUNC
+	
+	Archive base;
+	bool enable;
+};
+
+template<typename Archive>
+versioned_archive<Archive> enable_with_version(Archive const& ar, int version_at_least)
+{
+	return versioned_archive<Archive>(ar, version_at_least);
+}
+
+template<typename Archive>
+versioned_archive<Archive> enable_when(Archive const& ar, bool enable)
+{
+	return versioned_archive<Archive>(ar, enable);
+}
+
 /*
 template<typename Context, typename HashAccum>
 struct hash_archive

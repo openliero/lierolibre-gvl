@@ -13,6 +13,7 @@ class basic_rect
 {
 public:
 	basic_rect()
+	: x1(0), y1(0), x2(0), y2(0)
 	{ }
 
 	basic_rect(T x1_, T y1_, T x2_, T y2_)

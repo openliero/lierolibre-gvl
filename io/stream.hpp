@@ -601,11 +601,12 @@ struct stream_reader
 	{
 		if(cur_ != end_)
 			return false;
-		
+			
 		stream::read_status status = next_bucket_();
 		if(status == stream::read_eos)
 			return true;
-		
+	
+		return false; // TODO: Is erroring count as eos?	
 	}
 	
 	// TODO: A get that returns a special value for EOF

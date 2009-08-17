@@ -15,7 +15,7 @@ bucket::bucket(void const* ptr, size_type len)
 	end_ = len;
 }
 
-void stream_writer::flush_buffer(bucket_size new_buffer_size)
+stream::write_status stream_writer::flush_buffer(bucket_size new_buffer_size)
 {
 	std::size_t size = buffer_size_();
 	if(size > 0)
@@ -23,8 +23,11 @@ void stream_writer::flush_buffer(bucket_size new_buffer_size)
 		sassert((cap_ & (cap_ - 1)) == 0);
 			
 		correct_buffer_();
-		mem_buckets_.push_back(new bucket(buffer_.release(), 0, size));
+		gvl::list<bucket> b;
+		b.push_back(new bucket(buffer_.release(), 0, size));
 		
+		stream::write_result res = sink_->write_or_buffer(b.first());
+
 		// TODO: Improve
 		if(size > estimated_needed_buffer_size_)
 			estimated_needed_buffer_size_ <<= 1;
@@ -46,25 +49,28 @@ void stream_writer::flush_buffer(bucket_size new_buffer_size)
 		
 		cur_ = buffer_->data;
 		end_ = buffer_->data + cap_;
+		
+		return res.s;
 	}
+	
+	return stream::write_ok;
 }
 
 stream::write_status stream_writer::weak_flush(bucket_size new_buffer_size)
 {
-	flush_buffer(new_buffer_size);
-	return partial_flush();
+	return flush_buffer(new_buffer_size);
 }
 
 stream::write_status stream_writer::flush(bucket_size new_buffer_size)
 {
-	flush_buffer(new_buffer_size);
-	stream::write_status res = partial_flush();
+	stream::write_status res = flush_buffer(new_buffer_size);
 	if(res != stream::write_ok)
 		return res;
 		
 	return sink_->flush();
 }
 
+#if 0
 stream::write_status stream_writer::partial_flush()
 {
 	if(!sink_)
@@ -86,14 +92,14 @@ stream::write_status stream_writer::partial_flush()
 	
 	return stat;
 }
-
+#endif
 
 stream::write_status stream_writer::put_bucket(bucket* buf)
 {
-	flush_buffer();
-	gvl::unlink(buf);
-	mem_buckets_.push_back(buf);
-	return partial_flush();
+	stream::write_status res = flush_buffer();
+
+	stream::write_result res2 = sink_->write_or_buffer(buf);
+	return res != stream::write_ok ? res : res2.s;
 }
 
 }

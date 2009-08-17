@@ -10,7 +10,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <gvl/math/ieee.hpp>
 #include <emmintrin.h>
 
 #pragma intrinsic(_mm_mul_sd, _mm_div_sd)

@@ -73,14 +73,6 @@ template<>
 template<>
 void object::test<1>()
 {
-/*
-	gvl::shared_ptr<gvl::fstream> f(new gvl::fstream("foo.replay.gz"));
-	gvl::shared_ptr<gvl::fstream> f2(new gvl::fstream("foo.replay"));
-	gvl::shared_ptr<gvl::filter> z(new gvl::gzip_filter(f2, f));
-	
-	z.pump_all(); // pump_all reads from the source and writes to the sink
-	*/
-	
 	using namespace gvl;
 	
 	//stream_ptr source(new brigade_buffer());

@@ -105,7 +105,7 @@ struct basic_obitstream : common_obitstream
 	
 	
 	// Bits written if 'bytes' calls to put_byte were made
-	// after an initial state of out_bits_left == 8.
+	// after an initial state of out_bits_left == word_bits.
 	std::size_t out_bits_written(std::size_t bytes) const
 	{
 		return bytes * word_bits + (word_bits - out_bits_left);

@@ -3,6 +3,7 @@
 #include <gvl/list.hpp>
 #include <gvl/math/tt800.hpp>
 #include <gvl/support/algorithm.hpp>
+#include <gvl/support/macros.hpp>
 #include <functional>
 
 namespace tut

@@ -335,13 +335,13 @@ struct rdouble
 		return gD(value, b.value);
 	}
 
-	rdouble sqrt() const
-	{
-		return gSqrt(value);
-	}
-
 	double value;
 };
+
+inline rdouble sqrt(rdouble x)
+{
+	return gSqrt(x.value);
+}
 
 }
 

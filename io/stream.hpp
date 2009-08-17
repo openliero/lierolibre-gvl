@@ -335,6 +335,11 @@ struct stream : shared
 		in_buffer.buckets.splice_front(buckets);
 	}
 	
+	void unread(bucket* b)
+	{
+		in_buffer.buckets.relink_front(b);
+	}
+	
 	/// Writes a bucket to a sink. If bucket_sink::ok is returned,
 	/// takes ownership of 'b' and unlinks it from it's list<bucket>.
 	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
@@ -353,10 +358,27 @@ struct stream : shared
 		return write_bucket(b);
 	}
 	
+	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
+	write_result write_or_buffer(bucket* b)
+	{
+		write_result res = write_bucket(b);
+		if(!res.consumed)
+			write_buffered(b);
+		res.consumed = true;
+		return res;
+	}
+	
 	// Buffer a list of buckets.
 	void write_buffered(list<bucket>& buckets)
 	{
 		out_buffer.buckets.splice(buckets);
+	}
+		
+	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
+	void write_buffered(bucket* b)
+	{
+		gvl::unlink(b);
+		out_buffer.buckets.relink_front(b);
 	}
 	
 	write_status flush()
@@ -524,16 +546,14 @@ struct stream_reader
 	typedef bucket::size_type size_type;
 	
 	stream_reader(shared_ptr<stream> source_init)
-	: bucket_list_size_(0)
-	, cur_(0)
+	: cur_(0)
 	, end_(0)
 	, source_(source_init)
 	{
 	}
 	
 	stream_reader()
-	: bucket_list_size_(0)
-	, cur_(0)
+	: cur_(0)
 	, end_(0)
 	, source_()
 	{
@@ -549,11 +569,6 @@ struct stream_reader
 	/*
 	shared_ptr<stream> get_source()
 	{ return source_; }*/
-	
-	size_type read_size()
-	{
-		return bucket_list_size_ + (end_ - cur_);
-	}
 	
 	uint8_t get()
 	{
@@ -582,34 +597,19 @@ struct stream_reader
 		}
 	}
 	
-	// TODO: A get that returns a special value for EOF
-		
-	stream::read_status buffer(size_type amount)
+	bool at_eos()
 	{
-		size_type cur_read = read_size();
-		while(cur_read < amount)
-		{
-			stream::read_status s = read_bucket_(amount - cur_read);
-			if(s != stream::read_ok)
-				return s;
-			cur_read = read_size();
-		}
+		if(cur_ != end_)
+			return false;
 		
-		return stream::read_ok;
+		stream::read_status status = next_bucket_();
+		if(status == stream::read_eos)
+			return true;
+		
 	}
 	
-	/* TODO
-	bucket::status buffer_sequenced(size_type amount, linked_vector<uint8_t>& res)
-	{
-		bucket::status s = buffer(amount);
-		if(s != bucket::ok)
-			return s;
-		reinsert_first_bucket();
-		
-		sequence(mem_buckets_, amount, res);
-		return bucket::ok;
-	}*/
-	
+	// TODO: A get that returns a special value for EOF
+
 	// TODO: This returned an auto_read_result before
 	stream::read_result get_bucket(size_type amount = 0)
 	{
@@ -617,10 +617,6 @@ struct stream_reader
 		{
 			correct_first_bucket_();
 			return stream::read_result(stream::read_ok, first_.release());
-		}
-		else if(!mem_buckets_.empty())
-		{
-			return stream::read_result(stream::read_ok, pop_bucket_());
 		}
 		else
 			return read_bucket_and_return_(amount);
@@ -634,37 +630,19 @@ struct stream_reader
 			correct_first_bucket_();
 			return stream::read_result(stream::read_ok, first_.release());
 		}
-		else if(!mem_buckets_.empty())
-		{
-			return stream::read_result(stream::read_ok, pop_bucket_());
-		}
 		else
 			return try_read_bucket_and_return_(amount);
 	}
 	
-	/*
-	void assign(shared_ptr<stream> source_new)
-	{
-		bucket_list_size_ = 0;
-		cur_ = 0;
-		end_ = 0;
-		first_.reset();
-		mem_buckets_.clear();
-		source_ = source_new;
-	}*/
-	
 	shared_ptr<stream> detach()
 	{
-		reinsert_first_bucket();
+		correct_first_bucket_();
 
-		shared_ptr<stream> ret = source_;
-		source_->unread(mem_buckets_);
-		
-		bucket_list_size_ = 0;
-		source_.reset();
+		shared_ptr<stream> ret = source_.release();
+		source_->unread(first_.release());
+		cur_ = end_ = 0;
 		sassert(cur_ == end_);
 		sassert(!first_.get());
-		sassert(mem_buckets_.empty());
 		
 		return ret;
 	}
@@ -710,13 +688,6 @@ private:
 		passert(cur_ == end_, "Still data in the first bucket");
 		check_source();
 		
-		if(!mem_buckets_.empty())
-		{
-			//first_.reset(pop_bucket_());
-			set_first_bucket_(pop_bucket_());
-			return stream::read_ok;
-		}
-		
 		// Need to read a bucket
 		
 		// Reset first
@@ -745,55 +716,12 @@ private:
 		return stream::read_blocking;
 	}
 	
-	// May throw
-	stream::read_status read_bucket_(size_type amount)
-	{
-		check_source();
-		//while(true)
-		{
-			stream::read_result r(source_->read(amount));
-		
-			if(r.s == stream::read_ok)
-			{
-				add_bucket_(r.b);
-				return stream::read_ok;
-			}
-			else if(r.s == stream::read_eos)
-			{
-				return stream::read_eos;
-			}
-			
-			/* TODO:
-			derived()->flush();
-			derived()->block();
-			*/
-		}
-		
-		return stream::read_blocking;
-	}
-	
 	void check_source()
 	{
 		if(!source_)
 			throw stream_read_error(stream::read_error, "No source assigned to stream_reader");
 	}
-	
-	// May throw
-	stream::read_status try_read_bucket_(size_type amount)
-	{
-		check_source();
-			
-		stream::read_result r(source_->read(amount));
-	
-		if(r.s == stream::read_ok)
-		{
-			add_bucket_(r.b);
-			return stream::read_ok;
-		}
 		
-		return r.s;
-	}
-	
 	// May throw
 	stream::read_result read_bucket_and_return_(size_type amount)
 	{
@@ -820,20 +748,7 @@ private:
 		check_source();
 		return source_->read(amount);
 	}
-	
-	bucket* pop_bucket_()
-	{
-		// Let caller take care of this: passert(!first_.get(), "Still a bucket in first_");
-		passert(!mem_buckets_.empty(), "mem_buckets_ is empty");
 		
-		bucket* b = mem_buckets_.first();
-		mem_buckets_.unlink_front();
-
-		size_type s = b->size();
-		bucket_list_size_ -= s;
-		return b;
-	}
-	
 	/// Apply changes to first bucket
 	void correct_first_bucket_()
 	{
@@ -844,72 +759,20 @@ private:
 		}
 	}
 	
-	/// Apply changes to first bucket and put it back into mem_buckets_
-	void reinsert_first_bucket()
-	{
-		if(first_.get())
-		{
-			bucket* b = first_.release();
-			size_type old_size = b->size();
-			b->cut_front(old_size - first_left());
-			cur_ = end_ = 0;
-			mem_buckets_.relink_front(b);
-		}
-	}
-	
 	void set_first_bucket_(bucket* b)
 	{
 		//passert(!first_.get(), "Still a bucket in first_");
-		passert(mem_buckets_.empty(), "Still buckets in mem_buckets_");
 		size_type s = b->size();
 		
 		first_.reset(b);
 		// New first bucket, update cur_ and end_
 		cur_ = b->get_ptr();
 		end_ = cur_ + s;
-		passert(bucket_list_size_ == 0, "Incorrect bucket_list_size_");
 	}
-	
-	void add_bucket_(bucket* b)
-	{
-		size_type s = b->size();
-		
-		mem_buckets_.relink_back(b);
-		bucket_list_size_ += s;
-	}
-	
-#if 0 // Not needed (yet)
-	/// To be used when there are no buckets left
-	void add_bucket_empty_(bucket* b)
-	{
-		passert(!first_.get(), "Still a bucket in first_");
-		passert(mem_buckets_.empty(), "Still buckets in mem_buckets_");
-		size_type s = b->size();
-		
-		// TODO: Which to prefer here? Insertion into first or the beginning
-		// of mem_buckets_?
-#if 0
-		first_.reset(b);
-		// New first bucket, update cur_ and end_
-		cur_ = b->get_ptr();
-		end_ = cur_ + s;
-		passert(bucket_list_size_ == 0, "Incorrect bucket_list_size_");
-#else
-		mem_buckets_.relink_back(b);
-		bucket_list_size_ += s; // Buffered bucket
-#endif
-	}
-#endif
-
-	
-	
-	// Total size of buckets in mem_buckets_
-	size_type bucket_list_size_;
 	
 	uint8_t const* cur_; // Pointer into first_
 	uint8_t const* end_; // End of data in first_
 	std::auto_ptr<bucket> first_;
-	list<bucket> mem_buckets_;
 	shared_ptr<stream> source_;
 };
 
@@ -946,38 +809,10 @@ struct stream_writer
 		if(sink_)
 			flush();
 	}
-/*
-	brigade* sink_brigade()
-	{ return static_cast<DerivedT*>(this)->sink_brigade(); }
-
-	void assign(shared_ptr<stream> sink_new)
-	{
-		size_ = 0;
-		cap_ = 32;
-		buffer_.reset(bucket_data_mem::create(cap_, size_));
-		sink_ = sink_new;
-	}
-*/
-
-	
 	
 	stream::write_status flush(bucket_size new_buffer_size = 0);
 	stream::write_status weak_flush(bucket_size new_buffer_size = 0);
-	stream::write_status partial_flush();
-	
-#if 0
-	void put(uint8_t b)
-	{
-		sassert(size_ <= cap_);
-		if(size_ == cap_)
-			overflow_put_(b);
-		else
-		{
-			buffer_->data[size_] = b;
-			++size_;
-		}
-	}
-#endif
+	//stream::write_status partial_flush();
 
 	stream::write_status put(uint8_t b)
 	{
@@ -1019,7 +854,6 @@ struct stream_writer
 	shared_ptr<stream> detach()
 	{
 		flush_buffer();
-		partial_flush();
 		
 		// Buffer any remaining buckets
 		// partial_flush already does this: sink_->write_buffered(mem_buckets_);
@@ -1044,7 +878,7 @@ struct stream_writer
 	}
 	
 private:
-	void flush_buffer(bucket_size new_buffer_size = 0);
+	stream::write_status flush_buffer(bucket_size new_buffer_size = 0);
 	
 	std::size_t buffer_size_()
 	{
@@ -1110,7 +944,7 @@ private:
 	uint8_t* cur_; // Pointer into buffer_
 	uint8_t* end_; // End of capacity in buffer_
 	bucket_size cap_;
-	list<bucket> mem_buckets_;
+	//list<bucket> mem_buckets_;
 	std::auto_ptr<bucket_data_mem> buffer_;
 	std::size_t estimated_needed_buffer_size_;
 };

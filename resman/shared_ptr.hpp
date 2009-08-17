@@ -129,9 +129,9 @@ struct shared_ptr : shared_ptr_common
 	
 	shared_ptr release()
 	{
-		// TODO: We can do this more efficiently
-		shared_ptr ret = *this;
-		reset();
+		shared_ptr ret;
+		ret.v = v;
+		v = 0;
 		return ret;
 	}
 	
@@ -142,12 +142,12 @@ struct shared_ptr : shared_ptr_common
 	shared_ptr<DestT> cast()
 	{ return dynamic_cast<DestT*>(get()); }
 	
-	T* cow()
+	T& cow()
 	{
 		sassert(v);
 		if(v->ref_count() > 1)
 			reset(get()->clone());
-		return get();
+		return *get();
 	}
 	
 	T* get() const
@@ -337,6 +337,79 @@ shared_ptr<T>& shared_ptr<T>::operator=(unsafe_weak_ptr<T> const& b)
 	return *this;
 }
 */
+
+template<typename T>
+struct value_ptr
+{
+	value_ptr()
+	{ }
+	
+	explicit value_ptr(T* v)
+	: base(v)
+	{ }
+	
+	value_ptr(value_ptr const& b)
+	: base(b.base)
+	{ }
+
+	template<typename SrcT>
+	value_ptr(value_ptr<SrcT> const& b)
+	: base(b.base)
+	{ }
+
+	value_ptr& operator=(value_ptr const& b)
+	{
+		base = b.base;
+		return *this;
+	}
+
+	template<typename SrcT>
+	value_ptr& operator=(value_ptr<SrcT> const& b)
+	{
+		base = b.base;
+		return *this;
+	}
+		
+	operator void const*() const
+	{ return v; }
+	
+	T const* operator->() const
+	{ return base.operator->(); }
+	
+	T const& operator*() const
+	{ return base.operator*(); }
+	
+	void reset(T* b)
+	{ base.reset(b); }
+	
+	void reset()
+	{ base.reset(); }
+	
+	value_ptr release()
+	{
+		value_ptr ret;
+		ret.base.v = base.v;
+		base.v = 0;
+		return ret;
+	}
+	
+	void swap(value_ptr& b)
+	{ base.swap(b.base); }
+	
+	template<typename DestT>
+	shared_ptr<DestT> cast()
+	{ return dynamic_cast<DestT*>(get()); }
+	
+	T& cow()
+	{
+		return base.cow();
+	}
+	
+	T const* get() const
+	{ return base.get(); }
+	
+	shared_ptr<T> base;
+};
 
 } // namespace gvl
 

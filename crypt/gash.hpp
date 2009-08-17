@@ -43,10 +43,10 @@ struct hash_value
 
 struct gash
 {
-	static int const block_size = 8;
+	static int const block_size = 4;
 	
 	typedef hash_value<block_size> value_type;
-	
+
 	gash()
 	{
 		uint64_t accum = 1;
@@ -64,36 +64,28 @@ struct gash
 		d[1] ^= n[1];
 		d[2] ^= n[2];
 		d[3] ^= n[3];
-		d[4] ^= n[4];
-		d[5] ^= n[5];
-		d[6] ^= n[6];
-		d[7] ^= n[7];
 		
-		for(int i = 0; i < 8; ++i)
-			round();
+		for(int i = 0; i < 4; ++i)
+		{
+			round1();
+			round2();
+		}
 		
-		d[0] += n[0];
-		d[1] += n[1];
-		d[2] += n[2];
-		d[3] += n[3];
-		d[4] += n[4];
-		d[5] += n[5];
-		d[6] += n[6];
-		d[7] += n[7];
+		d[4] += n[0];
+		d[5] += n[1];
+		d[6] += n[2];
+		d[7] += n[3];
 	}
 	
-	void round()
+	void round1()
 	{
 		d[0] -= d[5];
 		d[1] -= d[6];
 		d[2] -= d[7];
-		d[3] += d[0];
-		d[4] += d[1];
-		d[5] += d[2];
-		d[6] ^= d[3];
-		d[7] ^= d[4];
+		d[3] ^= d[0];
+		d[4] ^= d[1];
+		d[5] ^= d[2];
 		
-		d[5] = rot(d[5], 7);
 		d[6] = rot(d[6], 17);
 		d[7] = rot(d[7], 37);
 		
@@ -102,6 +94,24 @@ struct gash
 		std::swap(d[3], d[7]);
 	}
 	
+
+	void round2()
+	{
+		d[7] -= d[2];
+		d[6] -= d[1];
+		d[5] -= d[0];
+		d[4] ^= d[7];
+		d[3] ^= d[6];
+		d[2] ^= d[5];
+		
+		d[0] = rot(d[0], 13);
+		d[1] = rot(d[1], 23);
+		
+		std::swap(d[1], d[2]);
+		std::swap(d[3], d[5]);
+		std::swap(d[7], d[0]);
+	}
+
 	value_type final() const
 	{
 		value_type ret;

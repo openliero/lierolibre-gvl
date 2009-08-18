@@ -18,7 +18,7 @@
  *	Bit twiddling.
  *
  * Exception:
- *	No exception.
+ *	No fd_exception.
  */
 
 #include "fdlibm.h"

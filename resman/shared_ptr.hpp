@@ -371,7 +371,7 @@ struct value_ptr
 	}
 		
 	operator void const*() const
-	{ return v; }
+	{ return base.v; }
 	
 	T const* operator->() const
 	{ return base.operator->(); }

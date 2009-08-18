@@ -10,6 +10,7 @@
 #include <new>
 #include <stdexcept>
 #include <string>
+#include <cstring>
 
 #include <cstdio> // TEMP
 
@@ -936,7 +937,7 @@ private:
 			//sassert(size_ == buffer_->size_);
 			cur_ = buffer_->data + buffer_->size_;
 			end_ = buffer_->data + cap_;
-			sassert((cur_ - buffer_->data) == buffer_->size_);
+			sassert(std::size_t(cur_ - buffer_->data) == buffer_->size_);
 		}
 	}
 

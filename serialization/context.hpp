@@ -85,7 +85,7 @@ struct serialization_context
 	
 	type& get_type(gvl::type_info ti)
 	{
-		std::map<gvl::type_info, type*>::iterator i = types.find(ti);
+		typename std::map<gvl::type_info, type*>::iterator i = types.find(ti);
 		if(i == types.end())
 		{
 			i = types.insert(std::make_pair(ti, new type)).first;
@@ -157,7 +157,7 @@ struct serialization_context
 	
 	~serialization_context()
 	{
-		for(std::map<gvl::type_info, type*>::iterator i = types.begin(); i != types.end(); ++i)
+		for(typename std::map<gvl::type_info, type*>::iterator i = types.begin(); i != types.end(); ++i)
 		{
 			delete i->second;
 		}

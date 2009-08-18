@@ -117,7 +117,7 @@ inline bool operator==(basic_vec<T, 2> a, basic_vec<T, 2> b)
 
 template<typename T>
 inline bool operator!=(basic_vec<T, 2> a, basic_vec<T, 2> b)
-{ return !(*this == b); }
+{ return !(a == b); }
 
 template<typename T>
 inline basic_vec<T, 2> cross(T a, basic_vec<T, 2> b)

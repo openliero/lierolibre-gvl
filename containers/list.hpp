@@ -783,14 +783,14 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		gvl_list_node* sent = &sentinel_;
 		gvl_list_node* lprev = sent;
-		gvl_list_node* cur = prev->next;
+		gvl_list_node* cur = lprev->next;
 		
 		while(cur != sent)
 		{
 			gvl_list_node* lnext = cur->next;
 			T const* curt = downcast(cur);
-			if(prev != sent
-			&& op(*curt, *downcast(prev)))
+			if(lprev != sent
+			&& op(*curt, *downcast(lprev)))
 			{
 				//cross_event(*downcast(prev), *downcast(cur));
 				
@@ -820,7 +820,7 @@ struct list : list_common, protected Deleter, protected Ownership
 			else
 				lprev = cur; // No move, prev will be cur
 			
-			cur = next;
+			cur = lnext;
 		}
 	}
 	

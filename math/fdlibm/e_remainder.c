@@ -49,7 +49,7 @@ static double zero = 0.0;
 	hp &= 0x7fffffff;
 	hx &= 0x7fffffff;
 
-    /* purge off exception values */
+    /* purge off fd_exception values */
 	if((hp|lp)==0) return gD(gM(x,p),gM(x,p)); 	/* p = 0 */
 	if((hx>=0x7ff00000)||			/* x not fd_finite */
 	  ((hp>=0x7ff00000)&&			/* p is NaN */

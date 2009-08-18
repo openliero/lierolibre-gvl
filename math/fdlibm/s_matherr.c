@@ -15,10 +15,10 @@
 #include "fdlibm_intern.h"
 
 #ifdef __STDC__
-	int fd_matherr(struct exception *x)
+	int fd_matherr(struct fd_exception *x)
 #else
 	int fd_matherr(x)
-	struct exception *x;
+	struct fd_exception *x;
 #endif
 {
 	int n=0;

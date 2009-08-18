@@ -1,6 +1,7 @@
 #include "system.hpp"
 
 #include "../support/platform.hpp"
+#include <stdexcept>
 
 namespace gvl
 {
@@ -39,7 +40,9 @@ void gvl::sleep(uint32_t ms)
 	Sleep((DWORD)ms);
 }
 
-#else
+#else // !(GVL_WIN32 || GVL_WIN64)
+
+#include <unistd.h>
 
 #if defined(_POSIX_MONOTONIC_CLOCK)
 
@@ -53,13 +56,13 @@ uint32_t gvl::get_ticks()
 		throw std::runtime_error("clock_gettime failed");
 	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 }
-#else
+#else // !defined(_POSIX_MONOTONIC_CLOCK)
 uint32_t get_ticks()
 {
 	passert(false, "STUB");
 	return 0;
 }
-#endif
+#endif // !defined(_POSIX_MONOTONIC_CLOCK)
 
 #if GVL_LINUX
 
@@ -77,11 +80,11 @@ void gvl::sleep(uint32_t ms)
 		t = left;
 	}
 }
-#else
+#else // !GVL_LINUX
 void gvl::sleep(uint32_t)
 {
 	passert(false, "STUB");
 }
-#endif
+#endif // !GVL_LINUX
 
-#endif
+#endif // !(GVL_WIN32 || GVL_WIN64)

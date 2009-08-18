@@ -44,7 +44,7 @@ static double one = 1.0, Zero[] = {0.0, -0.0,};
 	hx ^=sx;		/* |x| */
 	hy &= 0x7fffffff;	/* |y| */
 
-    /* purge off exception values */
+    /* purge off fd_exception values */
 	if((hy|ly)==0||(hx>=0x7ff00000)||	/* y=0,or x not fd_finite */
 	  ((hy|((ly|(0-ly))>>31))>0x7ff00000))	/* or y is NaN */
 	    return gD(gM(x,y), gM(x,y));

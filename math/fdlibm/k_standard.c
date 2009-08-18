@@ -28,7 +28,7 @@
 static double zero = 0.0;	/* used as const */
 
 /* 
- * Standard conformance (non-IEEE) on exception cases.
+ * Standard conformance (non-IEEE) on fd_exception cases.
  * Mapping:
  *	1 -- fd_acos(|x|>1)
  *	2 -- fd_asin(|x|>1)
@@ -82,7 +82,7 @@ static double zero = 0.0;	/* used as const */
 	double x,y; int type;
 #endif
 {
-	struct exception exc;
+	struct fd_exception exc;
 #ifndef HUGE_VAL	/* this is the only routine that uses HUGE_VAL */ 
 #define HUGE_VAL inf
 	double inf = 0.0;

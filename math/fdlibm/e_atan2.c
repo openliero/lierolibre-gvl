@@ -15,7 +15,7 @@
 /* __ieee754_atan2(y,x)
  * Method :
  *	1. Reduce y to positive by fd_atan2(y,x)=-fd_atan2(-y,x).
- *	2. Reduce x to positive by (if x and y are unexceptional):
+ *	2. Reduce x to positive by (if x and y are unfd_exceptional):
  *		ARG (x+iy) = arctan(y/x)   	   ... if x > 0,
  *		ARG (x+iy) = pi - arctan[y/(-x)]   ... if x < 0,
  *

@@ -45,6 +45,7 @@ int const error_ret = SOCKET_ERROR;
 inline int error() { return errno; }
 int const sckerr_in_progress = EINPROGRESS;
 int const sckerr_would_block = EWOULDBLOCK;
+int const sckerr_conn_reset = ECONNRESET;
 
 socket invalid_socket()
 {
@@ -59,17 +60,16 @@ socket::socket()
 
 }
 
-int
-socket::is_valid()
+bool socket::is_valid()
 {
-	return native_socket(s) != -1;
+	return native_socket(*this) != -1;
 }
 
 void socket::close()
 {
 	if(is_valid())
 	{
-		close(native_socket(*this));
+		::close(native_socket(*this));
 	}
 }
 
@@ -388,7 +388,11 @@ int internet_addr::port()
 uint32_t internet_addr::ip()
 {
 	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+#if GVL_WIN32 || GVL_WIN64
 	return ntohl(s->sin_addr.S_un.S_addr);
+#else
+	return ntohl(s->sin_addr.s_addr);
+#endif
 }
 
 /*
@@ -439,7 +443,7 @@ internet_addr::internet_addr(socket s)
 {
 	sockaddr* addr = reinterpret_cast<sockaddr*>(storage());
 	
-	int t = sizeof(sockaddr_in);
+	socklen_t t = sizeof(sockaddr_in);
 	
 	if(getsockname(native_socket(s), addr, &t) != error_ret)
 	{

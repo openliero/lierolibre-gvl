@@ -122,7 +122,7 @@ struct gash
 		return ret;
 	}
 	
-	uint64_t d[block_size];
+	uint64_t d[8];
 };
 
 template<typename Hash>
@@ -210,9 +210,9 @@ struct hash_accumulator
 	}
 	
 	hash_accumulator()
-	: cur(0)
-	, bit_n(64)
+	: bit_n(64)
 	, word_n(0)
+	, cur(0)
 	{
 	}
 	

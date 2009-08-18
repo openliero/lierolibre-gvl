@@ -67,7 +67,7 @@ int log2(uint32_t v)
 	};
 	
 	unsigned int t, tt;
-	if(tt = v >> 16)
+	if((tt = v >> 16))
 		return (t = tt >> 8) ? 24 + LogTable256[t] : 16 + LogTable256[tt];
 	else 
 		return (t = v >> 8) ? 8 + LogTable256[t] : LogTable256[v];
@@ -96,7 +96,7 @@ int top_bit(uint32_t v)
 	};
 	
 	unsigned int t, tt;
-	if(tt = v >> 16)
+	if((tt = v >> 16))
 		return (t = tt >> 8) ? 24 + LogTable256[t] : 16 + LogTable256[tt];
 	else 
 		return (t = v >> 8) ? 8 + LogTable256[t] : LogTable256[v];
@@ -108,10 +108,10 @@ int log2(uint64_t v)
 	// TODO: For 64-bit archs, use intrinsics
 	unsigned int ttt;
 	
-	if(ttt = (unsigned int)(v >> 32))
+	if((ttt = (uint32_t)(v >> 32)))
 		return 32 + log2(ttt);
 	else
-		return log2((unsigned int)v);
+		return log2((uint32_t)v);
 }
 #endif
 /*

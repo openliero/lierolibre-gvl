@@ -112,9 +112,6 @@ struct socketstream : stream, flags
 protected:
 	/*override*/ read_result read_bucket(size_type amount = 0, bucket* dest = 0);
 	
-	/// Writes a bucket to a sink. If bucket_sink::ok is returned,
-	/// takes ownership of 'b' and unlinks it from it's list<bucket>.
-	/// NOTE: 'b' must be inserted into a list<bucket> or be a singleton.
 	/*override*/ write_result write_bucket(bucket* b)
 	{
 		process();
@@ -125,7 +122,7 @@ protected:
 		size_type size = b->size();
 		int r = sock.send(b->get_ptr(), size);
 		
-		if(r == size)
+		if(r == (int)size)
 		{
 			std::cout << "Full write: " << size << "b" << std::endl;
 			

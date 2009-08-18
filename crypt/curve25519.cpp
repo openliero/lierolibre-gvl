@@ -744,7 +744,7 @@ void core(uint8_t* Px, uint8_t* s, uint8_t const* k, uint8_t const* Gx)
 bool curve25519::sign(uint8_t* v, uint8_t const* h, uint8_t const* x, uint8_t const* s)
 {
     /* v = (x - h) s  mod q  */
-    uint8_t tmp1[63];
+    uint8_t tmp1[65];
     uint8_t tmp2[33];
     int w;
     int i;

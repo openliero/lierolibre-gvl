@@ -317,22 +317,6 @@
 				RelativePath="..\uthread\uthread_config.hpp"
 				>
 			</File>
-			<Filter
-				Name="tut"
-				>
-				<File
-					RelativePath="..\tut\tut.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\tut\tut_reporter.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\tut\tut_restartable.hpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="support"
@@ -415,6 +399,10 @@
 			</File>
 			<File
 				RelativePath="..\support\object_model.h"
+				>
+			</File>
+			<File
+				RelativePath="..\support\platform.cpp"
 				>
 			</File>
 			<File
@@ -1539,6 +1527,38 @@
 				RelativePath="..\zlib\zutil.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="tut"
+			>
+			<File
+				RelativePath="..\tut\tut.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tut\tut_reporter.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tut\tut_restartable.hpp"
+				>
+			</File>
+			<Filter
+				Name="quickcheck"
+				>
+				<File
+					RelativePath="..\tut\quickcheck\context.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\tut\quickcheck\generator.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\tut\quickcheck\property.hpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="..\list.hpp"

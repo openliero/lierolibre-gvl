@@ -192,6 +192,8 @@ template<>
 template<>
 void object::test<3>()
 {
+	gvl_init_ieee();
+	
 	double computedNaN = gSqrt(-1.0);
 
 	double negZero = -10.0 * 0.0;
@@ -207,9 +209,12 @@ void object::test<3>()
 	ensure("dividing by 0 yields infinity", gD(1.0, zero) == std::numeric_limits<double>::infinity());
 	ensure("dividing 0 by 0 yields NaN", fd_isnan(gD(zero, zero)) != 0);
 
+	// Fails with round-double-53(round-extended-64(x * 2) / 2)
 	ensure("double overflow with multiply", gD(gM(1.7e308, 2.0), 2.0) == std::numeric_limits<double>::infinity());
+	// Fails with round-double-53(round-extended-64(x + x) / 2)
 	ensure("double overflow with add", gD(gA(1.7e308, 1.7e308), 2.0) == std::numeric_limits<double>::infinity());
 
+	// Fails with round-double-53(round-extended-64(x / 2) * 2)
 	ensure("double underflow with divide", gM(gD(4.940656458412e-324, 2.0), 2.0) == 0.0);
 
 	// These fail with round-double-53(round-extended-64(x / y))
@@ -227,8 +232,29 @@ void object::test<3>()
 	ensure("division is done with double precision #2", gD(6.0531002917684863e-0252, 6.8672903290096396e-0306) == 8.8143940357352393e+0053);
 	ensure("division is done with double precision #3", gD(3.5215930923124385e+0097, 2.6716890617707574e+0068) == 1.3181148744825781e+0029);
 	
+	// These fail with round-double-53(round-extended-64(sqrt(x))
+	ensure("sqrt is done with double precision #1", gSqrt(7.9975425458479251e-0252) == 2.8279926707556945e-0126);
+	ensure("sqrt is done with double precision #2", gSqrt(9.1244941815835015e+0183) == 9.5522218261425980e+0091);
+	ensure("sqrt is done with double precision #3", gSqrt(1.2549478092296626e-0152) == 1.1202445309974347e-0076);
+	
+	// These fail with round-double-53(round-extended-64(round-extended-64(1 + x) - y))
+	ensure("intermediates are double precision #1", gS(gA(1.0, -11562242321027462.), 1642019876357220.2) == -13204262197384680.);
+	ensure("intermediates are double precision #2", gS(gA(1.0, -6.4758762313609902e-006), 4.6367248808744297e-005) == 0.99994715687495983);
+	ensure("intermediates are double precision #3", gS(gA(1.0, -0.025106293868442715), -5.4931982728117911e-015) == 0.97489370613156268);
+		
+}
+
+template<>
+template<>
+void object::test<4>()
+{
 #if 0
+	unsigned int const flags = _RC_NEAR | _PC_64 /* | _PC_53*/ | _EM_INVALID | _EM_DENORMAL | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW | _EM_INEXACT;
+    _control87(flags, _MCW_EM | _MCW_PC | _MCW_RC);
+    
 	gvl::tt800 rnd(2);
+	
+	double one = 1.0;
 
 	for(unsigned long long i = 0; i < 400000000000ull; ++i)
 	{
@@ -240,19 +266,25 @@ void object::test<3>()
 		FD_LO(y) = rnd();
 		FD_HI(y) = rnd();
 		
-		r1 = gM(x, y);
+		__asm
+		{
+			fld1
+			fadd x
+			fsub y
+			fstp r1
+		}
 		
 		__asm
 		{
-			movsd xmm0, x
-			mulsd xmm0, y
-			movsd r2, xmm0
+			movsd xmm1, one
+			addsd xmm1, x
+			subsd xmm1, y
+			movsd r2, xmm1
 		}
 
 		if(!equivalent(r1, r2))
 		{
-			printf("FAIL! %f, %f\n", x, y);
-			return;
+			printf("FAIL! %.20f\n", x, y);
 		}
 
 #if 0

@@ -87,8 +87,7 @@
 #endif
 
 // TODO: This function should try to check whether the above inferred
-// characteristics are correct.
-// Returns: true if they are correct, false otherwise.
-int gvl_test_platform();
+// characteristics are correct. It will call std::abort if not.
+void gvl_test_platform();
 
 #endif // UUID_E256FC00B8C44EBE85C8738284C064F6

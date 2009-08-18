@@ -411,6 +411,67 @@ struct value_ptr
 	shared_ptr<T> base;
 };
 
+template<typename T>
+struct shared_any_wrapper : shared
+{
+	shared_any_wrapper(T* value_init)
+	: value(value_init)
+	{
+	}
+	
+	~shared_any_wrapper()
+	{
+		delete value;
+	}
+	
+	T* value;
+};
+
+template<typename T>
+struct shared_ptr_any : shared_ptr<shared_any_wrapper<T> >
+{
+	typedef shared_any_wrapper<T> wrapper;
+	typedef shared_ptr<shared_any_wrapper<T> > base;
+	
+	shared_ptr_any()
+	{ }
+	
+	explicit shared_ptr_any(T* v)
+	: base(new wrapper(v))
+	{ }
+	
+	// Copy-ctor, op=, operator void const*, swap are fine.
+	
+	// TODO: Converting ctors/op=, how would they work? Seems to require a different implementation.
+	
+	T* operator->() const
+	{ return base::operator*().value; }
+	
+	T& operator*() const
+	{ return *base::operator*().value; }
+	
+	void reset(T* b)
+	{ base.reset(new wrapper(b)); }
+	
+	void reset()
+	{ base.reset(); }
+	
+	shared_ptr_any release()
+	{
+		shared_ptr_any ret;
+		ret.v = v;
+		v = 0;
+		return ret;
+	}
+	
+	// TODO: cow
+	
+	T* get() const
+	{ return base::get() ? base::get()->value : 0; }
+};
+
+// TODO: Specialize shared_ptr_any for types that derive gvl::shared
+
 } // namespace gvl
 
 

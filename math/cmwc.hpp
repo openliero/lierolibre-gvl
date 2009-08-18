@@ -17,7 +17,7 @@ struct prng_common
 	
 	uint32_t operator()(uint32_t max)
 	{
-		Uint64 v = derived()();
+		uint64_t v = derived()();
 		v *= max;
 		return uint32_t(v >> 32);
 	}

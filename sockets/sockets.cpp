@@ -12,6 +12,38 @@ socket socket::invalid()
 	return socket();
 }
 
+struct internet_addr_sockaddr_in : internet_addr_impl
+{
+	// Default copy-ctor and op= are fine
+	
+	internet_addr_impl* clone();
+	
+	sockaddr_in s;
+};
+
+sockaddr_in* get_sockaddr_in(internet_addr_impl& impl)
+{
+	if(internet_addr_sockaddr_in* p = dynamic_cast<internet_addr_sockaddr_in*>(&impl))
+		return &p->s;
+	return 0;
+}
+
+sockaddr* get_sockaddr(internet_addr& self)
+{
+	if(!self.ptr)
+		return 0;
+	if(internet_addr_sockaddr_in* p = dynamic_cast<internet_addr_sockaddr_in*>(self.ptr.get()))
+		return reinterpret_cast<sockaddr*>(&p->s);
+	return 0;
+}
+
+sockaddr_in const* get_sockaddr_in(internet_addr_impl const& impl)
+{
+	if(internet_addr_sockaddr_in const* p = dynamic_cast<internet_addr_sockaddr_in const*>(&impl))
+		return &p->s;
+	return 0;
+}
+
 #if GVL_WIN32 || GVL_WIN64
 
 inline int error() { return WSAGetLastError(); }
@@ -77,10 +109,7 @@ int const error_ret = -1;
 
 #endif
 
-static sockaddr* get_sockaddr(internet_addr& self)
-{
-	return reinterpret_cast<sockaddr*>(self.storage());
-}
+
 
 #if 0
 static char* copy_string(char const* p)
@@ -352,42 +381,21 @@ typedef uint64_t sckimpl_sa_align_t;
 std::size_t const sckimpl_sa_maxsize = 32; // IPv6 needs 28 bytes
 */
 
-// TODO: Nicer aligned storage, look at Boost
-struct internet_addr_storage : internet_addr_impl
+internet_addr_impl* internet_addr_sockaddr_in::clone()
 {
-	internet_addr_storage(bool is_set_init = false)
-	: internet_addr_impl(is_set_init)
-	{
-	}
-	
-	// Default copy-ctor and op= are fine
-	
-	sockaddr_in s;
-	
-	void* storage()
-	{
-		return &s;
-	}
-/*
-    char               _ss_pad1[sizeof(sckimpl_sa_align_t)];
-    sckimpl_sa_align_t _ss_align;
-    char               _ss_pad2[sckimpl_sa_maxsize - sizeof(sckimpl_sa_align_t)*2];*/
-};
-
-internet_addr_impl* internet_addr_impl::clone()
-{
-	return new internet_addr_storage(static_cast<internet_addr_storage&>(*this));
+	return new internet_addr_sockaddr_in(*this);
 }
 
-int internet_addr::port()
+
+int internet_addr::port() const
 {
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+	sockaddr_in* s = get_sockaddr_in(*ptr);
 	return ntohs(s->sin_port);
 }
 
-uint32_t internet_addr::ip()
+uint32_t internet_addr::ip() const
 {
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+	sockaddr_in* s = get_sockaddr_in(*ptr);
 #if GVL_WIN32 || GVL_WIN64
 	return ntohl(s->sin_addr.S_un.S_addr);
 #else
@@ -395,24 +403,10 @@ uint32_t internet_addr::ip()
 #endif
 }
 
-/*
-internet_addr::internet_addr(host_entry& hp_, int port)
-: ptr(new internet_addr_storage)
-{
-	hostent& hp = *static_cast<hostent*>(hp_.storage());
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
-	
-	memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
-	memmove(reinterpret_cast<char *>(&s->sin_addr), hp.h_addr_list[0], hp.h_length);
-	s->sin_family = hp.h_addrtype;
-	
-	this->port(port);
-}*/
-
 internet_addr::internet_addr(uint32_t addr, int port)
-: ptr(new internet_addr_storage(true))
+: ptr(new internet_addr_sockaddr_in)
 {
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+	sockaddr_in* s = get_sockaddr_in(*ptr);
 	
 	memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
 	
@@ -422,14 +416,12 @@ internet_addr::internet_addr(uint32_t addr, int port)
 }
 
 internet_addr::internet_addr(char const* name, int port)
-: ptr(new internet_addr_storage)
 {
 	hostent* p = gethostbyname(name);
 	if(p)
 	{
-		ptr->is_set_ = true;
-		
-		sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+		ptr.reset(new internet_addr_sockaddr_in);
+		sockaddr_in* s = get_sockaddr_in(*ptr);
 		
 		memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
 		memmove(reinterpret_cast<char *>(&s->sin_addr), p->h_addr_list[0], p->h_length);
@@ -439,22 +431,22 @@ internet_addr::internet_addr(char const* name, int port)
 }
 
 internet_addr::internet_addr(socket s)
-: ptr(new internet_addr_storage)
 {
-	sockaddr* addr = reinterpret_cast<sockaddr*>(storage());
+	sockaddr_in addr;
 	
 	socklen_t t = sizeof(sockaddr_in);
 	
-	if(getsockname(native_socket(s), addr, &t) != error_ret)
+	if(getsockname(native_socket(s), reinterpret_cast<sockaddr*>(&addr), &t) != error_ret)
 	{
-		ptr->is_set_ = true;
+		ptr.reset(new internet_addr_sockaddr_in);
+		*get_sockaddr_in(*ptr) = addr;
 	}
 }
 
 internet_addr::internet_addr()
-: ptr(new internet_addr_storage(true))
+: ptr(new internet_addr_sockaddr_in)
 {
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+	sockaddr_in* s = get_sockaddr_in(*ptr);
 	
 	memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
 	
@@ -463,26 +455,32 @@ internet_addr::internet_addr()
 	s->sin_addr.s_addr = htonl( INADDR_ANY );
 }
 
+
+
 bool operator==(internet_addr const& a, internet_addr const& b)
 {
-	sockaddr_in const* as = reinterpret_cast<sockaddr_in const*>(a.storage());
-	sockaddr_in const* bs = reinterpret_cast<sockaddr_in const*>(b.storage());
-	return a.ptr->is_set_ == b.ptr->is_set_
-	  && as->sin_addr.s_addr == bs->sin_addr.s_addr
-	  && as->sin_port == bs->sin_port;
+	if(!a.ptr || !b.ptr)
+	{
+		return !a.ptr && !b.ptr;
+	}
+	
+	sockaddr_in const* as = get_sockaddr_in(*a.ptr);
+	sockaddr_in const* bs = get_sockaddr_in(*b.ptr);
+	return as->sin_addr.s_addr == bs->sin_addr.s_addr
+	    && as->sin_port == bs->sin_port;
 }
 
 void internet_addr::port(int port)
 {
 	ptr.cow();
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+	sockaddr_in* s = get_sockaddr_in(*ptr);
 	s->sin_port = htons( (u_short)port );
 }
 
 void internet_addr::ip(uint32_t addr)
 {
 	ptr.cow();
-	sockaddr_in* s = reinterpret_cast<sockaddr_in*>(storage());
+	sockaddr_in* s = get_sockaddr_in(*ptr);
 	s->sin_addr.s_addr = htonl( addr );
 }
 

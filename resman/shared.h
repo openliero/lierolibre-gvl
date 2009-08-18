@@ -13,16 +13,33 @@ struct gvl_shared
 	
 	void add_ref()
 	{
+#if GVL_THREADSAFE
+		#error "Not finished"
+		// TODO: Interlocked add
 		++_ref_count;
+#else
+		++_ref_count;
+#endif
 	}
 	
 	void release()
 	{
+#if GVL_THREADSAFE
+		#error "Not finished"
+		if(_ref_count == 1) // 1 means it has to become 0, nobody can increment it after this read
+			_delete();
+		else
+		{
+			// TODO: CAS decrement the counter and check
+			cas(
+		}
+#else
 		--_ref_count;
 		if(_ref_count == 0)
 		{
 			_delete();
 		}
+#endif
 	}
 	
 	int ref_count() const
@@ -32,7 +49,7 @@ struct gvl_shared
 	{
 	}
 	
-	int ref_count;
+	int _ref_count;
 	gvl_weak_ptr* first;
 };
 

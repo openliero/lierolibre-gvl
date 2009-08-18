@@ -5,6 +5,11 @@
 #include <gvl/support/algorithm.hpp>
 #include <gvl/support/macros.hpp>
 #include <functional>
+#include <memory>
+
+#include <gvl/tut/quickcheck/context.hpp>
+#include <gvl/tut/quickcheck/generator.hpp>
+#include <gvl/tut/quickcheck/property.hpp>
 
 namespace tut
 {
@@ -28,6 +33,42 @@ struct integer
 	
 	int v;
 };
+
+#define QC_BEGIN_GEN(name, type) \
+struct name : gvl::qc::generator<type> { \
+	typedef type t; \
+	t* gen_t(gvl::qc::context& ctx) {
+
+#define QC_END_GEN() } };
+
+typedef gvl::list<integer, tag1> integer_list;
+
+QC_BEGIN_GEN(singleton_list_gen, integer_list)
+	std::auto_ptr<t> ret(new t);
+	ret->push_back(new integer(1));
+	return ret.release();
+QC_END_GEN()
+
+QC_BEGIN_GEN(concat_list_gen, integer_list)
+	std::auto_ptr<t> a(ctx.generate_any<t>());
+	std::auto_ptr<t> b(ctx.generate_any<t>());
+	a->splice(*b);
+	return a.release();
+QC_END_GEN()
+
+struct clear_property : gvl::qc::property<gvl::list<integer, tag1> >
+{
+	typedef gvl::list<integer, tag1> t;
+	
+	bool check(gvl::qc::context& ctx, t& obj)
+	{
+		std::cout << obj.size() << std::endl;
+		obj.clear();
+		return obj.empty();
+	}
+};
+
+
 
 struct list_data
 {
@@ -128,6 +169,17 @@ void object::test<1>()
 		ensure("l1 empty", l1.empty());
 		ensure("l2 empty", l2.empty());
 	}
+}
+
+template<>
+template<>
+void object::test<2>()
+{
+	gvl::qc::context ctx;
+	ctx.add("singleton", new singleton_list_gen);
+	ctx.add("concat", new concat_list_gen);
+	
+	gvl::qc::test_property<clear_property>(ctx);
 }
 
 } // namespace tut

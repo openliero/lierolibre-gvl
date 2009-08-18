@@ -57,8 +57,7 @@ struct internet_addr_impl : gvl::shared
 {
 	friend struct internet_addr;
 	
-	internet_addr_impl(bool is_set_init = false)
-	: is_set_(is_set_init)
+	internet_addr_impl()
 	{
 	}
 	
@@ -66,14 +65,10 @@ struct internet_addr_impl : gvl::shared
 	{
 	}
 	
-	internet_addr_impl* clone();
-	
-	virtual void* storage() = 0;
-	
-	bool is_set_;
+	virtual internet_addr_impl* clone() = 0;
 };
 
-struct internet_addr // : internet_addr_storage
+struct internet_addr
 {
 	internet_addr(); // any
 	internet_addr(char const* name, int port = 0);
@@ -82,30 +77,25 @@ struct internet_addr // : internet_addr_storage
 	// on the socket or (if applicable) a connect or accept has
 	// been done.
 	internet_addr(socket s);
-	//internet_addr(host_entry* hp, int port);
 	internet_addr(uint32_t ip, int port);
 	
-	void* storage()
-	{ return ptr->storage(); }
-	void const* storage() const
-	{ return ptr->storage(); }
+	operator void const*() const
+	{ return ptr; }
 	
-	operator bool()
-	{ return ptr->is_set_; }
-	
-    int  port();
+    int  port() const;
     void port(int port_new);
     
-    uint32_t ip();
+    uint32_t ip() const;
     void     ip(uint32_t ip_new);
     
     void reset()
-    { ptr->is_set_ = false; }
+    { ptr.reset(); }
 
     friend bool operator==(internet_addr const&, internet_addr const&);
     
     gvl::shared_ptr<internet_addr_impl> ptr;
 };
+
 
 /*
 struct host_entry_impl : gvl::shared

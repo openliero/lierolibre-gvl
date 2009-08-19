@@ -13,14 +13,28 @@ struct context;
 
 struct base_generator
 {
+	base_generator(double weight = 1.0)
+	: weight(weight)
+	{
+	}
+	
 	virtual void* gen(context& ctx) = 0;
+	
+	double weight;
 };
 
 template<typename T>
 struct generator : base_generator
 {
+	generator(double weight = 1.0)
+	: base_generator(weight)
+	{
+	}
+	
 	void* gen(context& ctx) { return gen_t(ctx); }
 	virtual T* gen_t(context& ctx) = 0;
+	
+	
 };
 
 } // namespace qc

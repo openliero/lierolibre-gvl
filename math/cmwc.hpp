@@ -15,6 +15,12 @@ struct prng_common
 	DerivedT& derived()
 	{ return *static_cast<DerivedT*>(this); }
 	
+	double operator()(double max)
+	{
+		uint32_t v = derived()();
+		return v * max / 4294967296.0;
+	}
+	
 	uint32_t operator()(uint32_t max)
 	{
 		uint64_t v = derived()();

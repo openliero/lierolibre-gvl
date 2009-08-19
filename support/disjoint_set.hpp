@@ -4,7 +4,7 @@
 namespace gvl
 {
 
-template<typename T>
+template<typename T, typename Tag = void>
 struct disjoint_set_member
 {
 	disjoint_set_member()

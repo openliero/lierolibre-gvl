@@ -6,6 +6,7 @@
 #include <gvl/support/macros.hpp>
 #include <functional>
 #include <memory>
+#include <algorithm>
 
 #include <gvl/tut/quickcheck/context.hpp>
 #include <gvl/tut/quickcheck/generator.hpp>
@@ -41,6 +42,12 @@ struct name : gvl::qc::generator<type> { \
 
 #define QC_END_GEN() } };
 
+#define QC_BEGIN_PROP(name, type) \
+struct clear_property : gvl::qc::property<type> { \
+	typedef type t;
+	
+#define QC_END_PROP() };
+
 typedef gvl::list<integer, tag1> integer_list;
 
 QC_BEGIN_GEN(singleton_list_gen, integer_list)
@@ -50,23 +57,32 @@ QC_BEGIN_GEN(singleton_list_gen, integer_list)
 QC_END_GEN()
 
 QC_BEGIN_GEN(concat_list_gen, integer_list)
+	if(ctx.generator_depth() > 10)
+	{
+		std::auto_ptr<t> ret(new t);
+		ret->push_back(new integer(1));
+		return ret.release();
+	}
 	std::auto_ptr<t> a(ctx.generate_any<t>());
 	std::auto_ptr<t> b(ctx.generate_any<t>());
 	a->splice(*b);
 	return a.release();
 QC_END_GEN()
 
-struct clear_property : gvl::qc::property<gvl::list<integer, tag1> >
-{
-	typedef gvl::list<integer, tag1> t;
-	
+QC_BEGIN_GEN(sorted_list_gen, integer_list)
+	std::auto_ptr<t> a(ctx.generate_any<t>());
+	a->sort(std::less<integer>());
+	return a.release();
+QC_END_GEN()
+
+QC_BEGIN_PROP(clear_property, integer_list)
 	bool check(gvl::qc::context& ctx, t& obj)
 	{
 		std::cout << obj.size() << std::endl;
 		obj.clear();
 		return obj.empty();
 	}
-};
+QC_END_PROP()
 
 
 
@@ -178,6 +194,7 @@ void object::test<2>()
 	gvl::qc::context ctx;
 	ctx.add("singleton", new singleton_list_gen);
 	ctx.add("concat", new concat_list_gen);
+	ctx.add("sorted", new sorted_list_gen);
 	
 	gvl::qc::test_property<clear_property>(ctx);
 }

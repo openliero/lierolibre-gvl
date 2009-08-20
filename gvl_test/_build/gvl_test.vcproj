@@ -201,6 +201,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="support"
+			>
+			<File
+				RelativePath="..\support\bits.cpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\test.cpp"
 			>

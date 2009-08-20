@@ -10,10 +10,6 @@
 #include <iostream>
 #include <iomanip>
 
-#include <emmintrin.h>
-
-#pragma intrinsic(_mm_mul_sd, _mm_div_sd)
-
 namespace tut
 {
 
@@ -68,19 +64,6 @@ void object::test<1>()
 #endif
 }
 
-inline double M(double x, double y)
-{
-	double r;
-	_mm_store_sd(&r, _mm_mul_sd(_mm_load_sd(&x), _mm_load_sd(&y)));
-	return r;
-}
-
-inline double D(double x, double y)
-{
-	double r;
-	_mm_store_sd(&r, _mm_div_sd(_mm_load_sd(&x), _mm_load_sd(&y)));
-	return r;
-}
 
 template<>
 template<>

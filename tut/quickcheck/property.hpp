@@ -52,7 +52,7 @@ struct property
             }
         }
         
-        std::cout << "OK, Ran " << tests_ran << " tests out of " << generated << " generated" << std::endl;
+        //std::cout << "OK, Ran " << tests_ran << " tests out of " << generated << " generated" << std::endl;
         
         return true;
 	}

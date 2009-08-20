@@ -50,18 +50,20 @@ struct clear_property : gvl::qc::property<type> { \
 
 typedef gvl::list<integer, tag1> integer_list;
 
+QC_BEGIN_GEN(empty_list_gen, integer_list)
+	return new t;
+QC_END_GEN()
+
 QC_BEGIN_GEN(singleton_list_gen, integer_list)
 	std::auto_ptr<t> ret(new t);
-	ret->push_back(new integer(1));
+	ret->push_back(new integer(ctx.rand(10000)));
 	return ret.release();
 QC_END_GEN()
 
 QC_BEGIN_GEN(concat_list_gen, integer_list)
 	if(ctx.generator_depth() > 10)
 	{
-		std::auto_ptr<t> ret(new t);
-		ret->push_back(new integer(1));
-		return ret.release();
+		return ctx.generate<t>("singleton");
 	}
 	std::auto_ptr<t> a(ctx.generate_any<t>());
 	std::auto_ptr<t> b(ctx.generate_any<t>());
@@ -75,12 +77,11 @@ QC_BEGIN_GEN(sorted_list_gen, integer_list)
 	return a.release();
 QC_END_GEN()
 
-QC_BEGIN_PROP(clear_property, integer_list)
+QC_BEGIN_PROP(integrity_property, integer_list)
 	bool check(gvl::qc::context& ctx, t& obj)
 	{
-		std::cout << obj.size() << std::endl;
-		obj.clear();
-		return obj.empty();
+		obj.integrity_check();
+		return true;
 	}
 QC_END_PROP()
 
@@ -195,6 +196,7 @@ void object::test<2>()
 	ctx.add("singleton", new singleton_list_gen);
 	ctx.add("concat", new concat_list_gen);
 	ctx.add("sorted", new sorted_list_gen);
+	ctx.add("empty", new empty_list_gen);
 	
 	gvl::qc::test_property<clear_property>(ctx);
 }

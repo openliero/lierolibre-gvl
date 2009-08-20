@@ -44,6 +44,7 @@ inline int log2(uint64_t v)
 #else
 int log2(uint32_t v);
 int log2(uint64_t v);
+int top_bit(uint32_t v);
 #endif
 
 inline int ceil_log2(uint32_t v)

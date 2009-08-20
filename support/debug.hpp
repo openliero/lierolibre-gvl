@@ -1,10 +1,18 @@
 #ifndef UUID_B28D1ACCA789486008A1FF8B92CF00C5
 #define UUID_B28D1ACCA789486008A1FF8B92CF00C5
 
-//#include "macros.hpp"
+#include <stdexcept>
 
 namespace gvl
 {
+
+struct assert_failure : std::runtime_error
+{
+	assert_failure(std::string const& str)
+	: std::runtime_error(str)
+	{
+	}
+};
 
 void passert_fail(char const* cond, char const* file, int line, char const* msg);
 

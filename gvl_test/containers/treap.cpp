@@ -7,25 +7,10 @@
 #include <cmath>
 #include <set>
 #include <ctime>
+#include <cstdio>
 
 namespace tut
 {
-
-/*
-struct treap_integer : gvl::treap_node<>
-{
-	treap_integer(int v)
-	: v(v)
-	{
-	}
-	
-	bool operator<(treap_integer const& b) const
-	{
-		return v < b.v;
-	}
-	
-	int v;
-};*/
 
 struct treap_integer2 : gvl::treap_node2<>
 {
@@ -84,7 +69,7 @@ struct timer
 	~timer()
 	{
 		std::clock_t stop = std::clock();
-		printf("Time: %f\n", (stop - start) / (double)(CLOCKS_PER_SEC));
+		std::printf("Time: %f\n", (stop - start) / (double)(CLOCKS_PER_SEC));
 	}
 	
 	std::clock_t start;
@@ -103,13 +88,11 @@ void object::test<1>()
 	
 	gvl::tt800 r(1234);
 	
-	int const iter = 150000;
+	int const iter = 500000;
 	int const limit = iter;
 	
 
 	{
-		timer _;
-		
 		for(int repeat = 0; repeat < iter; ++repeat)
 		{
 			l3.insert(new treap_integer2(/*repeat*/r.range(0, limit)));
@@ -120,8 +103,6 @@ void object::test<1>()
 	int sum = 0;
 	
 	{
-		timer _;
-		
 		for(int repeat = 0; repeat < 30; ++repeat)
 		{
 			int v = r.range(0, limit);
@@ -134,8 +115,6 @@ void object::test<1>()
 	}
 	
 	{
-		timer _;
-		
 		for(int repeat = 0; repeat < iter; ++repeat)
 		{
 			int v = r.range(0, limit);
@@ -149,8 +128,6 @@ void object::test<1>()
 	}
 		
 	{
-		timer _;
-		
 		for(int repeat = 0; repeat < iter; ++repeat)
 		{
 			int v = r.range(0, limit);

@@ -74,8 +74,8 @@ struct basic_ibitstream // : common_ibitstream
 	uint32_t get_rice(uint32_t shift);
 	
 	
-	uint32_t     in_bits_left;
 	unsigned int in_bits; // We hope unsigned int is the fastest type to deal with
+	uint32_t     in_bits_left;
 };
 
 template<typename DerivedT, typename WordT = uint8_t>
@@ -137,8 +137,8 @@ struct basic_obitstream : common_obitstream
 	void put_golomb(uint32_t v, uint32_t m);
 	void put_rice(uint32_t v, uint32_t shift);
 	
-	uint32_t     out_bits_left;
 	unsigned int out_bits; // We hope unsigned int is the fastest type to deal with
+	uint32_t     out_bits_left;
 };
 
 // Dummy obitstream to allow normalization of interface of bitstreams.
@@ -177,19 +177,19 @@ struct dummy_ibitstream
 	void not_supported() const
 	{ throw std::runtime_error("Not supported"); }
 	
-	std::size_t in_bytes_required(std::size_t bits) const { not_supported(); }
+	std::size_t in_bytes_required(std::size_t bits) const { not_supported(); return 0; }
 	
 	void     ignore(uint32_t bits) { not_supported(); }
-	uint32_t get() { not_supported(); }
-	uint32_t get_uint(uint32_t bits) { not_supported(); }
+	uint32_t get() { not_supported(); return 0; }
+	uint32_t get_uint(uint32_t bits) { not_supported(); return 0; }
 	void     get_block(void* ptr_, size_t len) { not_supported(); }
-	uint32_t get_lim(uint32_t low, uint32_t high) { not_supported(); }
+	uint32_t get_lim(uint32_t low, uint32_t high) { not_supported(); return 0; }
 	void     resetg() { not_supported(); }
 	
-	uint32_t get_trunc(uint32_t count) { not_supported(); }
-	uint32_t get_unary() { not_supported(); }
-	uint32_t get_golomb(uint32_t m) { not_supported(); }
-	uint32_t get_rice(uint32_t shift) { not_supported(); }
+	uint32_t get_trunc(uint32_t count) { not_supported(); return 0; }
+	uint32_t get_unary() { not_supported(); return 0; }
+	uint32_t get_golomb(uint32_t m) { not_supported(); return 0; }
+	uint32_t get_rice(uint32_t shift) { not_supported(); return 0; }
 	
 	void get_debug_mark() { not_supported(); }
 };

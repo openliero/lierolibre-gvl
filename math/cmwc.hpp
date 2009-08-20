@@ -2,37 +2,12 @@
 #define UUID_BBDA02831ADD413B1A3552A8997B8324
 
 #include "../support/cstdint.hpp"
+#include "random.hpp"
 #include <cstddef>
 
 namespace gvl
 {
 
-template<typename DerivedT, typename ValueT>
-struct prng_common
-{
-	typedef ValueT value_type;
-	
-	DerivedT& derived()
-	{ return *static_cast<DerivedT*>(this); }
-	
-	double operator()(double max)
-	{
-		uint32_t v = derived()();
-		return v * max / 4294967296.0;
-	}
-	
-	uint32_t operator()(uint32_t max)
-	{
-		uint64_t v = derived()();
-		v *= max;
-		return uint32_t(v >> 32);
-	}
-	
-	uint32_t operator()(uint32_t min, uint32_t max)
-	{
-		return derived()(max - min) + min;
-	}
-};
 
 template<int R, uint32_t A>
 struct cmwc : prng_common<cmwc<R, A>, uint32_t>

@@ -1,9 +1,10 @@
 SubDir TOP gvl ;
 
-C++FLAGS = -s -Wall ;
-CFLAGS = -s -Wall ;
+C++FLAGS = -Wall -I$(TOP) ;
+CFLAGS = -Wall -I$(TOP) ;
 OPTIM = -O3 ;
 LINK = "g++" ;
+LINKLIBS on gvltest$(SUFEXE) = -lrt ;
 
 Library libgvl :
 	containers/list.cpp
@@ -123,4 +124,18 @@ Library libgvl :
 	zlib/zutil.c
 	;
 	
+Main gvltest :
+	gvl_test/containers/list.cpp
+	gvl_test/containers/pairing_heap.cpp
+	gvl_test/containers/treap.cpp
+	gvl_test/io/bitstream.cpp
+	gvl_test/io/stream.cpp
+	gvl_test/support/bits.cpp
+	gvl_test/math/deterministic_float.cpp
+	gvl_test/test.cpp
+	;
+
+LinkLibraries gvltest : libgvl ;
+	
 MakeLocate libgvl$(SUFLIB) : $(TOP)/gvl/_bin ;
+MakeLocate gvltest$(SUFEXE) : $(TOP)/gvl/_bin ;

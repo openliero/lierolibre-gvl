@@ -4,6 +4,7 @@
 #include <climits>
 #include <cstddef>
 #include <algorithm>
+#include "../support/cstdint.hpp"
 #include "../support/functional.hpp"
 #include "../support/debug.hpp"
 //#include "../math/tt800.hpp"
@@ -155,6 +156,11 @@ struct treap2 : Compare, Random, Deleter
 	
 	struct range
 	{
+		template<typename T2
+		, typename Tag2
+		, typename Compare2
+		, typename Deleter2
+		, typename Random2>
 		friend struct treap2;
 		
 		bool empty() const
@@ -377,7 +383,7 @@ struct treap2 : Compare, Random, Deleter
 		
 		// Fix up heap property
 
-		treap_node_common2* lhead = head;
+		//treap_node_common2* lhead = head;
 
 		if(el_priority < parent->priority())
 		{
@@ -447,7 +453,7 @@ struct treap2 : Compare, Random, Deleter
 		T* back = &r.front();
 		// We don't want to call pop_back() as it would set back_prev_ to the unlinked element.
 		// back_prev_ remains correct.
-		r.back_ = r.back_->move<0>();
+		r.back_ = r.back_->template move<0>();
 		unlink(back);
 		return back;
 	}
@@ -480,7 +486,7 @@ struct treap2 : Compare, Random, Deleter
 	template<typename SpecKeyT>
 	bool test(SpecKeyT const& k)
 	{
-		return find(k) != end();
+		return !find(k).empty();
 	}
 	
 	// Assumes the predicate is true for elements [0, x) and false for [x, count) where x is in [0, count]
@@ -586,7 +592,7 @@ struct treap2 : Compare, Random, Deleter
 		return total_depth_(head->ch[0], 1.0) / size();
 	}
 	
-	__int64 rotations;
+	int64_t rotations;
 
 private:
 

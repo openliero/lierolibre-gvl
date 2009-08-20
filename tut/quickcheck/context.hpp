@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <stdexcept>
 
 
 namespace gvl
@@ -69,9 +70,7 @@ struct context
 		generator_set::generator_map::iterator i = m.all().find(name);
 		if(i == m.all().end())
 			throw std::runtime_error("A generator with this name does not exist");
-		++generator_depth_;
-		T* p = *static_cast<generator<T>*>(i->second);
-		--generator_depth_;
+		generator<T>& p = *static_cast<generator<T>*>(i->second);
 		return p;
 	}
 	
@@ -83,7 +82,7 @@ struct context
 		if(m.all().empty())
 			throw std::runtime_error("There are no generators for this type");
 			
-		double n = rand(m.total_weight);
+		double n = rand.get_double(m.total_weight);
 		generator_set::generator_map::iterator i = m.all().begin();
 		for(; i != m.all().end(); ++i)
 		{
@@ -103,7 +102,10 @@ struct context
 	template<typename T>
 	T* generate(std::string const& name)
 	{
-		return get_generator<T>(name).gen_t(*this);
+		++generator_depth_;
+		T* p = get_generator<T>(name).gen_t(*this);
+		--generator_depth_;
+		return p;
 	}
 	
 	int generator_depth() const

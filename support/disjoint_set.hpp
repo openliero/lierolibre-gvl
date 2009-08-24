@@ -12,6 +12,21 @@ struct disjoint_set_member
 	{
 	}
 	
+	// Define this in T for unification logic.
+	// 'this' will be the new representative of the set.
+	void on_union(T const&)
+	{
+		// Do nothing by default
+	}
+	
+	// Define this in T for reset logic.
+	// This will be called when 'this' is made into a singleton
+	// set.
+	void on_reset()
+	{
+		// Do nothing by default
+	}
+	
 	bool same_set(T& b)
 	{
 		return &find() == &b.find();
@@ -34,6 +49,8 @@ struct disjoint_set_member
 		T& rootA = find();
 		T& rootB = b.find();
 		
+		sassert(!rootA.parent && !rootB.parent);
+		
 		if(&rootA == &rootB)
 			return rootA;
 		
@@ -43,24 +60,27 @@ struct disjoint_set_member
 		if(rankA < rankB)
 		{
 			rootA.parent = &rootB;
+			rootB.on_union(rootA);
 			return rootB;
 		}
 		else
 		{
 			rootB.parent = &rootA;
+			rootA.on_union(rootB);
 			if(rankA == rankB)
-				++rootA.rank;
+				rootA.rank = rankA + 1;
 			return rootA;
 		}
 	}
 	
-	// Make this member into it's own set again.
+	// Make this member into a singleton set.
 	// This only has defined behaviour if all elements of the set are reset()
-	// before any element in the set is used.
+	// before any element in the set is used again.
 	void reset()
 	{
 		parent = 0;
 		rank = 0;
+		on_reset();
 	}
 	
 	T* parent;

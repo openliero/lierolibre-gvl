@@ -88,7 +88,7 @@ void object::test<1>()
 	
 	gvl::tt800 r(1234);
 	
-	int const iter = 500000;
+	int const iter = 50000;
 	int const limit = iter;
 	
 

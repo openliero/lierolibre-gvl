@@ -65,6 +65,12 @@ bool test_property(context& ctx, int max_generated = 1000, int max_tested = 500)
 	return prop.run(ctx, max_generated, max_tested);
 }
 
+#define QC_BEGIN_PROP(name, type) \
+struct name : gvl::qc::property<type> { \
+	typedef type t;
+	
+#define QC_END_PROP() };
+
 } // namespace qc
 } // namespace gvl
 

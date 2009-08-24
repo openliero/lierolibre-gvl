@@ -35,18 +35,9 @@ struct integer
 	int v;
 };
 
-#define QC_BEGIN_GEN(name, type) \
-struct name : gvl::qc::generator<type> { \
-	typedef type t; \
-	t* gen_t(gvl::qc::context& ctx) {
 
-#define QC_END_GEN() } };
 
-#define QC_BEGIN_PROP(name, type) \
-struct clear_property : gvl::qc::property<type> { \
-	typedef type t;
-	
-#define QC_END_PROP() };
+
 
 typedef gvl::list<integer, tag1> integer_list;
 
@@ -71,6 +62,13 @@ QC_BEGIN_GEN(concat_list_gen, integer_list)
 	return a.release();
 QC_END_GEN()
 
+QC_BEGIN_GEN(erase_list_gen, integer_list)
+	std::auto_ptr<t> a(ctx.generate_any<t>());
+	if(!a->empty())
+		a->pop_front();
+	return a.release();
+QC_END_GEN()
+
 QC_BEGIN_GEN(sorted_list_gen, integer_list)
 	std::auto_ptr<t> a(ctx.generate_any<t>());
 	a->sort(std::less<integer>());
@@ -85,7 +83,20 @@ QC_BEGIN_PROP(integrity_property, integer_list)
 	}
 QC_END_PROP()
 
-
+QC_BEGIN_PROP(pop_front_property, integer_list)
+	bool holds_for(gvl::qc::context& ctx, t& obj)
+	{
+		return !obj.empty();
+	}
+	
+	bool check(gvl::qc::context& ctx, t& obj)
+	{
+		std::size_t before_count = obj.size();
+		obj.pop_front();
+		std::size_t after_count = obj.size();
+		return after_count + 1 == before_count;
+	}
+QC_END_PROP()
 
 struct list_data
 {
@@ -197,8 +208,10 @@ void object::test<2>()
 	ctx.add("concat", new concat_list_gen);
 	ctx.add("sorted", new sorted_list_gen);
 	ctx.add("empty", new empty_list_gen);
+	ctx.add("erase", new erase_list_gen);
 	
-	gvl::qc::test_property<clear_property>(ctx);
+	gvl::qc::test_property<integrity_property>(ctx);
+	gvl::qc::test_property<pop_front_property>(ctx);
 }
 
 } // namespace tut

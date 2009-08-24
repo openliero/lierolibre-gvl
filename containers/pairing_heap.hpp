@@ -7,6 +7,8 @@
 #include "../support/functional.hpp"
 #include "../support/debug.hpp"
 
+#define AUX_TWOPASS 1
+
 namespace gvl
 {
 
@@ -42,6 +44,8 @@ struct pairing_heap : Compare, Deleter
 	
 	pairing_heap()
 	: root(0)
+	, tail_aux(0)
+	, links(0)
 	//, n(0)
 	{
 	}
@@ -64,6 +68,7 @@ struct pairing_heap : Compare, Deleter
 	
 	void meld(pairing_heap& b)
 	{
+#if !AUX_TWOPASS
 		if(root && b.root) // comparison_link_ assumes non-zero pointers
 		{
 			root = comparison_link_(root, b.root);
@@ -76,6 +81,21 @@ struct pairing_heap : Compare, Deleter
 		// If root is non-zero and b.root is zero, we leave root as is
 		
 		b.root = 0;
+#else
+		if(root && b.root)
+		{
+			aux_splice_(b.root, b.tail_aux);
+		}
+		else if(!root)
+		{
+			// root is 0, but b.root may not be
+			root = b.root;
+			tail_aux = b.tail_aux;
+		}
+			
+		b.root = 0;
+		b.tail_aux = 0;
+#endif
 	}
 	
 	// NOTE: TODO: Does root->prev have to have a defined value?
@@ -83,10 +103,12 @@ struct pairing_heap : Compare, Deleter
 	void insert(T* el_)
 	{
 		pairing_node_common* el = upcast(el_);
-		
 		el->left_child = 0;
-		//el->right_sibling = 0; // TODO: NOTE: Do we need to do this?
-		//el->prev = 0; // TODO: NOTE: Do we need to do this?
+		
+#if !AUX_TWOPASS
+		
+		// NOTE: right_sibling and prev are left undefined for
+		// the new root.
 		
 		if(!root)
 		{
@@ -96,7 +118,18 @@ struct pairing_heap : Compare, Deleter
 		{
 			root = comparison_link_(root, el);
 		}
-		//++n;
+#else
+		if(!root)
+		{
+			root = el;
+			root->right_sibling = 0;
+			tail_aux = root;
+		}
+		else
+		{
+			aux_insert_(el);
+		}
+#endif
 	}
 	
 	// NOTE: This actually "works" for increasing as well,
@@ -124,11 +157,16 @@ struct pairing_heap : Compare, Deleter
 						
 			unlink_subtree_(el);
 				
+#if !AUX_TWOPASS
 			root = comparison_link_(root, el);
-			//root->right_sibling = 0; // TODO: NOTE: Do we need to do this?
-			//root->prev = 0; // TODO: NOTE: Do we need to do this?
+			// NOTE: right_sibling and prev are left undefined for
+			// the new root.
+#else
+			aux_insert_(el);
+#endif
 		}
 	}
+
 	
 	T* unlink_min()
 	{
@@ -136,18 +174,48 @@ struct pairing_heap : Compare, Deleter
 		
 		pairing_node_common* ret = root;
 		
+#if AUX_TWOPASS
+		ret = combine_siblings_multipass_(ret);
+#endif
+
 		pairing_node_common* left_child = ret->left_child;
 		if(left_child)
 		{
 			root = combine_siblings_(left_child);
-			//root->right_sibling = 0; // TODO: NOTE: Do we need to do this?
-			//root->prev = 0; // TODO: NOTE: Do we need to do this?
+#if !AUX_TWOPASS			
+			// NOTE: right_sibling and prev are left undefined for
+			// the new root.
+#else
+			root->right_sibling = 0;
+#endif
 		}
 		else
+		{
 			root = 0;
+		}
+		
+		tail_aux = root;
+		
 		return downcast(ret);
 	}
 	
+	void print_tree()
+	{
+		print_siblings_(0, root);
+	}
+	
+	// TEMP
+	void print_siblings_(int indent, pairing_node_common* el)
+	{
+		if(!el)
+			return;
+			
+		for(; el; el = el->right_sibling)
+		{
+			std::cout << std::string(indent, ' ') << static_cast<T*>(el)->v << std::endl;
+			print_siblings_(indent + 1, el->left_child);
+		}
+	}
 	
 	T* unlink(T* el_)
 	{
@@ -159,7 +227,11 @@ struct pairing_heap : Compare, Deleter
 				
 			if(el->left_child)
 			{
+#if !AUX_TWOPASS
 				root = comparison_link_(root, combine_siblings_(el->left_child));
+#else
+				aux_insert_(combine_siblings_(el->left_child));
+#endif
 			}
 		}
 		else
@@ -171,9 +243,7 @@ struct pairing_heap : Compare, Deleter
 	void erase_min()
 	{
 		passert(root, "Empty heap");
-		pairing_node_common* old = root;
-		unlink_min();
-		Deleter::operator()(old);
+		Deleter::operator()(unlink_min());
 	}
 	
 	void erase(T* el)
@@ -188,7 +258,7 @@ struct pairing_heap : Compare, Deleter
 		{
 			delete_subtree_(root);
 			root = 0;
-			//n = 0;
+			tail_aux = 0;
 		}
 	}
 
@@ -197,8 +267,24 @@ struct pairing_heap : Compare, Deleter
 		passert(root, "Empty heap");
 		return *downcast(root);
 	}
+	
+	std::size_t size() const
+	{
+		if(!root)
+			return 0;
+		return 1 + subtree_size_(root->left_child);
+	}
+	
+	__int64 links; // TEMP
 		
 private:
+
+	std::size_t subtree_size_(pairing_node_common* el) const
+	{
+		if(!el)
+			return 0;
+		return 1 + subtree_size_(el->left_child) + subtree_size_(el->right_sibling);
+	}
 	
 	void unlink_subtree_(pairing_node_common* el)
 	{
@@ -214,6 +300,8 @@ private:
 	// BUT NOTE: Returned node has unmodified right_sibling and prev_next!
 	pairing_node_common* comparison_link_(pairing_node_common* a, pairing_node_common* b)
 	{
+		++links;
+		
 		if(Compare::operator()(*downcast(a), *downcast(b)))
 		{
 			// Make 'b' a child of 'a'
@@ -239,6 +327,8 @@ private:
 			return b;
 		}
 	}
+	
+	
 	
 	// NOTE: Return node has undefined right_sibling and prev!
 	pairing_node_common* combine_siblings_(pairing_node_common* el)
@@ -307,6 +397,59 @@ private:
 		return first;
 	}
 	
+	// NOTE: Return node has undefined right_sibling and prev!
+	pairing_node_common* combine_siblings_multipass_(pairing_node_common* el)
+	{
+		pairing_node_common* first = el;
+		
+		while(true)
+		{
+			pairing_node_common* second = first->right_sibling;
+			
+			if(!second)
+				return first; // Only one sub-tree
+			
+			// We're fast-tracking the case with two children
+
+			pairing_node_common* next = second->right_sibling;
+				
+			first = comparison_link_(first, second);
+			
+			if(!next)
+				return first;
+				
+			pairing_node_common* prev = first;
+			
+			do
+			{
+				pairing_node_common* a = next;
+				pairing_node_common* b = a->right_sibling;
+				if(!b)
+				{
+					prev->right_sibling = a;
+					sassert(prev->right_sibling != prev);
+					prev = a;
+					break;
+				}
+				
+				next = b->right_sibling;
+				
+				pairing_node_common* tree = comparison_link_(a, b);
+				
+				// Append tree
+				prev->right_sibling = tree;
+				sassert(prev->right_sibling != prev);
+				prev = tree;
+			}
+			while(next);
+			
+			// Terminate list
+			prev->right_sibling = 0;
+		}
+				
+		return first;
+	}
+	
 	void delete_subtree_(pairing_node_common* el)
 	{
 		pairing_node_common* child = el->left_child;
@@ -320,9 +463,49 @@ private:
 		
 		Deleter::operator()(el);
 	}
+
+#if AUX_TWOPASS
+	void aux_insert_(pairing_node_common* el)
+	{
+		sassert(root && el);
+		
+		if(Compare::operator()(*downcast(el), *downcast(root)))
+		{
+			// el is the new root
+			el->right_sibling = root;
+			root = el;
+		}
+		else
+		{
+			// insert el at the end (after tail_aux)
+			tail_aux->right_sibling = el;
+			tail_aux = el;
+		}
+	}
 	
-	pairing_node_common* root; // root->prev_next and root->right_sibling are undefined
-	//std::size_t n;
+	void aux_splice_(pairing_node_common* el, pairing_node_common* tail)
+	{
+		sassert(root && el);
+		
+		if(Compare::operator()(*downcast(el), *downcast(root)))
+		{
+			// el is the new root
+			tail->right_sibling = root;
+			root = el;
+		}
+		else
+		{
+			// insert el after
+			tail_aux->right_sibling = el;
+			tail_aux = tail;
+		}
+	}
+#endif	
+	
+	pairing_node_common* root; // root->prev_next and root->right_sibling are undefined (unless AUX_TWOPASS)
+#if AUX_TWOPASS
+	pairing_node_common* tail_aux;
+#endif
 };
 
 }

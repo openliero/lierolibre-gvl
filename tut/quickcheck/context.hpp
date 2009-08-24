@@ -32,8 +32,9 @@ struct generator_set
 	}
 	
 	template<typename T>
-	void add(std::string const& name, generator<T>* g)
+	void add(std::string const& name, generator<T>* g, double set_weight = 1.0)
 	{
+		g->weight = set_weight;
 		if(!m.insert(std::make_pair(name, g)).second)
 			throw std::runtime_error("A generator with this name is already present");
 		total_weight += g->weight;
@@ -57,10 +58,10 @@ struct context
 	}
 	
 	template<typename T>
-	void add(std::string const& name, generator<T>* g)
+	void add(std::string const& name, generator<T>* g, double set_weight = 1.0)
 	{
 		generator_set& m = generators[gvl::type_id<T>()];
-		m.add(name, g);
+		m.add(name, g, set_weight);
 	}
 	
 	template<typename T>

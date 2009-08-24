@@ -35,12 +35,14 @@ struct generator : base_generator
 	virtual T* gen_t(context& ctx) = 0;
 };
 
+
 #define QC_BEGIN_GEN(name, type) \
 struct name : gvl::qc::generator<type> { \
 	typedef type t; \
 	t* gen_t(gvl::qc::context& ctx) {
 
 #define QC_END_GEN() } };
+
 
 } // namespace qc
 } // namespace gvl

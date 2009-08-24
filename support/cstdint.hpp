@@ -8,7 +8,7 @@
 #include "platform.hpp"
 
 #if GVL_GCC
-#include "stdint.h"
+#include <stdint.h>
 #else /* !GVL_GCC */
 
 #if CHAR_BIT == 8 && UCHAR_MAX == 0xff

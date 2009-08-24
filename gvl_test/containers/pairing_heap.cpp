@@ -14,6 +14,8 @@
 #include <gvl/tut/quickcheck/generator.hpp>
 #include <gvl/tut/quickcheck/property.hpp>
 
+#include <gvl/support/log.hpp>
+
 namespace tut
 {
 
@@ -75,7 +77,7 @@ struct heap_model
 typedef std::pair<h_t, heap_model<pairing_heap_integer> > test_type;
 
 QC_BEGIN_GEN(empty_heap_gen, test_type)
-	std::cout << "Empty";
+	TLOG("Empty");
 	return new t;
 QC_END_GEN()
 
@@ -83,7 +85,7 @@ QC_BEGIN_GEN(singleton_heap_gen, test_type)
 	std::auto_ptr<t> ret(new t);
 	int v = ctx.rand(10000);
 	TANDEM(ret, insert(new pairing_heap_integer(v)));
-	std::cout << "Singleton(" << v << ")";
+	TLOG("Singleton(" << v << ")");
 	return ret.release();
 QC_END_GEN()
 
@@ -92,11 +94,11 @@ QC_BEGIN_GEN(merge_heap_gen, test_type)
 	{
 		return ctx.generate<t>("singleton");
 	}
-	std::cout << "Meld(";
+	TLOG("Meld(");
 	std::auto_ptr<t> a(ctx.generate_any<t>());
-	std::cout << ", ";
+	TLOG(", ");
 	std::auto_ptr<t> b(ctx.generate_any<t>());
-	std::cout << ")";
+	TLOG(")");
 	
 	/*
 	std::cout << "\n\n";
@@ -115,9 +117,9 @@ QC_BEGIN_GEN(merge_heap_gen, test_type)
 QC_END_GEN()
 
 QC_BEGIN_GEN(erase_min_heap_gen, test_type)
-	std::cout << "EraseMin(";
+	TLOG("EraseMin(");
 	std::auto_ptr<t> a(ctx.generate_any<t>());
-	std::cout << ")";
+	TLOG(")");
 	if(!a->first.empty())
 		a->first.erase_min();
 	if(!a->second.empty())
@@ -126,11 +128,11 @@ QC_BEGIN_GEN(erase_min_heap_gen, test_type)
 QC_END_GEN()
 
 QC_BEGIN_GEN(insert_heap_gen, test_type)
-	std::cout << "Insert(";
+	TLOG("Insert(");
 	std::auto_ptr<t> a(ctx.generate_any<t>());
 	
 	int v = ctx.rand(10000);
-	std::cout << ", " << v << ")";
+	TLOG(", " << v << ")");
 	TANDEM(a, insert(new pairing_heap_integer(v)));
 	return a.release();
 QC_END_GEN()
@@ -139,22 +141,18 @@ QC_END_GEN()
 QC_BEGIN_PROP(heap_integrity_property, test_type)
 	bool check(gvl::qc::context& ctx, t& obj)
 	{
-		std::cout << std::endl << "=== heap_integrity_property ===" << std::endl;
+		TLOG(std::endl << "=== heap_integrity_property ===");
 		
 		while(!obj.first.empty() && !obj.second.empty())
 		{
 			int a = obj.first.min().v;
 			int b = obj.second.min().v;
-			
-			std::cout << "(" << a << " == " << b << ") ";
-			
+						
 			if(a != b)
 				return false;
 			obj.first.erase_min();
 			obj.second.erase_min();
 		}
-		
-		std::cout << std::endl;
 		
 		return obj.first.empty() && obj.second.empty();
 	}

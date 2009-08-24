@@ -162,14 +162,42 @@ inline T length_sqr(basic_vec<T, 2> self)
 }
 
 template<typename T>
-inline double length(basic_vec<T, 2> self)
-{ return std::sqrt(double(length_sqr(self))); }
+inline T length(basic_vec<T, 2> self)
+{
+	using std::sqrt; // To allow overloading
+	return sqrt(length_sqr(self));
+}
+
+template<typename T2, typename T>
+inline T2 length_convert(basic_vec<T, 2> self)
+{
+	using std::sqrt; // To allow overloading
+	return sqrt(T2(length_sqr(self)));
+}
 
 template<typename T>
 inline basic_vec<T, 2> normal(basic_vec<T, 2> self)
 {
-	double invLength = 1.0 / length(self);
-	basic_vec<T, 2> ret(T(self.x*invLength), T(self.y*invLength));
+	T invLength = T(1) / length(self);
+	basic_vec<T, 2> ret(self.x*invLength, self.y*invLength);
+	return ret;
+}
+
+// Uses reciprocal to avoid one division, thus not as accurate as it
+// could be. Use normal_accurate to get a more accurate result.
+template<typename T2, typename T>
+inline basic_vec<T2, 2> normal_convert(basic_vec<T, 2> self)
+{
+	T2 invLength = T2(1) / length_convert<T2>(self);
+	basic_vec<T2, 2> ret(T2(self.x)*invLength, T2(self.y)*invLength);
+	return ret;
+}
+
+template<typename T>
+inline basic_vec<T, 2> normal_accurate(basic_vec<T, 2> self)
+{
+	T len = length(self);
+	basic_vec<T, 2> ret(self.x / len, self.y / len);
 	return ret;
 }
 

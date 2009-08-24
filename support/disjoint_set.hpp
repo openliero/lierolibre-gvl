@@ -14,6 +14,7 @@ struct disjoint_set_member
 	
 	// Define this in T for unification logic.
 	// 'this' will be the new representative of the set.
+	template<typename Tag2>
 	void on_union(T const&)
 	{
 		// Do nothing by default
@@ -22,6 +23,7 @@ struct disjoint_set_member
 	// Define this in T for reset logic.
 	// This will be called when 'this' is made into a singleton
 	// set.
+	template<typename Tag2>
 	void on_reset()
 	{
 		// Do nothing by default
@@ -60,13 +62,13 @@ struct disjoint_set_member
 		if(rankA < rankB)
 		{
 			rootA.parent = &rootB;
-			rootB.on_union(rootA);
+			rootB.on_union<Tag>(rootA);
 			return rootB;
 		}
 		else
 		{
 			rootB.parent = &rootA;
-			rootA.on_union(rootB);
+			rootA.on_union<Tag>(rootB);
 			if(rankA == rankB)
 				rootA.rank = rankA + 1;
 			return rootA;
@@ -80,8 +82,11 @@ struct disjoint_set_member
 	{
 		parent = 0;
 		rank = 0;
-		on_reset();
+		derived().on_reset<Tag>();
 	}
+	
+	T& derived()
+	{ return *static_cast<T*>(this); }
 	
 	T* parent;
 	int rank;

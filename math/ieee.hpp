@@ -4,6 +4,7 @@
 /* NOTE: Keep this usable from C */
 
 #include "../support/platform.hpp"
+#include "fdlibm/fdlibm.h"
 #include <math.h>
 
 #if GVL_MSVCPP && GVL_FORCE_SSE2_FPU
@@ -285,6 +286,11 @@ namespace gvl
 // C++ specific features
 struct rdouble
 {
+	rdouble()
+	: value(0.0)
+	{
+	}
+	
 	rdouble(double value)
 	: value(value)
 	{
@@ -339,9 +345,16 @@ struct rdouble
 };
 
 inline rdouble sqrt(rdouble x)
-{
-	return gSqrt(x.value);
-}
+{ return gSqrt(x.value); }
+
+inline rdouble log(rdouble x)
+{ return fd_log(x.value); }
+
+inline rdouble cos(rdouble x)
+{ return fd_cos(x.value); }
+
+inline rdouble sin(rdouble x)
+{ return fd_sin(x.value); }
 
 }
 

@@ -480,6 +480,7 @@ private:
 			// insert el at the end (after tail_aux)
 			tail_aux->right_sibling = el;
 			tail_aux = el;
+			el->right_sibling = 0;
 		}
 	}
 	

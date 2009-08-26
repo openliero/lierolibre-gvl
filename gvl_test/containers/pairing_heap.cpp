@@ -16,6 +16,9 @@
 
 #include <gvl/support/log.hpp>
 
+#define GVL_PROFILE 1
+#include <gvl/support/profile.hpp>
+
 namespace tut
 {
 
@@ -60,7 +63,18 @@ struct heap_model
 	
 	void erase_min()
 	{
+		delete *elements.begin();
+		unlink_min();
+	}
+	
+	void unlink_min()
+	{
 		elements.erase(elements.begin());
+	}
+	
+	void unlink_all()
+	{
+		elements.clear();
 	}
 	
 	T& min()
@@ -228,6 +242,76 @@ void object::test<2>()
 	ctx.add("erase_min", new erase_min_heap_gen, 0.4);
 	
 	gvl::qc::test_property<heap_integrity_property>(ctx);
+}
+
+template<>
+template<>
+void object::test<3>()
+{
+	std::vector<pairing_heap_integer> added;
+	gvl::mwc rand;
+	rand.seed(1);
+	
+	
+	
+	int const count = 1000000;
+	
+	for(int i = 0; i < count; ++i)
+	{
+		int v = rand(0, 10000);
+		
+		added.push_back(pairing_heap_integer(v));
+	}
+	
+	{
+		h_t heap;
+		
+		GVL_PROF_TIMER("pairing heap");
+		for(int i = 0; i < 20; ++i)
+		{	
+			heap.insert(&added[0]);
+			for(std::size_t i = 1; i < added.size(); ++i)
+			{
+				if((added[i].v & 3) == 0)
+					heap.unlink_min();
+				else
+					heap.insert(&added[i]);
+			}
+			
+			for(int i = 0; i < 10000; ++i)
+			{
+				heap.unlink_min();
+				//heap.erase_min();
+			}
+			
+			heap.unlink_all();
+		}
+	}
+	
+	/*
+	{
+		heap_model<pairing_heap_integer> heap;
+		
+		GVL_PROF_TIMER("heap model");
+		for(int i = 0; i < 10; ++i)
+		{	
+			
+			for(std::size_t i = 0; i < added.size(); ++i)
+			{
+				heap.insert(&added[i]);
+			}
+			
+			for(int i = 0; i < 10000; ++i)
+			{
+				heap.unlink_min();
+			}
+			
+			heap.unlink_all();
+		}
+	}*/
+	
+	std::cout << '\n';
+	gvl::present_profile(std::cout);
 }
 
 } // namespace tut

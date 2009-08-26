@@ -351,10 +351,6 @@
 				RelativePath="..\math\deterministic_float.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\math\random.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="support"

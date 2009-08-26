@@ -7,7 +7,8 @@
 #include "../support/functional.hpp"
 #include "../support/debug.hpp"
 
-#define AUX_TWOPASS 1
+// AUX_TWOPASS seems to be slower in general, at least up to a million elements
+#define AUX_TWOPASS 0
 
 namespace gvl
 {
@@ -44,7 +45,9 @@ struct pairing_heap : Compare, Deleter
 	
 	pairing_heap()
 	: root(0)
+#if AUX_TWOPASS
 	, tail_aux(0)
+#endif
 	, links(0)
 	//, n(0)
 	{
@@ -63,7 +66,9 @@ struct pairing_heap : Compare, Deleter
 	void swap(pairing_heap& b)
 	{
 		std::swap(root, b.root);
-		//std::swap(n, b.n);
+#if AUX_TWOPASS
+		std::swap(tail_aux, b.tail_aux);
+#endif
 	}
 	
 	void meld(pairing_heap& b)
@@ -194,7 +199,9 @@ struct pairing_heap : Compare, Deleter
 			root = 0;
 		}
 		
+#if AUX_TWOPASS
 		tail_aux = root;
+#endif
 		
 		return downcast(ret);
 	}
@@ -257,9 +264,16 @@ struct pairing_heap : Compare, Deleter
 		if(root)
 		{
 			delete_subtree_(root);
-			root = 0;
-			tail_aux = 0;
+			unlink_all();
 		}
+	}
+	
+	void unlink_all()
+	{
+		root = 0;
+#if AUX_TWOPASS
+		tail_aux = 0;
+#endif
 	}
 
 	T& min()

@@ -18,7 +18,7 @@ void gvl_test_platform()
 	uint32_t v = 0xAABBCCDD;
 	uint8_t first = reinterpret_cast<uint8_t*>(&v)[0];
 	uint8_t second = reinterpret_cast<uint8_t*>(&v)[1];
-#if GVL_ENDIAN == GVL_BIG_ENDIAN
+#if GVL_BIG_ENDIAN
 	sassert(first == 0xAA && second == 0xBB);
 #else
 	sassert(first == 0xDD && second == 0xCC);

@@ -5,6 +5,8 @@
 #include <ostream>
 #include <ctime>
 
+#include "../system/system.hpp"
+
 namespace gvl
 {
 
@@ -32,7 +34,7 @@ struct profile_timer
 {
 	profile_timer(char const* desc, char const* func, int line);
 		
-	std::clock_t total_time;
+	uint32_t total_time;
 	char const* desc;
 	char const* func;
 	int line;
@@ -44,23 +46,23 @@ struct profile_accum_timer
 	profile_accum_timer(profile_timer& timer_init)
 	: timer(timer_init)
 	{
-		start_time = std::clock();
+		start_time = get_ticks();
 	}
 	
 	~profile_accum_timer()
 	{
-		std::clock_t end_time = std::clock();
+		uint32_t end_time = get_ticks();
 		++timer.count;
 		timer.total_time += (end_time - start_time);
 	}
 	
-	std::clock_t start_time;
+	uint32_t start_time;
 	profile_timer& timer;
 };
 
 void present_profile(std::ostream& str);
 
-#ifdef GVL_PROFILE
+#if GVL_PROFILE
 #define GVL_PROF_COUNT(desc) static gvl::profile_counter GVL_CONCAT(_vl_profcount, __LINE__) ((desc), __FUNCTION__, __LINE__); ++ GVL_CONCAT(_vl_profcount, __LINE__)
 #define GVL_PROF_SUM(desc, num) static gvl::profile_counter GVL_CONCAT(_vl_profcount, __LINE__) ((desc), __FUNCTION__, __LINE__); GVL_CONCAT(_vl_profcount, __LINE__) += std::size_t(num);
 #define GVL_PROF_TIMER(desc) static gvl::profile_timer GVL_CONCAT(_vl_prof_timer, __LINE__) ((desc), __FUNCTION__, __LINE__); gvl::profile_accum_timer GVL_CONCAT(_vl_prof_accum_timer, __LINE__) (GVL_CONCAT(_vl_prof_timer, __LINE__))

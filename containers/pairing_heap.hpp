@@ -15,8 +15,8 @@ namespace gvl
 
 struct pairing_node_common
 {
-	pairing_node_common** prev_next;    // Previous node slot pointing to this
 	pairing_node_common* left_child;    // Left child
+	pairing_node_common** prev_next;    // Previous node slot pointing to this
 	pairing_node_common* right_sibling; // Right sibling
 };
 
@@ -48,7 +48,6 @@ struct pairing_heap : Compare, Deleter
 #if AUX_TWOPASS
 	, tail_aux(0)
 #endif
-	, links(0)
 	//, n(0)
 	{
 	}
@@ -289,8 +288,6 @@ struct pairing_heap : Compare, Deleter
 		return 1 + subtree_size_(root->left_child);
 	}
 	
-	__int64 links; // TEMP
-		
 private:
 
 	std::size_t subtree_size_(pairing_node_common* el) const
@@ -314,8 +311,6 @@ private:
 	// BUT NOTE: Returned node has unmodified right_sibling and prev_next!
 	pairing_node_common* comparison_link_(pairing_node_common* a, pairing_node_common* b)
 	{
-		++links;
-		
 		if(Compare::operator()(*downcast(a), *downcast(b)))
 		{
 			// Make 'b' a child of 'a'

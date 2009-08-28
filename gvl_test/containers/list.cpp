@@ -1,7 +1,7 @@
 #include <gvl/tut/tut.hpp>
 
 #include <gvl/list.hpp>
-#include <gvl/math/tt800.hpp>
+#include <gvl/math/cmwc.hpp>
 #include <gvl/support/algorithm.hpp>
 #include <gvl/support/macros.hpp>
 #include <functional>
@@ -83,7 +83,7 @@ QC_BEGIN_PROP(integrity_property, integer_list)
 	}
 QC_END_PROP()
 
-QC_BEGIN_PROP(pop_front_property, integer_list)
+QC_BEGIN_GENERIC_PROP(pop_front_property)
 	bool holds_for(gvl::qc::context& ctx, t& obj)
 	{
 		return !obj.empty();
@@ -134,18 +134,18 @@ void object::test<1>()
 	l1_t l1;
 	l2_t l2;
 	
-	gvl::tt800 r(1234);
+	gvl::mwc r(1234);
 	
 	for(int repeat = 0; repeat < 100; ++repeat)
 	{
 		std::size_t l1_count = 0;
 		std::size_t l2_count = 0;
 		
-		int count = r.range(0, 200);
+		int count = r(0, 200);
 		
 		for(int i = 0; i < count; ++i)
 		{
-			integer* o = new integer(r.range(0, 10000));
+			integer* o = new integer(r(0, 10000));
 			l1.push_back(o);
 			l2.push_back(o);
 			++l1_count;
@@ -211,7 +211,7 @@ void object::test<2>()
 	ctx.add("erase", new erase_list_gen);
 	
 	gvl::qc::test_property<integrity_property>(ctx);
-	gvl::qc::test_property<pop_front_property>(ctx);
+	gvl::qc::test_property<pop_front_property<integer_list> >(ctx);
 }
 
 } // namespace tut

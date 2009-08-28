@@ -8,11 +8,12 @@
 namespace gvl
 {
 
-
+// NOTE: This generator only generates
+// numbers in [0, 2^32-1)
 template<int R, uint32_t A>
-struct cmwc : prng_common<cmwc<R, A>, uint32_t>
+struct cmwc // : prng_common<cmwc<R, A>, uint32_t>
 {
-	using prng_common<cmwc<R, A>, uint32_t>::operator();
+	//using prng_common<cmwc<R, A>, uint32_t>::operator();
 	
 	template<typename Archive, int R2, uint32_t A2>
 	friend void archive(Archive ar, cmwc<R2, A2>& x);

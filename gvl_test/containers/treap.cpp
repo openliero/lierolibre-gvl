@@ -3,6 +3,7 @@
 #include <gvl/containers/treap2.hpp>
 #include <gvl/math/tt800.hpp>
 #include <gvl/support/algorithm.hpp>
+#include <gvl/resman/allocator.hpp>
 #include <functional>
 #include <cmath>
 #include <set>
@@ -75,6 +76,7 @@ struct timer
 	std::clock_t start;
 };
 
+
 template<>
 template<>
 void object::test<1>()
@@ -82,13 +84,15 @@ void object::test<1>()
 	//typedef gvl::treap<treap_integer> l1_t;
 	typedef std::set<int> l2_t;
 	typedef gvl::treap2<treap_integer2> l3_t;
+	
+	
 	//l1_t l1;
 	/*l2_t l2;*/
 	l3_t l3;
 	
 	gvl::tt800 r(1234);
 	
-	int const iter = 50000;
+	int const iter = 5000;
 	int const limit = iter;
 	
 

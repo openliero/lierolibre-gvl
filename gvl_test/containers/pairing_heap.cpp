@@ -9,6 +9,7 @@
 #include <ctime>
 #include <algorithm>
 #include <set>
+#include <queue>
 
 #include <gvl/tut/quickcheck/context.hpp>
 #include <gvl/tut/quickcheck/generator.hpp>
@@ -16,7 +17,7 @@
 
 #include <gvl/support/log.hpp>
 
-#define GVL_PROFILE 1
+//#define GVL_PROFILE 1
 #include <gvl/support/profile.hpp>
 
 namespace tut
@@ -68,19 +69,13 @@ struct heap_model
 	}
 	
 	void unlink_min()
-	{
-		elements.erase(elements.begin());
-	}
+	{ elements.erase(elements.begin());	}
 	
 	void unlink_all()
-	{
-		elements.clear();
-	}
+	{ elements.clear();	}
 	
 	T& min()
-	{
-		return **elements.begin();
-	}
+	{ return **elements.begin(); }
 	
 	std::size_t size() const { return elements.size(); }
 	bool empty() const { return elements.empty(); }
@@ -248,13 +243,12 @@ template<>
 template<>
 void object::test<3>()
 {
+#if GVL_PROFILE
 	std::vector<pairing_heap_integer> added;
 	gvl::mwc rand;
 	rand.seed(1);
 	
-	
-	
-	int const count = 1000000;
+	int const count = 500000;
 	
 	for(int i = 0; i < count; ++i)
 	{
@@ -269,16 +263,13 @@ void object::test<3>()
 		GVL_PROF_TIMER("pairing heap");
 		for(int i = 0; i < 20; ++i)
 		{	
-			heap.insert(&added[0]);
-			for(std::size_t i = 1; i < added.size(); ++i)
+			for(std::size_t i = 0; i < added.size(); ++i)
 			{
-				if((added[i].v & 3) == 0)
-					heap.unlink_min();
-				else
-					heap.insert(&added[i]);
+				heap.insert(&added[i]);
 			}
 			
-			for(int i = 0; i < 10000; ++i)
+			for(int i = 0; i < 200; ++i)
+			//while(!heap.empty())
 			{
 				heap.unlink_min();
 				//heap.erase_min();
@@ -288,30 +279,29 @@ void object::test<3>()
 		}
 	}
 	
-	/*
 	{
-		heap_model<pairing_heap_integer> heap;
+		std::priority_queue<char> heap;
 		
 		GVL_PROF_TIMER("heap model");
-		for(int i = 0; i < 10; ++i)
+		for(int i = 0; i < 20; ++i)
 		{	
 			
 			for(std::size_t i = 0; i < added.size(); ++i)
 			{
-				heap.insert(&added[i]);
+				heap.push(added[i].v);
 			}
 			
-			for(int i = 0; i < 10000; ++i)
+			for(int i = 0; i < 200; ++i)
+			//while(!heap.empty())
 			{
-				heap.unlink_min();
+				heap.pop();
 			}
-			
-			heap.unlink_all();
 		}
-	}*/
+	}
 	
 	std::cout << '\n';
 	gvl::present_profile(std::cout);
+#endif
 }
 
 } // namespace tut

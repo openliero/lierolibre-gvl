@@ -71,6 +71,11 @@ struct name : gvl::qc::property<type> { \
 	
 #define QC_END_PROP() };
 
+#define QC_BEGIN_GENERIC_PROP(name) \
+template<typename T_> \
+struct name : gvl::qc::property<T_> { \
+	typedef T_ t;
+
 } // namespace qc
 } // namespace gvl
 

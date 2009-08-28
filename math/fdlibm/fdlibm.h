@@ -29,7 +29,7 @@ inline double fd_r(double x)
 #define _IEEE_LIBM
 
 
-#if GVL_ENDIAN == GVL_LITTLE_ENDIAN
+#if GVL_LITTLE_ENDIAN
 #define FD_HI(x) *(1+(int*)&x)
 #define FD_LO(x) *(int*)&x
 #define FD_HIp(x) *(1+(int*)x)

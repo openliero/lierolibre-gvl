@@ -35,12 +35,11 @@ std::size_t array_size(T(&)[N])
 	return N;
 }
 
+#if 0 // TODO: Return value is inaccurate of apply
 struct inc_filter : gvl::filter
 {
 	read_status apply(apply_mode mode, size_type amount = 0)
 	{
-		// TODO: Return value is inaccurate, but nothing cares yet.
-		
 		if(out_buffer.empty() && mode == am_pulling)
 		{
 			read_status res = try_pull(amount);
@@ -68,6 +67,7 @@ struct inc_filter : gvl::filter
 		return read_ok;
 	}
 };
+#endif
 
 template<>
 template<>
@@ -75,7 +75,6 @@ void object::test<1>()
 {
 	using namespace gvl;
 	
-	//stream_ptr source(new brigade_buffer());
 	stream_ptr sink(new brigade_buffer());
 	
 	gvl::shared_ptr<deflate_filter> filter(new deflate_filter(true));
@@ -100,27 +99,6 @@ void object::test<1>()
 		int v = reader.get();
 		ensure(v == 13);
 	}
-	
-	
-	/*
-	stream_reader reader(source);
-	
-	int i1 = reader.get();
-	int i2 = reader.get();
-	
-	ensure(i1 == 0);
-	ensure(i2 == 0);
-	
-	// Add a filter
-	stream_ptr end = reader.detach();
-	filter->attach_source(end);
-	reader.attach(filter);
-	
-	int i3 = reader.get();
-	int i4 = reader.get();
-	
-	ensure(i3 == 3);
-	ensure(i4 == 4);*/
 }
 
 } // namespace tut

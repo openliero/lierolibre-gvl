@@ -75,8 +75,20 @@ void profile_manager::present(std::ostream& str)
 		str << "Timer Description\n";
 		FOREACH(timer_line_map_t, l, f->second.timers)
 		{
-			double time = l->second->total_time / 1000.0;
-			str << std::setw(5) << time << " s " << l->second->desc << ", line " << l->first << " (average time: " << (time / l->second->count) * 1000.0 << " ms)\n";
+			if(l->second->count > 0)
+			{
+				double time = l->second->total_time / 1000.0;
+				str << std::setw(5) << time << " s " << l->second->desc << ", line " << l->first;
+				if(l->second->count > 1)
+				{
+					str << " (average time: " << (time / l->second->count) * 1000.0 << " ms)";
+				}
+				str << "\n";
+			}
+			else
+			{
+				str << l->second->desc << " not hit\n";
+			}
 		}
 		str << "=======\n\n";
 	}

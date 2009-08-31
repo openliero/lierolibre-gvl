@@ -6,6 +6,7 @@
 #include <ctime>
 
 #include "../system/system.hpp"
+#include "../support/macros.hpp"
 
 namespace gvl
 {

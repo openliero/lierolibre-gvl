@@ -16,7 +16,8 @@ struct shared
 
 	}
 	
-	void add_ref()
+	// const to allow shared_ptr<T const>
+	void add_ref() const
 	{
 #if GVL_THREADSAFE
 		#error "Not finished"
@@ -26,7 +27,8 @@ struct shared
 #endif
 	}
 	
-	void release()
+	// const to allow shared_ptr<T const>
+	void release() const
 	{
 #if GVL_THREADSAFE
 		#error "Not finished"
@@ -66,15 +68,14 @@ struct shared
 	}
 	
 private:
-	void _delete()
+	void _delete() const
 	{
 		delete this;
 	}
 	
-	void _clear_weak_ptrs();
+	void _clear_weak_ptrs() const;
 	
-	
-	int _ref_count;
+	mutable int _ref_count; // You should be able to have shared_ptr<T const>
 	weak_ptr_common* _first;
 };
 

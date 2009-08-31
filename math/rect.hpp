@@ -93,7 +93,18 @@ public:
 		x2 = std::max(b.x2, x2);
 		y2 = std::max(b.y2, y2);
 	}
+	
+	bool proper_intersecting(basic_rect const& b) const
+	{
+		return (b.y2 > y1
+		     && b.y1 < y2
+		     && b.x2 > x1
+		     && b.x1 < x2);
+	}
 
+	// TODO: This isn't really intersecting!
+	// Also returns true when the rectangles are merely touching.
+	// What to do about that? Added proper_intersecting above for now.
 	bool intersecting(basic_rect const& b) const
 	{
 		return (b.y2 >= y1

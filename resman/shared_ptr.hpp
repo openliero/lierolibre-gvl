@@ -15,6 +15,7 @@ struct weak_ptr_common;
 
 struct no_ownership_transfer {};
 
+#if 0
 struct shared_ptr_common
 {
 	shared_ptr_common()
@@ -39,9 +40,10 @@ struct shared_ptr_common
 		_release();
 	}
 
-	void reset(shared* v_new)
+	// const to allow shared_ptr<T const>
+	void reset(shared const* v_new)
 	{
-		shared* old = v; // Handles self-reset.
+		shared const* old = v; // Handles self-reset.
 		_set(v_new);
 		if(old)
 			old->release();
@@ -53,15 +55,17 @@ struct shared_ptr_common
 			v->release();
 	}
 	
-	void _set(shared* v_new)
+	// const to allow shared_ptr<T const>
+	void _set(shared const* v_new)
 	{
 		v = v_new;
 		if(v)
 			v->add_ref();
 	}
 	
-	mutable shared* v; // This is mutable for the sake of deferred_ptr only, see if we can change that
+	mutable shared const* v; // This is mutable for the sake of deferred_ptr only, see if we can change that
 };
+#endif
 
 template<typename T>
 struct deferred_ptr;
@@ -71,36 +75,41 @@ template<typename T>
 struct unsafe_weak_ptr;*/
 
 template<typename T>
-struct shared_ptr : shared_ptr_common
+struct shared_ptr // : shared_ptr_common
 {
 	shared_ptr()
+	: v(0)
 	{ }
 	
-	explicit shared_ptr(T* v)
-	: shared_ptr_common(v)
-	{ }
+	explicit shared_ptr(T* v_init)
+	{
+		_set_non_zero(v_init);
+	}
+	
+	~shared_ptr()
+	{
+		_release();
+	}
 	
 	shared_ptr(shared_ptr const& b)
 	{
-		shared_ptr_common::_set(b.get());
+		_set(b.get());
 	}
 
 	template<typename SrcT>
 	shared_ptr(shared_ptr<SrcT> const& b)
 	{
 		T* p = b.get();
-		shared_ptr_common::_set(p);
+		_set(p);
 	}
 
+	// These two take over reference from b
 	shared_ptr(deferred_ptr<T> const& b);
 	shared_ptr& operator=(deferred_ptr<T> const& b);
-	/*
-	shared_ptr(unsafe_weak_ptr<T> const& b);
-	shared_ptr& operator=(unsafe_weak_ptr<T> const& b);
-	*/
+
 	shared_ptr& operator=(shared_ptr const& b)
 	{
-		shared_ptr_common::reset(b.get());
+		_reset(b.get());
 		return *this;
 	}
 
@@ -108,11 +117,11 @@ struct shared_ptr : shared_ptr_common
 	shared_ptr& operator=(shared_ptr<SrcT> const& b)
 	{
 		T* p = b.get();
-		shared_ptr_common::reset(p);
+		_reset(p);
 		return *this;
 	}
 		
-	operator void*() const
+	operator void const*() const
 	{ return v; }
 	
 	T* operator->() const
@@ -122,7 +131,7 @@ struct shared_ptr : shared_ptr_common
 	{ sassert(v); return *static_cast<T*>(v); }
 	
 	void reset(T* b)
-	{ shared_ptr_common::reset(b); }
+	{ _reset(b); }
 	
 	void reset()
 	{ _release(); v = 0; }
@@ -152,27 +161,74 @@ struct shared_ptr : shared_ptr_common
 	
 	T* get() const
 	{ return static_cast<T*>(v); }
+	
+private:
+	void _reset(T* v_new)
+	{
+		T* old = v; // Handles self-reset.
+		_set(v_new);
+		if(old)
+			old->release();
+	}
+	
+	void _release()
+	{
+		if(v)
+			v->release();
+	}
+	
+	void _set(T* v_new)
+	{
+		v = v_new;
+		if(v)
+			v->add_ref();
+	}
+	
+	void _set_non_zero(T* v_new)
+	{
+		v = v_new;
+		sassert(v);
+		v->add_ref();
+	}
+	
+	T* v;
 };
+
+struct deferred_ptr_raw_ptr_ {};
 
 // Cheaper, ownership-passing version of shared_ptr
 template<typename T>
-struct deferred_ptr : shared_ptr_common
+struct deferred_ptr // : shared_ptr_common
 {
+private:
+	
+public:
+	template<typename T>
+	friend struct shared_ptr;
+	
 	deferred_ptr()
+	: v(0)
 	{ }
 	
-	// takes ownership, v assumed fresh
-	explicit deferred_ptr(T* v)
-	: shared_ptr_common(v)
-	{ }
+	// Takes ownership, v assumed fresh
+	explicit deferred_ptr(T* v_init)
+	{
+		_set_non_zero(v_init);
+	}
+	
+	~deferred_ptr()
+	{
+		_release();
+	}
 	
 	template<typename SrcT>
 	deferred_ptr(shared_ptr<SrcT> const& b)
 	{
 		T* p = b.get();
-		shared_ptr_common::_set(p);
+		_set(p);
 	}
 	
+	// Takes over reference from b
 	template<typename SrcT>
 	deferred_ptr(deferred_ptr<SrcT> const& b)
 	{
@@ -180,6 +236,7 @@ struct deferred_ptr : shared_ptr_common
 		b.v = 0;
 	}
 	
+	// Takes over reference from b
 	deferred_ptr(deferred_ptr const& b)
 	{
 		v = b.get();
@@ -190,10 +247,11 @@ struct deferred_ptr : shared_ptr_common
 	deferred_ptr& operator=(shared_ptr<SrcT> const& b)
 	{
 		T* p = b.get();
-		shared_ptr_common::reset(p);
+		_reset(p);
 		return *this;
 	}
 	
+	// Takes over reference from b
 	template<typename SrcT>
 	deferred_ptr& operator=(deferred_ptr<SrcT> const& b)
 	{
@@ -202,6 +260,7 @@ struct deferred_ptr : shared_ptr_common
 		return *this;
 	}
 	
+	// Takes over reference from b
 	deferred_ptr& operator=(deferred_ptr const& b)
 	{
 		v = b.get();
@@ -209,7 +268,7 @@ struct deferred_ptr : shared_ptr_common
 		return *this;
 	}
 		
-	operator void*() const
+	operator void const*() const
 	{ return v;	}
 	
 	T* operator->() const
@@ -219,7 +278,7 @@ struct deferred_ptr : shared_ptr_common
 	{ assert(v); return *v;	}
 
 	void reset(T* b)
-	{ shared_ptr_common::reset(b); }
+	{ _reset(b); }
 	
 	void reset()
 	{ _release(); v = 0; }
@@ -229,11 +288,61 @@ struct deferred_ptr : shared_ptr_common
 	
 	template<typename DestT>
 	deferred_ptr<DestT> cast()
-	{ return dynamic_cast<DestT*>(get()); }
+	{
+		deferred_ptr<DestT> ret(dynamic_cast<DestT*>(get()), deferred_ptr_raw_ptr_());
+		v = 0;
+		return ret;
+	}
+	
+	template<typename DestT>
+	deferred_ptr<DestT> static_cast_()
+	{
+		deferred_ptr<DestT> ret(static_cast<DestT*>(get()), deferred_ptr_raw_ptr_());
+		v = 0;
+		return ret;
+	}
 	
 	T* get() const
 	{ return static_cast<T*>(v); }
 	
+	// Shouldn't use this one outside deferred_ptr!
+	explicit deferred_ptr(T* v_init, deferred_ptr_raw_ptr_)
+	: v(v_init)
+	{
+	}
+	
+private:
+	
+	
+	void _reset(T* v_new)
+	{
+		T* old = v; // Handles self-reset.
+		_set(v_new);
+		if(old)
+			old->release();
+	}
+	
+	void _release()
+	{
+		if(v)
+			v->release();
+	}
+	
+	void _set(T* v_new)
+	{
+		v = v_new;
+		if(v)
+			v->add_ref();
+	}
+	
+	void _set_non_zero(T* v_new)
+	{
+		v = v_new;
+		sassert(v);
+		v->add_ref();
+	}
+	
+	mutable T* v;
 };
 
 /*
@@ -314,12 +423,6 @@ shared_ptr<T>::shared_ptr(deferred_ptr<T> const& b)
 	v = b.v;
 	b.v = 0;
 }
-/*
-template<typename T>
-shared_ptr<T>::shared_ptr(unsafe_weak_ptr<T> const& b)
-{
-	_set(b.v);
-}*/
 
 template<typename T>
 shared_ptr<T>& shared_ptr<T>::operator=(deferred_ptr<T> const& b)
@@ -329,14 +432,7 @@ shared_ptr<T>& shared_ptr<T>::operator=(deferred_ptr<T> const& b)
 	b.v = 0;
 	return *this;
 }
-/*
-template<typename T>
-shared_ptr<T>& shared_ptr<T>::operator=(unsafe_weak_ptr<T> const& b)
-{
-	shared_ptr_common::_nonfresh_reset(b.get());
-	return *this;
-}
-*/
+
 
 template<typename T>
 struct value_ptr

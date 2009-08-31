@@ -2,15 +2,9 @@
 
 #include <gvl/containers/compact_interval_set.hpp>
 #include <gvl/math/cmwc.hpp>
-#include <gvl/support/algorithm.hpp>
-#include <gvl/support/macros.hpp>
 #include <functional>
 #include <memory>
 #include <algorithm>
-
-#include <gvl/tut/quickcheck/context.hpp>
-#include <gvl/tut/quickcheck/generator.hpp>
-#include <gvl/tut/quickcheck/property.hpp>
 
 // For bounded_rectangle_packer
 #include <gvl/math/rect.hpp>
@@ -38,6 +32,8 @@ namespace
 namespace tut
 {
 
+#if 0
+
 struct bounded_rectangle_packer
 {
 	struct stripe
@@ -62,7 +58,7 @@ struct bounded_rectangle_packer
 		{
 			std::vector<gvl::rect>::iterator i = rectangles.begin(), e = rectangles.end();
 			
-			int maxy = 0;
+			int maxy = -1; // extent_y2_ < 0 means invalid
 			int miny = 0;
 			for(; i != e; ++i)
 			{
@@ -99,15 +95,22 @@ struct bounded_rectangle_packer
 			return extent_y2() - extent_y1();
 		}
 		
+		int stripe_height() const
+		{
+			return stripe_y2 - stripe_y1;
+		}
+		
 		void erase(rectangle_iterator i)
 		{
 			int x1 = i->x1;
 			int x2 = i->x2;
 			
-			if(i->y1 == extent_y1_)
-				extent_y1_ = -1;
-			if(i->y2 == extent_y2_)
+			if(i->y1 == extent_y1_
+			|| i->y2 == extent_y2_)
+			{
+				extent_y1_ = 0;
 				extent_y2_ = -1;
+			}
 			
 			covered_width -= (x2 - x1);
 			gaps.insert(x1, x2);
@@ -128,26 +131,37 @@ struct bounded_rectangle_packer
 			{
 			}
 			
-			proposal(gap_set::iterator gap, int penalty)
+			proposal(gap_set::iterator gap, int penalty, int rect_width, int rect_height)
 			: valid(true)
 			, penalty(penalty)
 			, gap(gap)
+			, rect_width(rect_width)
+			, rect_height(rect_height)
 			{
 			}
 			
 			bool valid;
 			int penalty;
 			gap_set::iterator gap;
+			int rect_width, rect_height;
 		};
 		
 		proposal fit(int rect_width, int rect_height, bool allow_rotate)
 		{
-			if(allow_rotate
-			&& rect_height < rect_width
-			&& rect_width <= stripe_y2 - stripe_y1)
+			if(allow_rotate)
 			{
-				// We can fit it better rotated
-				std::swap(rect_width, rect_height);
+				if(rect_height > stripe_height())
+				{
+					std::swap(rect_width, rect_height);
+					if(rect_height > stripe_height())
+						return proposal(); // Both dimensions are too large
+				}
+				else if(rect_height < rect_width
+				     && rect_width <= extent_height()) // As long as we don't increase the maximum extent
+				{
+					// We can fit it better rotated
+					std::swap(rect_width, rect_height);
+				}
 			}
 		
 			int max_available_space = width - covered_width;
@@ -194,21 +208,25 @@ struct bounded_rectangle_packer
 				return proposal();
 			}
 			
-			int penalty = space_penalty(best_fit_space_left, rect_width) * (stripe_y2 - stripe_y1);
+			int penalty = space_penalty(best_fit_space_left, rect_width) * stripe_height();
 			
-			return proposal(best_fit, penalty);
+			return proposal(best_fit, penalty, rect_width, rect_height);
 		}
 		
-		rectangle_iterator accept(proposal p, int rect_width, int rect_height)
+		rectangle_iterator accept(proposal p)
 		{
+			sassert(p.rect_height <= stripe_height);
 			int x1 = p.gap->begin;
-			int x2 = x1 + rect_width;
-			int y1 = stripe_y1;
-			int y2 = y1 + rect_height;
+			int x2 = x1 + p.rect_width;
+			// Try first to center the rectangle within [extent_y1(), extent_y2())
+			int y1 = (extent_y1() + extent_y2() - p.rect_height) / 2;
+			if(y1 + p.rect_height > stripe_y2)
+				y1 = stripe_y1(); // ...if that fails, move it up
+			int y2 = y1 + p.rect_height;
 			
 			rectangles.push_back(gvl::rect(x1, y1, x2, y2));
 			gaps.insert_no_overlap(x1, x2);
-			covered_width -= rect_width;
+			covered_width -= p.rect_width;
 			if(extents_invalid() || y1 < extent_y1_)
 				extent_y1_ = y1; // If extents were invalid, they will remain so
 			if(extents_invalid() || y2 > extent_y2_)
@@ -268,6 +286,9 @@ struct bounded_rectangle_packer
 		{
 			proposal p = i->fit(rect_width, rect_height, true);
 			
+			// TODO: Calculate how much space we waste
+			// 
+			
 			if(!best_p.valid
 			|| p.penalty < best_p.penalty)
 			{
@@ -280,9 +301,14 @@ struct bounded_rectangle_packer
 		
 		if(best_p.valid)
 		{
-			stripe::rectangle_iterator rect_iter = best_i->accept(best_p, rect_width, rect_height);
+			stripe::rectangle_iterator rect_iter = best_i->accept(best_p);
 			return fit_result(rect_iter, best_i);
 		}
+		
+		// Here we have two additional options:
+		// 1. Split a stripe into two.
+		// 2. Shrink a stripe and enlarge the adjacent one so
+		// that the rectangle fits into one of them.
 		
 		{
 			// TODO: Try splitting or resizing stripes
@@ -292,6 +318,8 @@ struct bounded_rectangle_packer
 	
 	std::list<stripe> stripes;
 };
+
+#endif
 
 template<>
 template<>

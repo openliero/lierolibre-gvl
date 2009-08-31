@@ -3,7 +3,7 @@
 namespace gvl
 {
 
-void shared::_clear_weak_ptrs()
+void shared::_clear_weak_ptrs() const
 {
 #if 0 // TODO
 	for(weak_ptr_common* p = _first; p; )

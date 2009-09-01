@@ -320,15 +320,32 @@
 			Name="containers"
 			>
 			<File
+				RelativePath="..\containers\accurate_rectangle_packing.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\containers\bounded_rectangle_packing.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\containers\compact_interval_set.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -340,7 +357,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -352,7 +368,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -364,7 +379,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -380,7 +394,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -392,7 +405,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -408,7 +420,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -420,7 +431,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -436,7 +446,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

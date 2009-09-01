@@ -94,6 +94,113 @@ public:
 		y2 = std::max(b.y2, y2);
 	}
 	
+	bool join_h(basic_rect const& b)
+	{
+		T new_x1 = std::min(b.x1, x1);
+		T new_x2 = std::max(b.x2, x2);
+		
+		bool changed = new_x1 != x1 || new_x2 != x2;
+		x1 = new_x1;
+		x2 = new_x2;
+		
+		return changed;
+	}
+	
+	bool join_v(basic_rect const& b)
+	{
+		T new_y1 = std::min(b.y1, y1);
+		T new_y2 = std::max(b.y2, y2);
+		
+		bool changed = new_y1 != y1 || new_y2 != y2;
+		y1 = new_y1;
+		y2 = new_y2;
+		
+		return changed;
+	}
+		
+	bool precise_join(basic_rect const& b)
+	{
+		bool ok = false;
+		if(x1 == b.x1 && x2 == b.x2)
+		{
+			if(b.y2 >= y1
+			&& b.y1 <= y2)
+				ok = true;
+		}
+		else if(y1 == b.y1 && y2 == b.y2)
+		{
+			if(b.x2 >= x1
+			&& b.x1 <= x2)
+				ok = true;
+		}
+		else
+		{
+			ok = encloses(b) || b.encloses(*this);
+		}
+		
+		if(ok)
+			join(b);
+		return ok;
+	}
+	
+	// Extend *this and b to their maximal size without
+	// changing their joint coverage.
+	int maximal_extend(basic_rect& b)
+	{
+		int change_mask = 0;
+		if(intersecting_v(b))
+		{
+			if(encloses_h(b))
+			{
+				// Extend b vertically into *this
+				if(b.join_v(*this))
+					change_mask |= 2;
+			}
+			if(b.encloses_h(*this))
+			{
+				// Extend *this vertically into b
+				if(join_v(b))
+					change_mask |= 1;
+			}
+		}
+		
+		if(intersecting_h(b))
+		{
+			if(encloses_v(b))
+			{
+				// Extend b horizontally into *this
+				if(b.join_h(*this))
+					change_mask |= 2;
+			}
+			if(b.encloses_v(*this))
+			{
+				// Extend *this horizontally into b
+				if(join_h(b))
+					change_mask |= 1;
+			}
+		}
+		
+		return change_mask;
+	}
+	
+	// Is b inside *this?
+	bool encloses(basic_rect const& b) const
+	{
+		return encloses_h(b) && encloses_v(b);
+	}
+	
+	// Is the horizontal span of b inside *this?
+	bool encloses_h(basic_rect const& b) const
+	{
+		return x1 <= b.x1 && x2 >= b.x2;
+	}
+	
+	// Is the vertical span of b inside *this?
+	bool encloses_v(basic_rect const& b) const
+	{
+		return y1 <= b.y1 && y2 >= b.y2;
+	}
+	
 	bool proper_intersecting(basic_rect const& b) const
 	{
 		return (b.y2 > y1
@@ -101,16 +208,25 @@ public:
 		     && b.x2 > x1
 		     && b.x1 < x2);
 	}
+	
+	bool intersecting_h(basic_rect const& b) const
+	{
+		return (b.x2 >= x1
+		     && b.x1 <= x2);
+	}
+	
+	bool intersecting_v(basic_rect const& b) const
+	{
+		return (b.y2 >= y1
+		     && b.y1 <= y2);
+	}
 
 	// TODO: This isn't really intersecting!
 	// Also returns true when the rectangles are merely touching.
 	// What to do about that? Added proper_intersecting above for now.
 	bool intersecting(basic_rect const& b) const
 	{
-		return (b.y2 >= y1
-		     && b.y1 <= y2
-		     && b.x2 >= x1
-		     && b.x1 <= x2);
+		return intersecting_h(b) && intersecting_v(b);
 	}
 
 	bool intersect(basic_rect const& b)
@@ -123,10 +239,10 @@ public:
 		return valid();
 	}
 
-	bool inside(basic_vec<T, 2> v) const
-	{ return inside(v.x, v.y); }
+	bool encloses(basic_vec<T, 2> v) const
+	{ return encloses(v.x, v.y); }
 	
-	bool inside(T x, T y) const
+	bool encloses(T x, T y) const
 	{
 		T diffX = x - x1;
 		T diffY = y - y1;
@@ -197,6 +313,12 @@ public:
 	
 	basic_vec<T, 2> lr()
 	{ return basic_vec<T, 2>(x2, y2); }
+	
+	bool operator==(basic_rect const& b) const
+	{ return x1 == b.x1 && y1 == b.y1 && x2 == b.x2 && y2 == b.y2; }
+	
+	bool operator!=(basic_rect const& b) const
+	{ return !operator==(b); }
 };
 
 typedef basic_rect<int> rect;

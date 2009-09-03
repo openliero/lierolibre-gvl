@@ -102,6 +102,11 @@ inline bool all_set(uint32_t v, uint32_t f)
 	return (v & f) == f;
 }
 
+inline bool is_power_of_two(uint32_t x)
+{
+	return (x & (x-1)) == 0 && x != 0;
+}
+
 void write_uint32(uint8_t* ptr, uint32_t v);
 uint32_t read_uint32(uint8_t const* ptr);
 void write_uint16(uint8_t* ptr, uint32_t v);

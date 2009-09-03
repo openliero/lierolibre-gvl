@@ -11,7 +11,8 @@ int main()
 	tut::reporter visi;
 	tut::runner.get().set_callback(&visi);
 #if 1
-	tut::runner.get().run_test("gvl::recursive_bounded_rectangle_packing", 1);
+	tut::runner.get().run_tests("opt.hpp");
+	//tut::runner.get().run_test("gvl::recursive_bounded_rectangle_packing", 1);
 	//tut::runner.get().run_test("gvl::accurate_rectangle_packing", 1);
 #else
 	tut::runner.get().run_tests();

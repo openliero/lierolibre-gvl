@@ -460,6 +460,8 @@ struct accurate_rectangle_packing
 	std::map<int, int> vlines, hlines;
 	rectangle_list rectangles;
 	int width, height;
+	
+	int 
 };
 #endif
 

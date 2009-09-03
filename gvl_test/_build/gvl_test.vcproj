@@ -189,7 +189,7 @@
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="$(ProjectDir)\..\..\.."
 				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="0"
 				AssemblerOutput="4"
@@ -452,7 +452,15 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\support\opt.cpp"
+				>
+			</File>
 		</Filter>
+		<File
+			RelativePath="..\template.hpp"
+			>
+		</File>
 		<File
 			RelativePath="..\test.cpp"
 			>

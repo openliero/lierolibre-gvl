@@ -11,7 +11,7 @@ struct shared
 	friend struct weak_ptr_common;
 	
 	shared()
-	: _ref_count(0), _first(0)
+	: _ref_count(1), _first(0)
 	{
 
 	}

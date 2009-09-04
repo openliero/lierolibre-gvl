@@ -7,9 +7,9 @@
 namespace gvl
 {
 
-prepared_division const& get_base_divider(int base)
+inline prepared_division const& get_base_divider(int base)
 {
-	static prepared_division base_dividers[36-1] =
+	static prepared_division const base_dividers[36-1] =
 	{
 		prepared_division(2), prepared_division(3),
 		prepared_division(4), prepared_division(5),
@@ -36,8 +36,11 @@ prepared_division const& get_base_divider(int base)
 	return base_dividers[base-2];
 }
 
+extern uint8_t const no_caps[];
+extern uint8_t const caps[];
+
 template<typename Writer, typename T>
-int uint_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, uint8_t over_9 = 'a')
+int uint_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, bool uppercase = false)
 {
 	if(base < 2 || base > 36)
 		return -1;
@@ -48,14 +51,15 @@ int uint_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, uint8_
 	uint8_t digits[buf_size];
 	uint8_t* e = digits + buf_size;
 	uint8_t* p = e;
-
+	
+	uint8_t const* names = uppercase ? caps : no_caps;
+	
+	int offset = (uppercase ? 'A' : 'a') - 10 - '0';
+		
 	while(min_digits-- > 0 || x > 0)
 	{
 		std::pair<uint32_t, uint32_t> res(div.quot_rem(x));
-		if(res.second >= 10)
-			res.second += over_9 - '0' - 10;
-		*--p = res.second + '0';
-		
+		*--p = names[res.second];
 		x = res.first;
 	}
   
@@ -64,19 +68,21 @@ int uint_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, uint8_
 }
 
 template<uint32_t Base, typename Writer, typename T>
-int uint_to_ascii_base(Writer& writer, T x, int base = 10, int min_digits = 1, uint8_t over_9 = 'a')
+int uint_to_ascii_base(Writer& writer, T x, int min_digits = 1, bool uppercase = false)
 {
 	std::size_t const buf_size = sizeof(T) * CHAR_BIT;
 	uint8_t digits[buf_size];
 	uint8_t* e = digits + buf_size;
 	uint8_t* p = e;
+	
+	uint8_t const* names = uppercase ? caps : no_caps;
+	
+	int offset = (uppercase ? 'A' : 'a') - 10 - '0';
 
 	while(min_digits-- > 0 || x > 0)
 	{
 		int n = x % Base;
-		if(Base > 10 && n >= 10)
-			n += over_9 - '0' - 10;
-		*--p = n + '0';		
+		*--p = names[n];
 		x /= Base;
 	}
   
@@ -84,17 +90,17 @@ int uint_to_ascii_base(Writer& writer, T x, int base = 10, int min_digits = 1, u
 	return 0;
 }
 
-template<typename Writer, typename T>
-void int_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, uint8_t over_9 = 'a')
+template<uint32_t Base, typename Writer, typename T>
+void int_to_ascii_base(Writer& writer, T x, int min_digits = 1, bool uppercase = false)
 {
 	if(x < 0)
 	{
 		writer.put('-');
-		uint_to_ascii<Base>(writer, -x, base, min_digits, over_9);
+		uint_to_ascii_base<Base>(writer, -x, min_digits, uppercase);
 	}
 	else
 	{
-		uint_to_ascii<Base>(writer, x, base, min_digits, over_9);
+		uint_to_ascii_base<Base>(writer, x, min_digits, uppercase);
 	}
 }
 

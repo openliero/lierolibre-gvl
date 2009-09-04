@@ -63,11 +63,13 @@ void object::test<1>()
 		}
 	}
 	
+#if 0
 	int cur_free = packing.free_rects.size();
 	std::cout << cur_free << " free rectangles\n";
 
 	std::cout << box_count << " boxes, area: " << area << ", "
 	<< (area * 100.0 / (double(packing.width) * double(packing.height))) << "%" << std::endl;
+#endif
 }
 
 

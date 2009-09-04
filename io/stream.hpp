@@ -4,6 +4,7 @@
 #include "../containers/list.hpp"
 #include "../support/debug.hpp"
 #include "../support/cstdint.hpp"
+#include "../support/platform.hpp"
 #include "../resman/shared_ptr.hpp"
 #include <memory>
 #include <vector>
@@ -783,7 +784,7 @@ struct brigade;
 struct stream_writer
 {
 	static bucket_size const default_initial_bucket_size = 512;
-	static bucket_size const max_bucket_size = 4096;
+	static bucket_size const max_bucket_size = 32768;
 	
 	stream_writer(shared_ptr<stream> sink)
 	: sink_(sink)
@@ -819,36 +820,40 @@ struct stream_writer
 	stream::write_status put(uint8_t b)
 	{
 		// We keep this function small to encourage
-		// inlining
+		// inlining of the common case
 		return (cur_ != end_) ? (*cur_++ = b, stream::write_ok) : overflow_put_(b);
 	}
 	
 	stream::write_status put(uint8_t const* p, std::size_t len)
 	{
-		check_sink();
-		
-		// As long as fitting in the current buffer would make it
-		// too large, write as much as possible and flush.
-		while((cur_ - buffer_->data) + len >= max_bucket_size)
+		// We keep this function small to encourage
+		// inlining of the common case
+		if(std::size_t(end_ - cur_) >= len)
 		{
-			std::size_t left = end_ - cur_;
-			// Copy as much as we can
-			std::memcpy(cur_, p, left);
-			cur_ += left;
-			p += left;
-			len -= left;
-			
-			// Flush and try to allocate a buffer large enough for the rest of the data
-			stream::write_status ret = weak_flush(len);
-			if(ret != stream::write_ok)
-				return ret;
+#if GVL_X86 || GVL_X86_64 // TODO: A define that says whether unaligned access is allowed
+			if(len < 64) // TODO: Tweak this limit
+			{
+				while(len > 4)
+				{
+					*reinterpret_cast<uint32_t*>(cur_) = *reinterpret_cast<uint32_t const*>(p);
+					len -= 4;
+					cur_ += 4;
+					p += 4;
+				}
+				while(len--)
+					*cur_++ = *p++;
+					
+				return stream::write_ok;
+			}
+#endif
+			std::memcpy(cur_, p, len);
+			cur_ += len;
+			return stream::write_ok;
 		}
-		
-		// Write the rest
-		ensure_cap_((cur_ - buffer_->data) + len);
-		std::memcpy(cur_, p, len);
-		cur_ += len;
-		return stream::write_ok;
+		else
+		{
+			return overflow_put_(p, len);
+		}
 	}
 	
 	stream::write_status put_bucket(bucket* buf);
@@ -906,9 +911,6 @@ private:
 		{
 			stream::write_status ret = weak_flush();
 			sassert(cur_ != end_);
-			//sassert(size_ < cap_);
-			//buffer_->data[size_] = b;
-			//++size_;
 			*cur_++ = b;
 			return ret;
 		}
@@ -918,12 +920,40 @@ private:
 			cap_ *= 2;
 			buffer_.reset(buffer_->enlarge(cap_));
 			buffer_->unsafe_push_back(b);
-			//sassert(size_ + 1 == buffer_->size_);
-			//size_ = buffer_->size_;
 			
 			read_in_buffer_();
 			return stream::write_ok;
 		}
+	}
+	
+	
+	stream::write_status overflow_put_(uint8_t const* p, std::size_t len)
+	{
+		check_sink();
+		
+		// As long as fitting in the current buffer would make it
+		// too large, write as much as possible and flush.
+		while((cur_ - buffer_->data) + len >= max_bucket_size)
+		{
+			std::size_t left = end_ - cur_;
+			// Copy as much as we can
+			std::memcpy(cur_, p, left);
+			cur_ += left;
+			p += left;
+			len -= left;
+			
+			// Flush and try to allocate a buffer large enough for the rest of the data
+			stream::write_status ret = weak_flush(len);
+			if(ret != stream::write_ok)
+				return ret;
+		}
+		
+		// Write the rest
+		ensure_cap_((cur_ - buffer_->data) + len);
+		
+		std::memcpy(cur_, p, len);
+		cur_ += len;
+		return stream::write_ok;
 	}
 	
 	void ensure_cap_(std::size_t s)
@@ -954,13 +984,13 @@ private:
 inline stream_writer& operator<<(stream_writer& writer, char const* str)
 {
 	std::size_t len = std::strlen(str);
-	writer.put_bucket(new bucket(str, len));
+	writer.put(reinterpret_cast<uint8_t const*>(str), len);
 	return writer;
 }
 
 inline stream_writer& operator<<(stream_writer& writer, std::string const& str)
 {
-	writer.put_bucket(new bucket(str.data(), str.size()));
+	writer.put(reinterpret_cast<uint8_t const*>(str.data()), str.size());
 	return writer;
 }
 
@@ -1204,7 +1234,20 @@ struct brigade_buffer : stream
 		return write_result(write_ok, true);
 	}
 	
-	//brigade buffer; // TODO: Use stream::in_buffer
+	void clear()
+	{
+		in_buffer.buckets.clear();
+	}
+	
+	void to_str(std::string& ret)
+	{
+		ret.clear();
+		for(list<bucket>::iterator i = in_buffer.buckets.begin(); i != in_buffer.buckets.end(); ++i)
+		{
+			char const* p = reinterpret_cast<char const*>(i->get_ptr());
+			ret.insert(ret.end(), p, p + i->size());
+		}
+	}
 };
 
 template<typename Writer>

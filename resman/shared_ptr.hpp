@@ -13,59 +13,7 @@ namespace gvl
 
 struct weak_ptr_common;
 
-struct no_ownership_transfer {};
-
-#if 0
-struct shared_ptr_common
-{
-	shared_ptr_common()
-	: v(0)
-	{
-	}
-	
-	explicit shared_ptr_common(shared* v_init)
-	: v(v_init)
-	{
-		_set(v_init);
-		sassert(v);
-	}
-		
-	shared_ptr_common(shared_ptr_common const& b)
-	{
-		_set(b.v);
-	}
-		
-	~shared_ptr_common()
-	{
-		_release();
-	}
-
-	// const to allow shared_ptr<T const>
-	void reset(shared const* v_new)
-	{
-		shared const* old = v; // Handles self-reset.
-		_set(v_new);
-		if(old)
-			old->release();
-	}
-	
-	void _release()
-	{
-		if(v)
-			v->release();
-	}
-	
-	// const to allow shared_ptr<T const>
-	void _set(shared const* v_new)
-	{
-		v = v_new;
-		if(v)
-			v->add_ref();
-	}
-	
-	mutable shared const* v; // This is mutable for the sake of deferred_ptr only, see if we can change that
-};
-#endif
+struct share_ownership {};
 
 template<typename T>
 struct deferred_ptr;
@@ -81,9 +29,16 @@ struct shared_ptr // : shared_ptr_common
 	: v(0)
 	{ }
 	
+	// Takes ownership, v_init assumed fresh (no add_ref!)
 	explicit shared_ptr(T* v_init)
+	: v(v_init)
 	{
-		_set_non_zero(v_init);
+	}
+	
+	// Shares ownership
+	explicit shared_ptr(T* v_init, share_ownership)
+	{
+		_set(v_init);
 	}
 	
 	~shared_ptr()
@@ -109,7 +64,7 @@ struct shared_ptr // : shared_ptr_common
 
 	shared_ptr& operator=(shared_ptr const& b)
 	{
-		_reset(b.get());
+		_reset_shared(b.get());
 		return *this;
 	}
 
@@ -117,7 +72,7 @@ struct shared_ptr // : shared_ptr_common
 	shared_ptr& operator=(shared_ptr<SrcT> const& b)
 	{
 		T* p = b.get();
-		_reset(p);
+		_reset_shared(p);
 		return *this;
 	}
 		
@@ -130,8 +85,9 @@ struct shared_ptr // : shared_ptr_common
 	T& operator*() const
 	{ sassert(v); return *static_cast<T*>(v); }
 	
-	void reset(T* b)
-	{ _reset(b); }
+	// Takes ownership, v_new assumed fresh (no add_ref!)
+	void reset(T* v_new)
+	{ _reset(v_new); }
 	
 	void reset()
 	{ _release(); v = 0; }
@@ -149,7 +105,7 @@ struct shared_ptr // : shared_ptr_common
 	
 	template<typename DestT>
 	shared_ptr<DestT> cast()
-	{ return dynamic_cast<DestT*>(get()); }
+	{ return shared_ptr<DestT>(dynamic_cast<DestT*>(get()), share_ownership()); }
 	
 	T& cow()
 	{
@@ -163,9 +119,18 @@ struct shared_ptr // : shared_ptr_common
 	{ return static_cast<T*>(v); }
 	
 private:
+	// Takes ownership (no add_ref!)
 	void _reset(T* v_new)
 	{
-		T* old = v; // Handles self-reset.
+		sassert(v_new != v); // self-reset is invalid
+		_release();
+		v = v_new;
+	}
+	
+	// Shares ownership
+	void _reset_shared(T* v_new)
+	{
+		T* old = v;
 		_set(v_new);
 		if(old)
 			old->release();
@@ -210,10 +175,16 @@ public:
 	: v(0)
 	{ }
 	
-	// Takes ownership, v assumed fresh
+	// Takes ownership, v_init assumed fresh (no add_ref!)
 	explicit deferred_ptr(T* v_init)
+	: v(v_init)
 	{
-		_set_non_zero(v_init);
+	}
+	
+	// Shares ownership
+	explicit deferred_ptr(T* v_init, share_ownership)
+	{
+		_set(v_init);
 	}
 	
 	~deferred_ptr()
@@ -247,7 +218,7 @@ public:
 	deferred_ptr& operator=(shared_ptr<SrcT> const& b)
 	{
 		T* p = b.get();
-		_reset(p);
+		_reset_shared(p);
 		return *this;
 	}
 	
@@ -277,8 +248,9 @@ public:
 	T& operator*() const
 	{ assert(v); return *v;	}
 
-	void reset(T* b)
-	{ _reset(b); }
+	// Takes ownership, v_new assumed fresh (no add_ref!)
+	void reset(T* v_new)
+	{ _reset(v_new); }
 	
 	void reset()
 	{ _release(); v = 0; }
@@ -289,7 +261,7 @@ public:
 	template<typename DestT>
 	deferred_ptr<DestT> cast()
 	{
-		deferred_ptr<DestT> ret(dynamic_cast<DestT*>(get()), deferred_ptr_raw_ptr_());
+		deferred_ptr<DestT> ret(dynamic_cast<DestT*>(get()));
 		v = 0;
 		return ret;
 	}
@@ -297,24 +269,25 @@ public:
 	template<typename DestT>
 	deferred_ptr<DestT> static_cast_()
 	{
-		deferred_ptr<DestT> ret(static_cast<DestT*>(get()), deferred_ptr_raw_ptr_());
+		deferred_ptr<DestT> ret(static_cast<DestT*>(get()));
 		v = 0;
 		return ret;
 	}
 	
 	T* get() const
 	{ return static_cast<T*>(v); }
-	
-	// Shouldn't use this one outside deferred_ptr!
-	explicit deferred_ptr(T* v_init, deferred_ptr_raw_ptr_)
-	: v(v_init)
-	{
-	}
-	
+		
 private:
 	
 	
 	void _reset(T* v_new)
+	{
+		sassert(v_new != v); // self-reset is invalid
+		_release();
+		v = v_new;
+	}
+	
+	void _reset_shared(T* v_new)
 	{
 		T* old = v; // Handles self-reset.
 		_set(v_new);
@@ -494,7 +467,9 @@ struct value_ptr
 	
 	template<typename DestT>
 	shared_ptr<DestT> cast()
-	{ return dynamic_cast<DestT*>(get()); }
+	{
+		return deferred_ptr<DestT>(dynamic_cast<DestT*>(get()), shared_ownership());
+	}
 	
 	T& cow()
 	{

@@ -236,7 +236,7 @@ void object::test<2>()
 	ctx.add("empty", new empty_heap_gen, 0.2);
 	ctx.add("erase_min", new erase_min_heap_gen, 0.4);
 	
-	gvl::qc::test_property<heap_integrity_property>(ctx);
+	gvl::qc::test_property<heap_integrity_property>(ctx, 2000, 1000);
 }
 
 template<>

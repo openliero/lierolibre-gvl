@@ -25,6 +25,8 @@ inline uint64_t emulu(uint32_t x, uint32_t y)
 #endif
 }
 
+#define CHECK_FF 1
+
 struct prepared_division
 {
 	prepared_division(uint32_t divisor_init)
@@ -54,7 +56,11 @@ struct prepared_division
 		if(remainder * 2 < divisor) // remainder * 2 < divisor <=> remainder / divisor < 1/2
 		{
 			multiplier = f;
+#if !CHECK_FF
 			offset = multiplier;
+#else
+			offset = 1;
+#endif
 		}
 		else
 		{
@@ -70,7 +76,15 @@ struct prepared_division
 	
 	uint32_t quot(uint32_t dividend)
 	{
+#if !CHECK_FF
 		return uint32_t((emulu(dividend, multiplier) + offset) >> 32) >> rshift;
+#else
+		dividend += offset;
+		if(!dividend)
+			return multiplier >> rshift;
+		else
+			return uint32_t(emulu(dividend, multiplier) >> 32) >> rshift;
+#endif
 	}
 	
 	std::pair<uint32_t, uint32_t> quot_rem(uint32_t dividend)

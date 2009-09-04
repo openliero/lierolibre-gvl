@@ -93,6 +93,37 @@ public:
 		x2 = std::max(b.x2, x2);
 		y2 = std::max(b.y2, y2);
 	}
+		
+	bool precise_join(basic_rect const& b)
+	{
+		bool ok = false;
+		if(x1 == b.x1 && x2 == b.x2)
+		{
+			if(b.y2 >= y1
+			&& b.y1 <= y2)
+				ok = true;
+		}
+		else if(y1 == b.y1 && y2 == b.y2)
+		{
+			if(b.x2 >= x1
+			&& b.x1 <= x2)
+				ok = true;
+		}
+		else
+		{
+			ok = inside(b) || b.inside(*this);
+		}
+		
+		if(ok)
+			join(b);
+		return ok;
+	}
+	
+	bool inside(basic_rect const& b) const
+	{
+		return x1 <= b.x1 && x2 >= b.x2
+		    && y1 <= b.y1 && y2 >= b.y2;
+	}
 	
 	bool join_h(basic_rect const& b)
 	{
@@ -117,32 +148,7 @@ public:
 		
 		return changed;
 	}
-		
-	bool precise_join(basic_rect const& b)
-	{
-		bool ok = false;
-		if(x1 == b.x1 && x2 == b.x2)
-		{
-			if(b.y2 >= y1
-			&& b.y1 <= y2)
-				ok = true;
-		}
-		else if(y1 == b.y1 && y2 == b.y2)
-		{
-			if(b.x2 >= x1
-			&& b.x1 <= x2)
-				ok = true;
-		}
-		else
-		{
-			ok = encloses(b) || b.encloses(*this);
-		}
-		
-		if(ok)
-			join(b);
-		return ok;
-	}
-	
+
 	// Extend *this and b to their maximal size without
 	// changing their joint coverage.
 	int maximal_extend(basic_rect& b)

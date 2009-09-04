@@ -82,9 +82,12 @@ void object::test<1>()
 	
 	stream_writer writer(filter);
 	
+	uint8_t seq[] = {1, 2, 3, 4};
+	
 	for(int i = 0; i < 1000; ++i)
 	{
 		writer.put(13);
+		writer.put(seq, 4);
 	}
 	
 	writer.flush();
@@ -98,6 +101,10 @@ void object::test<1>()
 	{
 		int v = reader.get();
 		ensure(v == 13);
+		ensure(reader.get() == 1);
+		ensure(reader.get() == 2);
+		ensure(reader.get() == 3);
+		ensure(reader.get() == 4);
 	}
 }
 

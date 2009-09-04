@@ -37,11 +37,14 @@ template<>
 void object::test<1>()
 {
 #if !GVL_PROFILE
-	for(uint32_t y = 2; y < 1000000; y += 761)
+	gvl::mwc rand;
+	for(int i = 0; i < 10000; ++i)
 	{
+		uint32_t y = rand(2, 0xffffffff);
+		
 		gvl::prepared_division d(y);
 		
-		for(uint32_t x = 3; x < 1000000000; x += 1327)
+		for(uint32_t x = 3; x < 10000000; x += 1327)
 		{
 			uint32_t expected = x / y;
 			uint32_t actual = d.quot(x);
@@ -58,15 +61,15 @@ template<>
 template<>
 void object::test<2>()
 {
+#if 0
 	gvl::stream_ptr cout(new gvl::fstream(stdout));
 	gvl::stream_ptr cin(new gvl::fstream(stdin));
 	gvl::stream_reader cin_reader(cin);
 	gvl::stream_writer cout_writer(cout);
-	gvl::formatter<> console(cin_reader, cout_writer);
-	
+	gvl::format_writer<> console(cout_writer);
 	console << 100;
-	
-	cout_writer.flush();
+	console.flush();
+#endif
 	
 #if GVL_PROFILE
 	uint32_t divisors[512];
@@ -88,11 +91,19 @@ void object::test<2>()
 			
 			uint32_t x = 0x13371337;
 			
-			for(int j = 0; j < 65536; ++j)
+			for(int j = 0; j < 65536/4; ++j)
 			{
-				std::pair<uint32_t, uint32_t> p = d.quot_rem(x);
-				x = p.first;
-				sum += p.second;
+				std::pair<uint32_t, uint32_t> p;
+			#define DO \
+				p = d.quot_rem(x); \
+				x = p.first + p.second; \
+				sum += p.second
+				
+				DO;
+				DO;
+				DO;
+				DO;
+			#undef DO
 			}
 		}
 	}
@@ -106,10 +117,19 @@ void object::test<2>()
 			
 			uint32_t x = 0x13371337;
 			
-			for(int j = 0; j < 65536; ++j)
+			for(int j = 0; j < 65536/4; ++j)
 			{
-				x /= d;
-				sum += (x % d);
+				uint32_t rem;
+			#define DO \
+				rem = (x % d); \
+				x = x / d + rem; \
+				sum += rem
+				
+				DO;
+				DO;
+				DO;
+				DO;
+			#undef DO
 			}
 		}
 	}
@@ -121,10 +141,19 @@ void object::test<2>()
 		{
 			uint32_t x = 0x13371337;
 			
-			for(int j = 0; j < 65536; ++j)
+			for(int j = 0; j < 65536/4; ++j)
 			{
-				x /= 1337;
-				sum += (x % 1337);
+				uint32_t rem;
+			#define DO \
+				rem = (x % 1337); \
+				x = x / 1337 + rem; \
+				sum += rem
+				
+				DO;
+				DO;
+				DO;
+				DO;
+			#undef DO
 			}
 		}
 	}

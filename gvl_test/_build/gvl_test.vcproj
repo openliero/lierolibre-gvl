@@ -191,7 +191,7 @@
 				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="0"
+				EnableEnhancedInstructionSet="2"
 				AssemblerOutput="4"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -328,6 +328,7 @@
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -335,6 +336,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -344,46 +346,18 @@
 			<File
 				RelativePath="..\containers\compact_interval_set.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\containers\list.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\containers\pairing_heap.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\containers\treap.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -392,24 +366,14 @@
 			<File
 				RelativePath="..\io\bitstream.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\io\formatter.cpp"
+				>
 			</File>
 			<File
 				RelativePath="..\io\stream.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -418,24 +382,10 @@
 			<File
 				RelativePath="..\math\deterministic_float.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\math\random.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -444,13 +394,6 @@
 			<File
 				RelativePath="..\support\bits.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\support\opt.cpp"

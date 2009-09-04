@@ -8,7 +8,7 @@
 namespace gvl
 {
 
-#if GVL_MSVCPP
+#if GVL_MSVCPP && !GVL_X86_64
 inline long lrint(double x)
 {
 	long r;
@@ -21,7 +21,7 @@ inline long lrint(double x)
 	return r;
 }
 
-#elif GVL_GCC && GVL_ARCH == GVL_X86
+#elif GVL_GCC && GVL_X86
 
 // TODO: Not tested at all
 inline long lrint(double x)

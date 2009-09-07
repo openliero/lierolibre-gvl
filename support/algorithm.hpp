@@ -6,6 +6,31 @@
 namespace gvl
 {
 
+template<typename T, void (T::*)(T&)>
+struct check_swap
+{ typedef T type; };
+
+template<typename T>
+void swap(typename check_swap<T, &T::swap>::type& x, T& y)
+{ x.swap(y); }
+
+template<typename T>
+struct ref_wrapper
+{
+	ref_wrapper(T& v)
+	: v(v)
+	{ }
+	T& v;
+};
+
+template<typename T>
+void swap(ref_wrapper<T> x, T& y)
+{
+	T temp(x.v);
+	x.v = y;
+	y = temp;
+}
+
 template<typename InputIterator, typename StrictWeakOrdering>
 bool is_sorted(InputIterator b, InputIterator e, StrictWeakOrdering comp)
 {

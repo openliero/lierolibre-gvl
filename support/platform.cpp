@@ -5,14 +5,14 @@
 
 void gvl_test_platform()
 {
-	sassert(sizeof(uint64_t)*CHAR_BIT == 64);
-	sassert(sizeof(uint32_t)*CHAR_BIT == 32);
-	sassert(sizeof(uint16_t)*CHAR_BIT == 16);
-	sassert(sizeof(uint8_t)*CHAR_BIT == 8);
-	sassert(sizeof(int64_t)*CHAR_BIT == 64);
-	sassert(sizeof(int32_t)*CHAR_BIT == 32);
-	sassert(sizeof(int16_t)*CHAR_BIT == 16);
-	sassert(sizeof(int8_t)*CHAR_BIT == 8);
+	GVL_STATIC_ASSERT(sizeof(uint64_t)*CHAR_BIT == 64);
+	GVL_STATIC_ASSERT(sizeof(uint32_t)*CHAR_BIT == 32);
+	GVL_STATIC_ASSERT(sizeof(uint16_t)*CHAR_BIT == 16);
+	GVL_STATIC_ASSERT(sizeof(uint8_t)*CHAR_BIT == 8);
+	GVL_STATIC_ASSERT(sizeof(int64_t)*CHAR_BIT == 64);
+	GVL_STATIC_ASSERT(sizeof(int32_t)*CHAR_BIT == 32);
+	GVL_STATIC_ASSERT(sizeof(int16_t)*CHAR_BIT == 16);
+	GVL_STATIC_ASSERT(sizeof(int8_t)*CHAR_BIT == 8);
 	
 	// Test endianness
 	uint32_t v = 0xAABBCCDD;
@@ -25,6 +25,6 @@ void gvl_test_platform()
 #endif
 
 	// Test integer assumptions
-	passert((-1>>31) == -1, "Signed right-shift must duplicate sign bit");
-	passert((-1/2) == 0, "Division must round towards 0");
+	GVL_STATIC_ASSERT((-1>>31) == -1); // Signed right-shift must duplicate sign bit
+	GVL_STATIC_ASSERT((-1/2) == 0); // Division must round towards 0
 }

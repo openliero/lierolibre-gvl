@@ -3,6 +3,7 @@
 //#include <gvl/io/stream.hpp>
 //#include <gvl/sockets/socketstream.hpp>
 #include <gvl/io/stream.hpp>
+#include <gvl/io/encoding.hpp>
 #include <gvl/io/deflate_filter.hpp>
 #include <gvl/math/tt800.hpp>
 //#include <gvl/support/algorithm.hpp>
@@ -77,10 +78,10 @@ void object::test<1>()
 	
 	stream_ptr sink(new brigade_buffer());
 	
-	gvl::shared_ptr<deflate_filter> filter(new deflate_filter(true));
+	shared_ptr<deflate_filter> filter(new deflate_filter(true));
 	filter->attach_sink(sink);
 	
-	stream_writer writer(filter);
+	raw_ansi_stream_writer writer(filter);
 	
 	uint8_t seq[] = {1, 2, 3, 4};
 	
@@ -93,10 +94,10 @@ void object::test<1>()
 	writer.flush();
 	writer.detach();
 	
-	gvl::shared_ptr<deflate_filter> filter2(new deflate_filter(false));
+	shared_ptr<deflate_filter> filter2(new deflate_filter(false));
 	filter2->attach_source(sink);
 	
-	stream_reader reader(filter2);
+	raw_ansi_stream_reader reader(filter2);
 	for(int i = 0; i < 1000; ++i)
 	{
 		int v = reader.get();

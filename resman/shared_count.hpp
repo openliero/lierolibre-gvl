@@ -4,7 +4,8 @@
 namespace gvl
 {
 
-#error "Untested"
+// TODO: This is not thread-safe at all. If GVL_THREADSAFE is defined
+// it should be thread-safe.
 
 /// Shared reference counter optimized for
 /// 1 reference.
@@ -33,13 +34,14 @@ struct shared_count
 	
 	void dec()
 	{
-		if(p)
+		if(!p)
 		{
-			if(--(*p) == 0)
-				delete p;
-		}
-		else
 			delete p;
+		}
+		else if(--(*p) == 0)
+		{
+			delete p;
+		}
 	}
 	
 	void swap(shared_count& b)
@@ -47,6 +49,13 @@ struct shared_count
 		std::swap(p, b.p);
 	}
 	
+	// release the current count and make a new one set to 1
+	void reset()
+	{
+		dec();
+		p = 0;
+	}
+		
 	int ref_count() const
 	{ return !p ? 1 : *p; }
 	
@@ -54,10 +63,13 @@ struct shared_count
 	{ return !p || *p == 1; }
 	
 private:
-	int* inc()
+	int* inc() const
 	{
 		if(!p)
-			return new int(2);
+		{
+			p = new int(2);
+			return p;
+		}
 		else
 		{
 			++(*p);
@@ -65,7 +77,7 @@ private:
 		}
 	}
 	
-	int* p; // 0 means ref count of 1
+	mutable int* p; // 0 means ref count of 1
 };
 
 } // namespace gvl

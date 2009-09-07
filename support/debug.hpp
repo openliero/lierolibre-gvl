@@ -26,6 +26,8 @@ void passert_fail(char const* cond, char const* file, int line, char const* msg)
 #define sassert(cond) ((void)0)
 #endif
 
+#define GVL_STATIC_ASSERT(cond) typedef char static_assert_[(cond) ? 1 : 0]
+
 }
 
 #endif // UUID_B28D1ACCA789486008A1FF8B92CF00C5

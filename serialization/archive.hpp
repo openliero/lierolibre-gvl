@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <gvl/io/stream.hpp>
+#include <gvl/io/encoding.hpp>
 #include <gvl/serialization/context.hpp>
 #include <gvl/support/cstdint.hpp>
 #include "except.hpp"
@@ -34,7 +35,7 @@ struct in_archive
 	static bool const out = false;
 	
 	
-	in_archive(gvl::stream_reader& reader, Context& context)
+	in_archive(gvl::raw_ansi_stream_reader& reader, Context& context)
 	: reader(reader), context(context)
 	{
 	}
@@ -194,11 +195,11 @@ struct in_archive
 		return *this;
 	}
 	
-	gvl::stream_reader& reader;
+	gvl::raw_ansi_stream_reader& reader;
 	Context& context;
 };
 
-template<typename Context = default_serialization_context, typename Writer = gvl::stream_writer>
+template<typename Context = default_serialization_context, typename Writer = gvl::raw_ansi_stream_writer>
 struct out_archive
 {
 	static bool const in = false;

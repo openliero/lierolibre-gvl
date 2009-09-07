@@ -13,8 +13,9 @@ int main()
 {
 	tut::reporter visi;
 	tut::runner.get().set_callback(&visi);
-#if 1
-	tut::runner.get().run_test("gvl::formatter", 2);
+#if 0
+	tut::runner.get().run_tests("gvl::string");
+	//tut::runner.get().run_tests("gvl::formatter");
 	//tut::runner.get().run_test("gvl::recursive_bounded_rectangle_packing", 1);
 	//tut::runner.get().run_test("gvl::accurate_rectangle_packing", 1);
 #else

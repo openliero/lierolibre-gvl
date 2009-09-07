@@ -1,10 +1,9 @@
 #include <gvl/tut/tut.hpp>
 
 #include <gvl/support/opt.hpp>
-#define GVL_PROFILE 1
 #include <gvl/support/profile.hpp>
 #include <gvl/math/cmwc.hpp>
-#include <gvl/io/formatter.hpp>
+#include <gvl/io/encoding.hpp>
 #include <gvl/io/fstream.hpp>
 #include <gvl/io/stream.hpp>
 
@@ -38,7 +37,7 @@ void object::test<1>()
 {
 #if !GVL_PROFILE
 	gvl::mwc rand;
-	for(int i = 0; i < 10000; ++i)
+	for(int i = 0; i < 1000; ++i)
 	{
 		uint32_t y = rand(2, 0xffffffff);
 		

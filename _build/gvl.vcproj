@@ -461,6 +461,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\containers\bucket.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\containers\buffer.cpp"
 				>
 				<FileConfiguration
@@ -558,6 +562,10 @@
 			</File>
 			<File
 				RelativePath="..\containers\range.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\containers\string.hpp"
 				>
 			</File>
 			<File
@@ -1233,7 +1241,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\io\formatter.hpp"
+				RelativePath="..\io\encoding.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\io\encoding.hpp"
 				>
 			</File>
 			<File
@@ -1606,6 +1618,10 @@
 				Name="quickcheck"
 				>
 				<File
+					RelativePath="..\tut\quickcheck\context.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\tut\quickcheck\context.hpp"
 					>
 				</File>
@@ -1615,6 +1631,10 @@
 				</File>
 				<File
 					RelativePath="..\tut\quickcheck\property.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\tut\quickcheck\quickcheck.hpp"
 					>
 				</File>
 			</Filter>

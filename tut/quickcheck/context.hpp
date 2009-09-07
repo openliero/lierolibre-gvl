@@ -40,6 +40,14 @@ struct generator_set
 		total_weight += g->weight;
 	}
 	
+	template<typename T>
+	void add_reusable(shared_ptr_any<T> obj)
+	{
+		// TODO: Need static_cast for shared_ptr_any to
+		// do this (maybe). We could make type-specific
+		// generator_sets too.
+	} 
+	
 	generator_map& all()
 	{ return m; }
 	
@@ -50,10 +58,11 @@ struct generator_set
 
 struct context
 {
-	
+	static context* current;
 	
 	context()
 	: generator_depth_(0)
+	, assert_fails_(0)
 	{
 	}
 	
@@ -76,7 +85,7 @@ struct context
 	}
 	
 	template<typename T>
-	T* generate_any()
+	shared_ptr_any<T> generate_any()
 	{
 		generator_set& m = generators[gvl::type_id<T>()];
 		
@@ -95,27 +104,60 @@ struct context
 		if(i == m.all().end())
 			throw std::runtime_error("Failed roulette-wheel selection");
 		++generator_depth_;
-		T* p = static_cast<generator<T>*>(i->second)->gen_t(*this);
+		shared_ptr_any<T> p(static_cast<generator<T>*>(i->second)->gen_t(*this));
 		--generator_depth_;
 		return p;
 	}
 	
+	
+	
 	template<typename T>
-	T* generate(std::string const& name)
+	shared_ptr_any<T> generate(std::string const& name)
 	{
 		++generator_depth_;
-		T* p = get_generator<T>(name).gen_t(*this);
+		shared_ptr_any<T> p(get_generator<T>(name).gen_t(*this));
 		--generator_depth_;
 		return p;
+	}
+	
+	
+	
+	template<typename T>
+	void add_reusable(shared_ptr_any<T> obj)
+	{
+		generator_set& m = generators[gvl::type_id<T>()];
+		
+		m.add_reusable(obj);
 	}
 	
 	int generator_depth() const
 	{ return generator_depth_; }
 	
+	bool assert_fail(char const* cond, char const* file, int line, char const* desc)
+	{
+		++assert_fails_;
+		return false;
+	}
+	
+	void reset_assert_fails()
+	{ assert_fails_ = 0;}
+	
+	int get_assert_fails() const
+	{ return assert_fails_; }
+	
 	std::map<gvl::type_info, generator_set> generators;
 	gvl::mwc rand;
 	int generator_depth_;
+	int assert_fails_;
 };
+
+
+
+#define QC_ASSERT(desc, cond) if(!(cond)) \
+{ if(!ctx.assert_fail(#cond, __FILE__, __LINE__, desc)) return chk_fail; } else (void)0
+
+#define QC_FATAL_ASSERT(desc, cond) if(!(cond)) \
+{ ctx.assert_fail(#cond, __FILE__, __LINE__, desc); return chk_fail; } else (void)0
 
 } // namespace qc
 } // namespace gvl

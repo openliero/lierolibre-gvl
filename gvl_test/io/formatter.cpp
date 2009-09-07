@@ -1,9 +1,8 @@
 #include <gvl/tut/tut.hpp>
 
-#include <gvl/io/formatter.hpp>
+#include <gvl/io/encoding.hpp>
 #include <gvl/io/stream.hpp>
 #include <gvl/containers/range.hpp>
-#define GVL_PROFILE 1
 #include <gvl/support/profile.hpp>
 #include <gvl/system/system.hpp>
 
@@ -33,6 +32,7 @@ template<>
 template<>
 void object::test<1>()
 {
+#if GVL_PROFILE
 	using namespace gvl;
 	
 	typedef delimited_iterator_range<uint8_t*> buffer_writer;
@@ -76,11 +76,10 @@ void object::test<1>()
 			_itoa(i, (char*)buffer, vbase);
 		}
 	}
-	
-	
+#endif
 }
 
-struct string_writer
+struct string_writer : gvl::basic_text_writer<string_writer>
 {
 	string_writer(std::string& str_init)
 	: str(str_init)
@@ -98,6 +97,11 @@ struct string_writer
 		str.push_back(static_cast<char>(x));
 	}
 	
+	void flush()
+	{
+		// Nothing
+	}
+	
 	std::string& str;
 };
 
@@ -105,11 +109,11 @@ template<>
 template<>
 void object::test<2>()
 {
+#if GVL_PROFILE
 	using namespace gvl;
 	
 	shared_ptr<brigade_buffer> dest(new brigade_buffer);
-	stream_writer writer(dest);
-	format_writer<> fwriter(writer);
+	raw_ansi_stream_writer writer(dest);
 	
 	std::stringstream ss;
 	
@@ -166,20 +170,35 @@ void object::test<2>()
 	}
 	
 	{
-		GVL_PROF_TIMER("brigade_buffer");
+		GVL_PROF_TIMER("format_writer + brigade_buffer");
 		
 		for(uint32_t i = 0; i < limit; ++i)
 		{
-			fwriter << "Hello " << i << '\n';
+			writer << "Hello " << i << '\n';
 		}
 		
-		fwriter.flush();
+		writer.flush();
 		
 		dest->to_str(a);
 	}
 	
+	{
+		GVL_PROF_TIMER("string_writer");
+		
+		std::string str;
+		string_writer swriter(str);
+		
+		for(uint32_t i = 0; i < limit; ++i)
+		{
+			swriter << "Hello " << i << '\n';
+		}
+		
+		swriter.flush();
+	}
+	
 	ensure("strings are equal", a == b && b == c);
 	std::cout << a.size() << std::endl;
+#endif
 }
 
 } // namespace tut

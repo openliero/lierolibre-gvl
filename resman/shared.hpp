@@ -1,6 +1,8 @@
 #ifndef UUID_5F7548A068F9485B6759368B5BAE8157
 #define UUID_5F7548A068F9485B6759368B5BAE8157
 
+#include <algorithm>
+
 namespace gvl
 {
 
@@ -58,6 +60,12 @@ struct shared
 			_delete();
 		}
 #endif
+	}
+	
+	void swap(shared& b)
+	{
+		std::swap(_ref_count, b._ref_count);
+		std::swap(_first, b._first);
 	}
 	
 	int ref_count() const

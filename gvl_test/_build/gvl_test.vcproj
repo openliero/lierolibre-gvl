@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(ProjectDir)\..\..\.."
-				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;LOG_LEVEL=LOG_TRACE"
+				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -188,7 +188,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				AdditionalIncludeDirectories="$(ProjectDir)\..\..\.."
-				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG"
+				PreprocessorDefinitions="_SECURE_SCL=0;_CRT_SECURE_NO_DEPRECATE;WIN32;NDEBUG;GVL_PROFILE=1"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="2"
@@ -353,6 +353,10 @@
 			</File>
 			<File
 				RelativePath="..\containers\pairing_heap.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\containers\string.cpp"
 				>
 			</File>
 			<File

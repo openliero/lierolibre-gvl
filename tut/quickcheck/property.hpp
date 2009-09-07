@@ -16,65 +16,113 @@ namespace qc
 template<typename T>
 struct property
 {
-	virtual T* generate(context& ctx)
+	enum chk_result
+	{
+		chk_ok, // Checked out
+		chk_ok_reuse, // Checked out, and passed object can be reused
+		chk_fail, // Check failed
+		chk_not_applicable // Check is not applicable to the generated objects
+	};
+	
+	virtual shared_ptr_any<T> generate(context& ctx)
 	{
 		return ctx.generate_any<T>();
 	}
 	
-	virtual bool check(context&, T&) = 0;
-	
-	virtual bool holds_for(context&, T&)
-	{
-		return true; // All by default
-	}
-	
-	
+	virtual chk_result do_check(context&) = 0;
+		
 	bool run(context& ctx, int max_generated, int max_tested)
 	{
 		int tests_ran = 0;
         int generated = 0;
+        
+        context::current = &ctx;
 
 		for(generated = 0; generated < max_generated; )
         {
-            shared_ptr_any<T> obj(generate(ctx));
             ++generated;
-            if(holds_for(ctx, *obj))
+
+			ctx.reset_assert_fails();
+			
+            chk_result res = do_check(ctx);
+            
+            if(res != chk_not_applicable)
             {
-                ++tests_ran;
-                if (!check(ctx, *obj))
-                {
-                    std::cout << "Property failed on test " << tests_ran << std::endl;
-                    return false;
-                }
-                
-                if (tests_ran >= max_tested)
-                    break;
-            }
+				++tests_ran;
+				if(res == chk_fail || ctx.get_assert_fails() > 0)
+				{
+					std::cout << "Property failed on test " << tests_ran << std::endl;
+					return false;
+				}
+				
+				if(res == chk_ok_reuse)
+				{
+				}
+				
+				if(tests_ran >= max_tested)
+					break;
+			}
         }
         
-        //std::cout << "OK, Ran " << tests_ran << " tests out of " << generated << " generated" << std::endl;
+        context::current = 0;
         
         return true;
 	}
 };
 
 template<typename Prop>
-bool test_property(context& ctx, int max_generated = 1000, int max_tested = 500)
+bool test_property(context& ctx, int max_generated = 200, int max_tested = 100)
 {
 	Prop prop;
 	return prop.run(ctx, max_generated, max_tested);
 }
 
+// VC++ 2008 has a bug where default values that call a template
+// function in a different namespace with explicit template parameters
+// are rejected. We pass a cast zero-pointer instead of explicit template
+// parameters.
+
+template<typename T>
+static gvl::shared_ptr_any<T> cur_generate_any(T* = 0)
+{
+	return gvl::qc::context::current->generate_any<T>();
+}
+
+template<typename T>
+static gvl::shared_ptr_any<T> cur_generate(std::string const& name, T* = 0)
+{
+	return gvl::qc::context::current->generate<T>(name);
+}
+
+
 #define QC_BEGIN_PROP(name, type) \
 struct name : gvl::qc::property<type> { \
-	typedef type t;
-	
+	using gvl::qc::property<type>::chk_result; \
+	typedef type t; \
+	typedef gvl::shared_ptr_any<type> ptr_t; \
+	virtual chk_result do_check(gvl::qc::context& ctx) \
+	{ return check(ctx); }
+
 #define QC_END_PROP() };
 
 #define QC_BEGIN_GENERIC_PROP(name) \
 template<typename T_> \
 struct name : gvl::qc::property<T_> { \
-	typedef T_ t;
+	using typename gvl::qc::property<T_>::chk_result; \
+	typedef T_ t; \
+	typedef gvl::shared_ptr_any<T_> ptr_t; \
+	virtual chk_result do_check(gvl::qc::context& ctx) \
+	{ return check(ctx); }
+	
+#define QC_CUR_CTX (*gvl::qc::context::current)
+
+#if 0
+#define QC_GEN(type, name, g)  gvl::shared_ptr_any<type> name = gvl::qc::cur_generate<type>(g, (type*)0)
+#define QC_GEN_ANY(type, name) gvl::shared_ptr_any<type> name = gvl::qc::cur_generate_any<type>((type*)0)
+#else
+#define QC_GEN(type, name, g)  gvl::shared_ptr_any<type> name = QC_CUR_CTX.generate<type>(g)
+#define QC_GEN_ANY(type, name) gvl::shared_ptr_any<type> name = QC_CUR_CTX.generate_any<type>()
+#endif
 
 } // namespace qc
 } // namespace gvl

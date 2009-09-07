@@ -35,20 +35,16 @@ struct integer
 	int v;
 };
 
-
-
-
-
 typedef gvl::list<integer, tag1> integer_list;
 
 QC_BEGIN_GEN(empty_list_gen, integer_list)
-	return new t;
+	return ptr_t(new t);
 QC_END_GEN()
 
 QC_BEGIN_GEN(singleton_list_gen, integer_list)
-	std::auto_ptr<t> ret(new t);
+	ptr_t ret(new t);
 	ret->push_back(new integer(ctx.rand(10000)));
-	return ret.release();
+	return ret;
 QC_END_GEN()
 
 QC_BEGIN_GEN(concat_list_gen, integer_list)
@@ -56,45 +52,44 @@ QC_BEGIN_GEN(concat_list_gen, integer_list)
 	{
 		return ctx.generate<t>("singleton");
 	}
-	std::auto_ptr<t> a(ctx.generate_any<t>());
-	std::auto_ptr<t> b(ctx.generate_any<t>());
+	ptr_t a(ctx.generate_any<t>());
+	ptr_t b(ctx.generate_any<t>());
 	a->splice(*b);
-	return a.release();
+	return a;
 QC_END_GEN()
 
 QC_BEGIN_GEN(erase_list_gen, integer_list)
-	std::auto_ptr<t> a(ctx.generate_any<t>());
+	ptr_t a(ctx.generate_any<t>());
 	if(!a->empty())
 		a->pop_front();
-	return a.release();
+	return a;
 QC_END_GEN()
 
 QC_BEGIN_GEN(sorted_list_gen, integer_list)
-	std::auto_ptr<t> a(ctx.generate_any<t>());
+	ptr_t a(ctx.generate_any<t>());
 	a->sort(std::less<integer>());
-	return a.release();
+	return a;
 QC_END_GEN()
 
 QC_BEGIN_PROP(integrity_property, integer_list)
-	bool check(gvl::qc::context& ctx, t& obj)
+	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
-		obj.integrity_check();
-		return true;
+		obj->integrity_check();
+		return chk_ok_reuse;
 	}
 QC_END_PROP()
 
 QC_BEGIN_GENERIC_PROP(pop_front_property)
-	bool holds_for(gvl::qc::context& ctx, t& obj)
+	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
-		return !obj.empty();
-	}
-	
-	bool check(gvl::qc::context& ctx, t& obj)
-	{
-		std::size_t before_count = obj.size();
-		obj.pop_front();
-		std::size_t after_count = obj.size();
-		return after_count + 1 == before_count;
+		if(obj->empty())
+			return chk_not_applicable;
+			
+		std::size_t before_count = obj->size();
+		obj->pop_front();
+		std::size_t after_count = obj->size();
+		QC_ASSERT("pop_front decrease count with 1", after_count + 1 == before_count);
+		return chk_ok_reuse;
 	}
 QC_END_PROP()
 

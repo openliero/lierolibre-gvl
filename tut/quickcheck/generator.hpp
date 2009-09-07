@@ -18,7 +18,7 @@ struct base_generator
 	{
 	}
 	
-	virtual void* gen(context& ctx) = 0;
+	//virtual void* gen(context& ctx) = 0;
 	
 	double weight;
 };
@@ -31,15 +31,18 @@ struct generator : base_generator
 	{
 	}
 	
-	void* gen(context& ctx) { return gen_t(ctx); }
-	virtual T* gen_t(context& ctx) = 0;
+	//void* gen(context& ctx) { return gen_t(ctx); }
+	virtual shared_ptr_any<T> gen_t(context& ctx) = 0;
 };
 
-
+#define QC_GEN_COMMON(type) \
+	typedef type t; \
+	typedef gvl::shared_ptr_any<type> ptr_t; \
+	
 #define QC_BEGIN_GEN(name, type) \
 struct name : gvl::qc::generator<type> { \
-	typedef type t; \
-	t* gen_t(gvl::qc::context& ctx) {
+	QC_GEN_COMMON(type) \
+	ptr_t gen_t(gvl::qc::context& ctx) {
 
 #define QC_END_GEN() } };
 

@@ -16,8 +16,6 @@
 #include <gvl/tut/quickcheck/property.hpp>
 
 #include <gvl/support/log.hpp>
-
-//#define GVL_PROFILE 1
 #include <gvl/support/profile.hpp>
 
 namespace tut
@@ -87,15 +85,15 @@ typedef std::pair<h_t, heap_model<pairing_heap_integer> > test_type;
 
 QC_BEGIN_GEN(empty_heap_gen, test_type)
 	TLOG("Empty");
-	return new t;
+	return ptr_t(new t);
 QC_END_GEN()
 
 QC_BEGIN_GEN(singleton_heap_gen, test_type)
-	std::auto_ptr<t> ret(new t);
+	ptr_t ret(new t);
 	int v = ctx.rand(10000);
 	TANDEM(ret, insert(new pairing_heap_integer(v)));
 	TLOG("Singleton(" << v << ")");
-	return ret.release();
+	return ret;
 QC_END_GEN()
 
 QC_BEGIN_GEN(merge_heap_gen, test_type)
@@ -104,9 +102,9 @@ QC_BEGIN_GEN(merge_heap_gen, test_type)
 		return ctx.generate<t>("singleton");
 	}
 	TLOG("Meld(");
-	std::auto_ptr<t> a(ctx.generate_any<t>());
+	ptr_t a(ctx.generate_any<t>());
 	TLOG(", ");
-	std::auto_ptr<t> b(ctx.generate_any<t>());
+	ptr_t b(ctx.generate_any<t>());
 	TLOG(")");
 	
 	/*
@@ -122,48 +120,48 @@ QC_BEGIN_GEN(merge_heap_gen, test_type)
 	a->first.print_tree();
 	std::cout << "\n\n";
 	*/
-	return a.release();
+	return a;
 QC_END_GEN()
 
 QC_BEGIN_GEN(erase_min_heap_gen, test_type)
 	TLOG("EraseMin(");
-	std::auto_ptr<t> a(ctx.generate_any<t>());
+	ptr_t a(ctx.generate_any<t>());
 	TLOG(")");
 	if(!a->first.empty())
 		a->first.erase_min();
 	if(!a->second.empty())
 		a->second.erase_min();
-	return a.release();
+	return a;
 QC_END_GEN()
 
 QC_BEGIN_GEN(insert_heap_gen, test_type)
 	TLOG("Insert(");
-	std::auto_ptr<t> a(ctx.generate_any<t>());
+	ptr_t a(ctx.generate_any<t>());
 	
 	int v = ctx.rand(10000);
 	TLOG(", " << v << ")");
 	TANDEM(a, insert(new pairing_heap_integer(v)));
-	return a.release();
+	return a;
 QC_END_GEN()
 
 
 QC_BEGIN_PROP(heap_integrity_property, test_type)
-	bool check(gvl::qc::context& ctx, t& obj)
+	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
 		TLOG(std::endl << "=== heap_integrity_property ===");
 		
-		while(!obj.first.empty() && !obj.second.empty())
+		while(!obj->first.empty() && !obj->second.empty())
 		{
-			int a = obj.first.min().v;
-			int b = obj.second.min().v;
-						
-			if(a != b)
-				return false;
-			obj.first.erase_min();
-			obj.second.erase_min();
+			int a = obj->first.min().v;
+			int b = obj->second.min().v;
+
+			QC_ASSERT("elements are the same", a == b);
+			obj->first.erase_min();
+			obj->second.erase_min();
 		}
 		
-		return obj.first.empty() && obj.second.empty();
+		QC_ASSERT("both empty", obj->first.empty() && obj->second.empty());
+		return chk_ok;
 	}
 QC_END_PROP()
 
@@ -236,7 +234,7 @@ void object::test<2>()
 	ctx.add("empty", new empty_heap_gen, 0.2);
 	ctx.add("erase_min", new erase_min_heap_gen, 0.4);
 	
-	gvl::qc::test_property<heap_integrity_property>(ctx, 2000, 1000);
+	gvl::qc::test_property<heap_integrity_property>(ctx, 1000, 500);
 }
 
 template<>

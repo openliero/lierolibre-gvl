@@ -7,6 +7,7 @@
 #include "shared.hpp"
 #include "../support/debug.hpp"
 #include "../support/functional.hpp"
+#include "shared_count.hpp"
 
 namespace gvl
 {
@@ -483,65 +484,103 @@ struct value_ptr
 };
 
 template<typename T>
-struct shared_any_wrapper : shared
+struct shared_ptr_any
 {
-	shared_any_wrapper(T* value_init)
-	: value(value_init)
-	{
-	}
+	struct dynamic_cast_tag_ {};
+	struct static_cast_tag_ {};
 	
-	~shared_any_wrapper()
-	{
-		delete value;
-	}
-	
-	T* value;
-};
-
-template<typename T>
-struct shared_ptr_any : shared_ptr<shared_any_wrapper<T> >
-{
-	typedef shared_any_wrapper<T> wrapper;
-	typedef shared_ptr<shared_any_wrapper<T> > base;
+	template<typename T2>
+	friend struct shared_ptr_any;
 	
 	shared_ptr_any()
+	: v(0)
 	{ }
 	
-	explicit shared_ptr_any(T* v)
-	: base(new wrapper(v))
+	explicit shared_ptr_any(T* v_init)
+	: v(v_init)
 	{ }
 	
-	// Copy-ctor, op=, operator void const*, swap are fine.
+	template<typename SrcT>
+	explicit shared_ptr_any(shared_ptr_any<SrcT> const& b, dynamic_cast_tag_)
+	: v(dynamic_cast<T*>(b.v))
+	, count(b.count)
+	{
+		
+	}
 	
-	// TODO: Converting ctors/op=, how would they work? Seems to require a different implementation.
+	template<typename SrcT>
+	explicit shared_ptr_any(shared_ptr_any<SrcT> const& b, static_cast_tag_)
+	: v(static_cast<T*>(b.v))
+	, count(b.count)
+	{
+		
+	}
+	
+	~shared_ptr_any()
+	{
+		if(v && count.unique())
+			delete v;
+	}
+	
+	// Copy-ctor, op= are fine.
 	
 	T* operator->() const
-	{ return base::operator*().value; }
+	{
+		sassert(v);
+		return v;
+	}
 	
 	T& operator*() const
-	{ return *base::operator*().value; }
+	{
+		sassert(v);
+		return *v;
+	}
 	
-	void reset(T* b)
-	{ base::reset(new wrapper(b)); }
-	
-	void reset()
-	{ base::reset(); }
+	void reset(T* b = 0)
+	{
+		shared_ptr_any n(b);
+		swap(n);
+	}
 	
 	shared_ptr_any release()
 	{
-		shared_ptr_any ret;
-		ret.v = this->v;
-		this->v = 0;
+		shared_ptr_any ret(n);
+		reset();
 		return ret;
+	}
+	
+	template<typename DestT>
+	shared_ptr_any<DestT> dynamic_cast_()
+	{
+		shared_ptr_any<DestT> ret(*this, dynamic_cast_tag_());
+		return ret;
+	}
+	
+	template<typename DestT>
+	shared_ptr_any<DestT> static_cast_()
+	{
+		shared_ptr_any<DestT> ret(*this, static_cast_tag_());
+		return ret;
+	}
+	
+	void swap(shared_ptr_any& b)
+	{
+		count.swap(b.count);
+		std::swap(v, b.v);
 	}
 	
 	// TODO: cow
 	
 	T* get() const
-	{ return base::get() ? base::get()->value : 0; }
+	{ return v; }
+	
+	int ref_count() const
+	{ return count.ref_count();	}
+	
+private:
+	T* v;
+	shared_count count;
 };
-
-// TODO: Specialize shared_ptr_any for types that derive gvl::shared
 
 } // namespace gvl
 

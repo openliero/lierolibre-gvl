@@ -25,7 +25,6 @@ struct bucket_data : shared
 	
 	virtual size_type size() const = 0;
 	
-	
 	virtual uint8_t const* get_ptr(bucket& owner_bucket, size_type offset) = 0;
 	
 	// Placement-new
@@ -51,117 +50,6 @@ struct bucket_data : shared
 	}
 };
 
-
-struct bucket : list_node<>
-{
-	typedef bucket_size size_type;
-	
-	bucket()
-	: begin_(0)
-	, end_(-1)
-	{
-	}
-	
-	bucket(bucket const& b, std::size_t begin, std::size_t end)
-	: data_(b.data_)
-	, begin_(begin)
-	, end_(end)
-	{
-		
-	}
-	
-	bucket(bucket_data* data)
-	: data_(data)
-	, begin_(0)
-	, end_(0)
-	{
-		end_ = data_->size();
-		if(end_ == bucket_data::nsize)
-		{
-			end_ = 0;
-			begin_ = 1;
-		}
-	}
-	
-	bucket(bucket_data* data, size_type begin, size_type end)
-	: data_(data)
-	, begin_(begin)
-	, end_(end)
-	{
-	}
-	
-	bucket(void const* ptr, size_type len);
-			
-	bool size_known() const { return begin_ <= end_; }
-	
-	size_type begin() const
-	{
-		passert(size_known(), "Size is unknown");
-		return begin_;
-	}
-	
-	size_type end() const
-	{
-		passert(size_known(), "Size is unknown");
-		return end_;
-	}
-	
-	size_type size() const
-	{
-		passert(size_known(), "Size is unknown");
-		return static_cast<size_type>(end_ - begin_);
-	}
-	
-	void split(std::size_t point)
-	{
-		passert(size_known(), "Size is unknown");
-		passert(0 <= point && point <= size(), "Split point is out of bounds");
-		
-		if(point == 0 || point == size())
-			return; // No need to do anything
-				
-		// Insert before
-		// TODO: We should actually let the bucket split itself.
-		// It should at least know when it's being copied.
-		relink_after(this, new bucket(*this, begin_ + point, end_));
-		end_ -= (size() - point);
-	}
-	
-	uint8_t const* get_ptr()
-	{
-		return data_->get_ptr(*this, begin_);
-	}
-		
-	void cut_front(size_type amount)
-	{
-		passert(size_known(), "Size is unknown");
-		begin_ += amount;
-		passert(begin_ <= end_, "Underflow");
-	}
-	
-	void cut_back(size_type amount)
-	{
-		passert(size_known(), "Size is unknown");
-		end_ -= amount;
-		passert(begin_ <= end_, "Underflow");
-	}
-	
-	bucket* clone() const
-	{
-		return new bucket(*this, begin_, end_);
-	}
-	
-	~bucket()
-	{
-	}
-	
-	
-protected:
-
-	shared_ptr<bucket_data> data_;
-	std::size_t begin_;
-	std::size_t end_;
-};
 
 struct bucket_data_mem : bucket_data
 {	
@@ -236,6 +124,134 @@ struct bucket_data_mem : bucket_data
 	std::size_t size_;
 	uint8_t data[1];
 };
+
+struct bucket : list_node<>
+{
+	typedef bucket_size size_type;
+	
+	bucket()
+	: begin_(0)
+	, end_(-1)
+	{
+	}
+	
+	bucket(bucket const& b, std::size_t begin, std::size_t end)
+	: data_(b.data_)
+	, begin_(begin)
+	, end_(end)
+	{
+		
+	}
+	
+	bucket(bucket_data_mem* data)
+	: data_(data)
+	, begin_(0)
+	, end_(0)
+	{
+		end_ = data_->size();
+		if(end_ == bucket_data::nsize)
+		{
+			end_ = 0;
+			begin_ = 1;
+		}
+	}
+	
+	bucket(bucket_data_mem* data, size_type begin, size_type end)
+	: data_(data)
+	, begin_(begin)
+	, end_(end)
+	{
+	}
+	
+	bucket(void const* ptr, size_type len);
+			
+	bool size_known() const { return begin_ <= end_; }
+	
+	size_type begin() const
+	{
+		passert(size_known(), "Size is unknown");
+		return begin_;
+	}
+	
+	size_type end() const
+	{
+		passert(size_known(), "Size is unknown");
+		return end_;
+	}
+	
+	size_type size() const
+	{
+		passert(size_known(), "Size is unknown");
+		return static_cast<size_type>(end_ - begin_);
+	}
+	
+	void split(std::size_t point)
+	{
+		passert(size_known(), "Size is unknown");
+		passert(0 <= point && point <= size(), "Split point is out of bounds");
+		
+		if(point == 0 || point == size())
+			return; // No need to do anything
+				
+		// Insert before
+		// TODO: We should actually let the bucket split itself.
+		// It should at least know when it's being copied.
+		relink_after(this, new bucket(*this, begin_ + point, end_));
+		end_ -= (size() - point);
+	}
+	
+	inline uint8_t const* get_ptr();
+		
+	void cut_front(size_type amount)
+	{
+		passert(size_known(), "Size is unknown");
+		begin_ += amount;
+		passert(begin_ <= end_, "Underflow");
+	}
+	
+	void cut_back(size_type amount)
+	{
+		passert(size_known(), "Size is unknown");
+		end_ -= amount;
+		passert(begin_ <= end_, "Underflow");
+	}
+	
+	shared_ptr<bucket_data_mem> release_data()
+	{
+		begin_ = 0;
+		end_ = 0;
+		return data_.release();
+	}
+	
+	bool bucket_begins_at_zero() const
+	{
+		return begin_ == 0;
+	}
+		
+	bucket* clone() const
+	{
+		return new bucket(*this, begin_, end_);
+	}
+	
+	~bucket()
+	{
+	}
+	
+	
+protected:
+
+	shared_ptr<bucket_data_mem> data_;
+	std::size_t begin_;
+	std::size_t end_;
+};
+
+
+uint8_t const* bucket::get_ptr()
+{
+	uint8_t const* ptr = data_->get_ptr(*this, begin_);
+	//passert(dynamic_cast<bucket_data_mem*>(data_.get()), "get_ptr must replace the bucket_data with bucket_data_mem");
+	return ptr;
+}
 
 }
 

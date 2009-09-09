@@ -3,6 +3,7 @@
 #include <gvl/containers/string.hpp>
 #include <gvl/tut/quickcheck/quickcheck.hpp>
 #include <gvl/support/algorithm.hpp>
+#include <gvl/support/foreach.hpp>
 
 namespace tut
 {
@@ -148,6 +149,7 @@ void object::test<1>()
 	
 }
 
+
 template<>
 template<>
 void object::test<2>()
@@ -157,6 +159,14 @@ void object::test<2>()
 	
 	ensure("swapped", y[6] == ' ');
 	ensure("swapped", x[0] == 'w');
+	
+	uint32_t sum = 0;
+	GVL_FOREACH(uint8_t i, x.all())
+	{
+		sum += i;
+	}
+	
+	ensure("sum is right", sum == 552);
 }
 
 

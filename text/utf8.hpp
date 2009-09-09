@@ -18,10 +18,14 @@ uint32_t const invalid_codepoint = uint32_t(-1);
 // all other cases.
 inline int unsafe_char_length(uint8_t start)
 {
-	uint32_t high_nibble = (start >> 4);
+	int high_nibble_2x = (start >> 4) << 1;
+
+	// nibble 0x0-0x7 -> 1
+	// nibble 0xc-0xd -> 2
+	// nibble 0xe -> 3
+	// nibble 0xf -> 4
 	
-	// Nibble 0xC is 2 bytes, 0xD is 3 bytes, 0xE is 4 bytes
-	return std::max(high_nibble - 0xC + 2, 1);
+	return ((0xe5550000 >> high_nibble_2x) & 3) + 1;
 }
 
 inline bool is_middle_byte(uint8_t b)
@@ -155,6 +159,22 @@ uint32_t decode(Range& range, uint32_t illegal_replacement = invalid_codepoint)
 invalid:
 	range = invalid_range;
 	return invalid_codepoint;
+}
+
+template<typename Range>
+void encode(Range& range, uint32_t cp)
+{
+	if(cp < 0x80)
+		range.put(cp);
+	else if(cp < 0x800)
+	{
+		range.put(0xc0 | (cp >> 6));
+		range.put(0x80 | (cp & 0x3f));
+	}
+	else if(cp < 0x80000)
+	{
+		range.put(0xc0 | (cp >> 6));
+	}
 }
 
 void normalize(std::string& str)

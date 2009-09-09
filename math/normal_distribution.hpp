@@ -14,7 +14,7 @@ struct normal_distribution
 	typedef T value_type;
 	
 	template<typename Random>
-	value_type operator()(Random rand, value_type mean, value_type sigma)
+	value_type normal_variate(Random rand, value_type mean = value_type(0), value_type sigma = value_type(1))
 	{
 		using std::sqrt;
 		using std::log;
@@ -38,7 +38,7 @@ struct normal_distribution
                           cos(value_type(2) * pi * r1) :
                           sin(value_type(2) * pi * r1)) * sigma + mean;
 	}
-	
+		
 	normal_distribution()
 	: valid(false)
 	{

@@ -28,18 +28,18 @@ struct basic_text_writer
 // efficient manner.
 // NOTE: You are not allowed to modify buckets
 // that are buffered.
-struct raw_ansi_stream_reader : gvl::shared
+struct octet_stream_reader : gvl::shared
 {
 	typedef bucket::size_type size_type;
 	
-	raw_ansi_stream_reader(shared_ptr<stream> source_init)
+	octet_stream_reader(shared_ptr<stream> source_init)
 	: cur_(0)
 	, end_(0)
 	, source_(source_init)
 	{
 	}
 	
-	raw_ansi_stream_reader()
+	octet_stream_reader()
 	: cur_(0)
 	, end_(0)
 	, source_()
@@ -138,7 +138,7 @@ struct raw_ansi_stream_reader : gvl::shared
 	void attach(shared_ptr<stream> source_new)
 	{
 		if(source_)
-			throw stream_error("A source is already attached to this raw_ansi_stream_reader");
+			throw stream_error("A source is already attached to this octet_stream_reader");
 		
 		source_ = source_new;
 	}
@@ -207,7 +207,7 @@ private:
 	void check_source()
 	{
 		if(!source_)
-			throw stream_read_error(stream::read_error, "No source assigned to raw_ansi_stream_reader");
+			throw stream_read_error(stream::read_error, "No source assigned to octet_stream_reader");
 	}
 		
 	// May throw
@@ -266,35 +266,37 @@ private:
 
 struct brigade;
 
-struct raw_ansi_stream_writer
-	: basic_text_writer<raw_ansi_stream_writer>
+struct octet_stream_writer
+	: basic_text_writer<octet_stream_writer>
 	, gvl::shared
 {
 	static bucket_size const default_initial_bucket_size = 512;
-	static bucket_size const max_bucket_size = 32768;
+	static bucket_size const default_max_bucket_size = 32768;
 	
-	raw_ansi_stream_writer(shared_ptr<stream> sink)
-	: sink_(sink)
-	, cur_(0)
-	, end_(0)
-	, cap_(default_initial_bucket_size)
-	, buffer_(bucket_data_mem::create(cap_, 0))
-	{
-		read_in_buffer_();
-	}
-	
-	raw_ansi_stream_writer()
+	octet_stream_writer(shared_ptr<stream> sink)
 	: sink_()
-	//, size_(0)
 	, cur_(0)
 	, end_(0)
 	, cap_(0)
 	, buffer_()
 	, estimated_needed_buffer_size_(default_initial_bucket_size)
+	, max_bucket_size(default_max_bucket_size)
+	{
+		attach(sink);
+	}
+	
+	octet_stream_writer()
+	: sink_()
+	, cur_(0)
+	, end_(0)
+	, cap_(0)
+	, buffer_()
+	, estimated_needed_buffer_size_(default_initial_bucket_size)
+	, max_bucket_size(default_max_bucket_size)
 	{
 	}
 	
-	~raw_ansi_stream_writer()
+	~octet_stream_writer()
 	{
 		if(sink_)
 			flush();
@@ -360,7 +362,7 @@ struct raw_ansi_stream_writer
 	void attach(shared_ptr<stream> new_sink)
 	{
 		if(sink_)
-			throw stream_error("A sink is already attached to the raw_ansi_stream_writer");
+			throw stream_error("A sink is already attached to the octet_stream_writer");
 		sink_ = new_sink;
 		cap_ = default_initial_bucket_size;
 		buffer_.reset(bucket_data_mem::create(cap_, 0));
@@ -370,10 +372,10 @@ struct raw_ansi_stream_writer
 	void check_sink()
 	{
 		if(!sink_)
-			throw stream_write_error(stream::write_error, "No sink assigned to raw_ansi_stream_writer");
+			throw stream_write_error(stream::write_error, "No sink assigned to octet_stream_writer");
 	}
 	
-	void swap(raw_ansi_stream_writer& b)
+	void swap(octet_stream_writer& b)
 	{
 		gvl::shared::swap(b);
 		sink_.swap(b.sink_);
@@ -387,6 +389,17 @@ struct raw_ansi_stream_writer
 			b.buffer_ = tmp;
 		}
 		std::swap(estimated_needed_buffer_size_, b.estimated_needed_buffer_size_);
+	}
+	
+	void reserve(std::size_t size)
+	{
+		ensure_cap_(size);
+	}
+	
+	// Make the growth of the current bucket unlimited
+	void set_unlimited_bucket()
+	{
+		max_bucket_size = std::size_t(0) - 1;
 	}
 		
 private:
@@ -483,11 +496,12 @@ private:
 	bucket_size cap_;
 	//list<bucket> mem_buckets_;
 	std::auto_ptr<bucket_data_mem> buffer_;
-	std::size_t estimated_needed_buffer_size_;
+	bucket_size estimated_needed_buffer_size_;
+	bucket_size max_bucket_size;
 };
 
 /*
-template<typename Writer = raw_ansi_stream_writer>
+template<typename Writer = octet_stream_writer>
 struct raw_ansi_format_writer : basic_text_writer<raw_ansi_format_writer<Writer> >
 {
 	raw_ansi_format_writer(Writer& w_init)

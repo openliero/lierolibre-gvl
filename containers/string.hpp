@@ -543,6 +543,7 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		}
 	private:
 		range(basic_string& self, uint8_t* cur_init, uint8_t* end_init)
+		: self(self), cur(cur_init), end(end_init)
 		{
 		}
 		
@@ -574,6 +575,46 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		init_from_(b, std::strlen(b_));
 	}
 	
+	basic_string(uint8_t const* b, std::size_t len)
+	{
+		init_from_(b, len);
+	}
+	
+	basic_string(
+		shared_ptr<bucket_data_mem> data_init,
+		std::size_t size_init,
+		std::size_t cap_init,
+		take_data_tag)
+	{
+		// We can't take over the data pointer unless we're doing
+		// Cow or the ref_count() is 1.
+		if(!Cow && data_init->ref_count() > 1)
+			init_from_(data_init->data, size_init); // Copy
+		else
+			init_from_(data_init.get(), size_init, cap_init, take_data_tag());
+	}
+	
+	template<std::size_t InlineSize2, bool Cow2>
+	basic_string(basic_string<InlineSize2, Cow2> const& b)
+	{
+		init_from_(b);
+	}
+	
+	template<std::size_t InlineSize2, bool Cow2>
+	basic_string(basic_string<InlineSize2, Cow2> const& b, take_data_tag)
+	{
+		if(b.is_inline_())
+		{
+			init_from_(b.d.inline_data, b.size_);
+			b.reset_next_limit_();
+		}
+		else
+		{
+			init_from_(b.d.data, b.size_, b.cap_, take_data_tag());
+			b.reset_next_limit_();
+		}
+	}
+	
 	~basic_string()
 	{
 		release_();
@@ -595,28 +636,6 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		}			
 	}
 	
-	template<std::size_t InlineSize2, bool Cow2>
-	basic_string(basic_string<InlineSize2, Cow2> const& b)
-	{
-		init_from_(b);
-	}
-	
-	
-	template<std::size_t InlineSize2, bool Cow2>
-	basic_string(basic_string<InlineSize2, Cow2> const& b, take_data_tag)
-	{
-		if(b.is_inline_())
-		{
-			init_from_(b.d.inline_data, b.size_);
-			b.reset_next_limit_();
-		}
-		else
-		{
-			init_from_(b.d.data, b.size_, b.cap_, take_data_tag());
-			b.reset_next_limit_();
-		}
-	}
-	
 	basic_string& operator=(basic_string b)
 	{
 		b.swap(*this);
@@ -633,6 +652,18 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 	template<std::size_t InlineSize2, bool Cow2>
 	void assign(basic_string<InlineSize2, Cow2> b)
 	{
+		b.swap(*this);
+	}
+	
+	void assign(shared_ptr<bucket_data_mem> data_new, std::size_t size_new, std::size_t cap_new)
+	{
+		basic_string b(data_new, size_new, cap_new, take_data_tag());
+		b.swap(*this);
+	}
+	
+	void assign(uint8_t const* begin, std::size_t len)
+	{
+		basic_string b(begin, len);
 		b.swap(*this);
 	}
 	
@@ -867,6 +898,7 @@ private:
 		{
 			this->cap_ = InlineSize;
 			std::memcpy(this->d.inline_data, data_init->data, size_init);
+			data_init->release();
 		}
 		else
 		{

@@ -76,12 +76,12 @@ void object::test<1>()
 {
 	using namespace gvl;
 	
-	stream_ptr sink(new brigade_buffer());
+	stream_ptr sink(new memory_stream());
 	
 	shared_ptr<deflate_filter> filter(new deflate_filter(true));
 	filter->attach_sink(sink);
 	
-	raw_ansi_stream_writer writer(filter);
+	octet_stream_writer writer(filter);
 	
 	uint8_t seq[] = {1, 2, 3, 4};
 	
@@ -97,7 +97,7 @@ void object::test<1>()
 	shared_ptr<deflate_filter> filter2(new deflate_filter(false));
 	filter2->attach_source(sink);
 	
-	raw_ansi_stream_reader reader(filter2);
+	octet_stream_reader reader(filter2);
 	for(int i = 0; i < 1000; ++i)
 	{
 		int v = reader.get();

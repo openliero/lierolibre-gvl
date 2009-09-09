@@ -41,11 +41,19 @@ inline int log2(uint64_t v)
 		return 0;
 	return r;
 }
+
 #else
 int log2(uint32_t v);
 int log2(uint64_t v);
 int top_bit(uint32_t v);
 #endif
+
+inline int popcount(uint32_t v)
+{
+	v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
+	v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
+	return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
+}
 
 inline int ceil_log2(uint32_t v)
 {

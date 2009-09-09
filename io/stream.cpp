@@ -17,10 +17,10 @@ bucket::bucket(void const* ptr, size_type len)
 
 
 #if 0
-stream::write_status raw_ansi_stream_writer::partial_flush()
+stream::write_status octet_stream_writer::partial_flush()
 {
 	if(!sink_)
-		throw stream_write_error(stream::write_error, "No sink assigned to raw_ansi_stream_writer");
+		throw stream_write_error(stream::write_error, "No sink assigned to octet_stream_writer");
 	stream::write_status stat = stream::write_ok;
 	while(!mem_buckets_.empty())
 	{

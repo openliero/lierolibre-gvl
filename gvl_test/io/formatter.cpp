@@ -3,6 +3,8 @@
 #include <gvl/io/encoding.hpp>
 #include <gvl/io/stream.hpp>
 #include <gvl/containers/range.hpp>
+#undef GVL_PROFILE
+#define GVL_PROFILE 1
 #include <gvl/support/profile.hpp>
 #include <gvl/system/system.hpp>
 
@@ -35,14 +37,14 @@ void object::test<1>()
 #if GVL_PROFILE
 	using namespace gvl;
 	
-	typedef delimited_iterator_range<uint8_t*> buffer_writer;
+	typedef unsafe_delimited_iterator_range<uint8_t*> buffer_writer;
 	
 	uint8_t buffer[32];
 	buffer_writer orig_writer(buffer, buffer + 32);
 	
 	uint32_t const limit = 1000000;
 	
-	uint32_t const base = 16;
+	uint32_t const base = 10;
 	uint32_t volatile vbase_ = base;
 	uint32_t vbase = vbase_;
 	
@@ -112,16 +114,16 @@ void object::test<2>()
 #if GVL_PROFILE
 	using namespace gvl;
 	
-	shared_ptr<brigade_buffer> dest(new brigade_buffer);
-	raw_ansi_stream_writer writer(dest);
-	
-	std::stringstream ss;
-	
+#ifdef NDEBUG
 	uint32_t limit = 2000000;
+#else
+	uint32_t limit = 20000;
+#endif
 	
-	std::string a, b, c;
+	std::string a, b, c, d;
 	
 	{
+		std::stringstream ss;
 		GVL_PROF_TIMER("stringstream");
 				
 		for(uint32_t i = 0; i < limit; ++i)
@@ -170,7 +172,10 @@ void object::test<2>()
 	}
 	
 	{
-		GVL_PROF_TIMER("format_writer + brigade_buffer");
+		shared_ptr<memory_stream> dest(new memory_stream);
+		octet_stream_writer writer(dest);
+		
+		GVL_PROF_TIMER("octet_stream_writer + memory_stream");
 		
 		for(uint32_t i = 0; i < limit; ++i)
 		{
@@ -180,6 +185,24 @@ void object::test<2>()
 		writer.flush();
 		
 		dest->to_str(a);
+	}
+	
+	{
+		shared_ptr<memory_stream> dest(new memory_stream);
+		octet_stream_writer writer(dest);
+		
+		GVL_PROF_TIMER("octet_stream_writer + memory_stream + unlimited bucket growth");
+		writer.set_unlimited_bucket();
+		
+		for(uint32_t i = 0; i < limit; ++i)
+		{
+			writer << "Hello " << i << '\n';
+		}
+		
+		writer.flush();
+		
+		gvl::string str;
+		dest->release_as_str(str);
 	}
 	
 	{
@@ -197,7 +220,6 @@ void object::test<2>()
 	}
 	
 	ensure("strings are equal", a == b && b == c);
-	std::cout << a.size() << std::endl;
 #endif
 }
 

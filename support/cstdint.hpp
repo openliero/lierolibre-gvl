@@ -45,7 +45,7 @@ typedef          long      int32_t;
 #endif
 
 /* We found a 32-bit type above, int should do */
-#if GVL_ARCH == GVL_X86 || GVL_ARCH == GVL_X86_64
+#if GVL_X86 || GVL_X86_64
 /* long should match the register size */
 typedef unsigned long    uint_fast16_t;
 typedef          long    int_fast16_t;

@@ -3,6 +3,7 @@
 
 #include "../containers/list.hpp"
 #include "../containers/bucket.hpp"
+#include "../containers/string.hpp"
 #include "../support/debug.hpp"
 #include "../support/cstdint.hpp"
 #include "../support/platform.hpp"
@@ -307,14 +308,14 @@ typedef shared_ptr<stream> stream_ptr;
 
 
 /*
-inline raw_ansi_stream_writer& operator<<(raw_ansi_stream_writer& writer, char const* str)
+inline octet_stream_writer& operator<<(octet_stream_writer& writer, char const* str)
 {
 	std::size_t len = std::strlen(str);
 	writer.put(reinterpret_cast<uint8_t const*>(str), len);
 	return writer;
 }
 
-inline raw_ansi_stream_writer& operator<<(raw_ansi_stream_writer& writer, std::string const& str)
+inline octet_stream_writer& operator<<(octet_stream_writer& writer, std::string const& str)
 {
 	writer.put(reinterpret_cast<uint8_t const*>(str.data()), str.size());
 	return writer;
@@ -538,7 +539,7 @@ protected:
 
 typedef shared_ptr<filter> filter_ptr;
 
-struct brigade_buffer : stream
+struct memory_stream : stream
 {
 	read_result read_bucket(size_type amount = 0, bucket* dest = 0)
 	{
@@ -573,6 +574,33 @@ struct brigade_buffer : stream
 			char const* p = reinterpret_cast<char const*>(i->get_ptr());
 			ret.insert(ret.end(), p, p + i->size());
 		}
+	}
+	
+	template<std::size_t InlineSize, bool Cow>
+	void release_as_str(gvl::basic_string<InlineSize, Cow>& ret)
+	{
+		if(in_buffer.buckets.empty())
+		{
+			ret.clear();
+			return;
+		}
+		list<bucket>::iterator i = in_buffer.buckets.begin();
+		
+		// TODO: The data usually has more capacity than 'size',
+		// but this information is lost.
+		std::size_t size = i->size();
+		if(i->bucket_begins_at_zero())
+			ret.assign(i->release_data(), size, size);
+		else
+			ret.assign(i->get_ptr(), size);
+			
+		while(++i != in_buffer.buckets.end())
+		{
+			std::size_t size = i->size();
+			ret.append(i->get_ptr(), size);
+		}
+		
+		in_buffer.buckets.clear();
 	}
 };
 

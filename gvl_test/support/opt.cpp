@@ -78,10 +78,9 @@ void object::test<2>()
 	{
 		divisors[i] = rand(3, 1337);
 	}
-	
-	uint32_t sum = 0;
-	
+		
 	{
+		uint32_t sum = 0;
 		GVL_PROF_TIMER("prepared_division");
 			
 		for(int i = 0; i < 512; ++i)
@@ -105,9 +104,12 @@ void object::test<2>()
 			#undef DO
 			}
 		}
+		
+		ensure("sum is correct", sum == 2405768521);
 	}
 	
 	{
+		uint32_t sum = 0;
 		GVL_PROF_TIMER("normal division");
 			
 		for(int i = 0; i < 512; ++i)
@@ -131,9 +133,12 @@ void object::test<2>()
 			#undef DO
 			}
 		}
+		
+		ensure("sum is correct", sum == 2405768521);
 	}
 	
 	{
+		uint32_t sum = 0;
 		GVL_PROF_TIMER("static division");
 			
 		for(int i = 0; i < 512; ++i)
@@ -155,11 +160,9 @@ void object::test<2>()
 			#undef DO
 			}
 		}
+		
+		ensure("sum is correct", sum == 502897152);
 	}
-	
-	std::cout << "Sum: " << sum << '\n';
-	
-	gvl::present_profile(std::cout);
 #endif
 }
 

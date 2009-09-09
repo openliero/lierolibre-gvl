@@ -3,7 +3,7 @@
 namespace gvl
 {
 
-stream::write_status raw_ansi_stream_writer::flush_buffer(bucket_size new_buffer_size)
+stream::write_status octet_stream_writer::flush_buffer(bucket_size new_buffer_size)
 {
 	std::size_t size = buffer_size_();
 	if(size > 0)
@@ -44,12 +44,12 @@ stream::write_status raw_ansi_stream_writer::flush_buffer(bucket_size new_buffer
 	return stream::write_ok;
 }
 
-stream::write_status raw_ansi_stream_writer::weak_flush(bucket_size new_buffer_size)
+stream::write_status octet_stream_writer::weak_flush(bucket_size new_buffer_size)
 {
 	return flush_buffer(new_buffer_size);
 }
 
-stream::write_status raw_ansi_stream_writer::flush(bucket_size new_buffer_size)
+stream::write_status octet_stream_writer::flush(bucket_size new_buffer_size)
 {
 	stream::write_status res = flush_buffer(new_buffer_size);
 	if(res != stream::write_ok)
@@ -58,7 +58,7 @@ stream::write_status raw_ansi_stream_writer::flush(bucket_size new_buffer_size)
 	return sink_->flush();
 }
 
-stream::write_status raw_ansi_stream_writer::put_bucket(bucket* buf)
+stream::write_status octet_stream_writer::put_bucket(bucket* buf)
 {
 	stream::write_status res = flush_buffer();
 

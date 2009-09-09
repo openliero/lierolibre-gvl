@@ -278,9 +278,9 @@ void object::test<3>()
 	}
 	
 	{
-		std::priority_queue<char> heap;
+		std::priority_queue<int> heap;
 		
-		GVL_PROF_TIMER("heap model");
+		GVL_PROF_TIMER("binary heap");
 		for(int i = 0; i < 20; ++i)
 		{	
 			
@@ -297,8 +297,6 @@ void object::test<3>()
 		}
 	}
 	
-	std::cout << '\n';
-	gvl::present_profile(std::cout);
 #endif
 }
 

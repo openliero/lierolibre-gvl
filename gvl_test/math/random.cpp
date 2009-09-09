@@ -33,8 +33,8 @@ void object::test<1>()
 	
 	gvl::mwc rand;
 	
-	double x = dist(rand, 0.0, 1.0);
-	x = rdist(rand, 0.0, 1.0).value;
+	double x = dist.normal_variate(rand, 0.0, 1.0);
+	x = rdist.normal_variate(rand, 0.0, 1.0).value;
 }
 
 } // namespace tut

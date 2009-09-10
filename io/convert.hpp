@@ -54,8 +54,6 @@ int uint_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, bool u
 	
 	uint8_t const* names = uppercase ? caps : no_caps;
 	
-	int offset = (uppercase ? 'A' : 'a') - 10 - '0';
-		
 	while(min_digits-- > 0 || x > 0)
 	{
 		std::pair<uint32_t, uint32_t> res(div.quot_rem(x));
@@ -77,8 +75,6 @@ int uint_to_ascii_base(Writer& writer, T x, int min_digits = 1, bool uppercase =
 	
 	uint8_t const* names = uppercase ? caps : no_caps;
 	
-	int offset = (uppercase ? 'A' : 'a') - 10 - '0';
-
 	while(min_digits-- > 0 || x > 0)
 	{
 		int n = x % Base;

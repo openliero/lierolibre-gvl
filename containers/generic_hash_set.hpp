@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <utility>
 #include "../support/debug.hpp"
 #include "../support/hash.hpp"
 
@@ -94,6 +95,12 @@ struct generic_hash_set : Hash, Compare
 
 	struct iterator
 	{
+		typedef std::ptrdiff_t difference_type;
+		typedef std::forward_iterator_tag iterator_category;
+		typedef ValueT* pointer;
+		typedef ValueT& reference;
+		typedef ValueT value_type;
+		
 		struct found_tag {};
 		
 		iterator(T* p, T* end)
@@ -200,7 +207,7 @@ struct generic_hash_set : Hash, Compare
 			
 			h += step; step += 2;
 		}
-		while(step < 64);
+		while(step < 1024);
 		
 		return 0;
 	}

@@ -71,7 +71,7 @@ QC_BEGIN_GEN(sorted_list_gen, integer_list)
 	return a;
 QC_END_GEN()
 
-QC_BEGIN_PROP(integrity_property, integer_list)
+QC_BEGIN_PROP(list_integrity_property, integer_list)
 	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
 		obj->integrity_check();
@@ -79,7 +79,7 @@ QC_BEGIN_PROP(integrity_property, integer_list)
 	}
 QC_END_PROP()
 
-QC_BEGIN_GENERIC_PROP(pop_front_property)
+QC_BEGIN_GENERIC_PROP(list_pop_front_property)
 	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
 		if(obj->empty())
@@ -199,14 +199,14 @@ template<>
 void object::test<2>()
 {
 	gvl::qc::context ctx;
-	ctx.add("singleton", new singleton_list_gen);
-	ctx.add("concat", new concat_list_gen);
+	ctx.add("singleton", new singleton_list_gen, 1.5);
+	ctx.add("concat", new concat_list_gen, 1.5);
 	ctx.add("sorted", new sorted_list_gen);
 	ctx.add("empty", new empty_list_gen);
 	ctx.add("erase", new erase_list_gen);
 	
-	gvl::qc::test_property<integrity_property>(ctx);
-	gvl::qc::test_property<pop_front_property<integer_list> >(ctx);
+	gvl::qc::test_property<list_integrity_property>(ctx);
+	gvl::qc::test_property<list_pop_front_property<integer_list> >(ctx);
 }
 
 } // namespace tut

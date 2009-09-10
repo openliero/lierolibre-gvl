@@ -407,7 +407,7 @@ void basic_ibitstream<DerivedT, WordT>::resetg()
 template<typename DerivedT, typename WordT>
 void basic_obitstream<DerivedT, WordT>::resetp()
 {
-	out_bits_left = 8;
+	out_bits_left = word_bits;
 	out_bits = 0;
 }
 

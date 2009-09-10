@@ -135,6 +135,18 @@ struct unsafe_delimited_iterator_range
 	It i, e;
 };
 
+template<typename ForwardIterator>
+unsafe_delimited_iterator_range<ForwardIterator> iter_range(ForwardIterator const& b, ForwardIterator const& e)
+{
+	return unsafe_delimited_iterator_range<ForwardIterator>(b, e);
+}
+
+template<typename Container>
+unsafe_delimited_iterator_range<typename Container::iterator> iter_range(Container& cont)
+{
+	return unsafe_delimited_iterator_range<typename Container::iterator>(cont.begin(), cont.end());
+}
+
 }
 
 #endif // UUID_4800C387FBD44D146E8D33AE59C4A598

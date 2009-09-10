@@ -60,15 +60,6 @@ template<>
 template<>
 void object::test<2>()
 {
-#if 0
-	gvl::stream_ptr cout(new gvl::fstream(stdout));
-	gvl::stream_ptr cin(new gvl::fstream(stdin));
-	gvl::stream_reader cin_reader(cin);
-	gvl::stream_writer cout_writer(cout);
-	gvl::format_writer<> console(cout_writer);
-	console << 100;
-	console.flush();
-#endif
 	
 #if GVL_PROFILE
 	uint32_t divisors[512];

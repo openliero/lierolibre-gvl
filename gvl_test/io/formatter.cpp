@@ -42,7 +42,11 @@ void object::test<1>()
 	uint8_t buffer[32];
 	buffer_writer orig_writer(buffer, buffer + 32);
 	
+#ifdef NDEBUG
 	uint32_t const limit = 1000000;
+#else
+	uint32_t const limit = 10000;
+#endif
 	
 	uint32_t const base = 10;
 	uint32_t volatile vbase_ = base;

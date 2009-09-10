@@ -68,7 +68,7 @@ QC_BEGIN_PROP(concat_property, gvl::string)
 	}
 QC_END_PROP()
 
-QC_BEGIN_PROP(cstr_property, gvl::string)
+QC_BEGIN_PROP(string_cstr_property, gvl::string)
 	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, a))
 	{
 		// c_str() will not return the whole string if it contains zeroes
@@ -82,7 +82,7 @@ QC_BEGIN_PROP(cstr_property, gvl::string)
 	}
 QC_END_PROP()
 
-QC_BEGIN_PROP(set_property, gvl::string)
+QC_BEGIN_PROP(string_set_property, gvl::string)
 	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, a))
 	{
 		if(a->empty())
@@ -98,7 +98,7 @@ QC_BEGIN_PROP(set_property, gvl::string)
 	}
 QC_END_PROP()
 
-QC_BEGIN_PROP(clear_property, gvl::string)
+QC_BEGIN_PROP(string_clear_property, gvl::string)
 	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, a))
 	{
 		if(a->empty())
@@ -143,9 +143,9 @@ void object::test<1>()
 	ctx.add("assign_swap_gen", new change_char_gen);
 	
 	gvl::qc::test_property<concat_property>(ctx);
-	gvl::qc::test_property<cstr_property>(ctx);
-	gvl::qc::test_property<set_property>(ctx);
-	gvl::qc::test_property<clear_property>(ctx);
+	gvl::qc::test_property<string_cstr_property>(ctx);
+	gvl::qc::test_property<string_set_property>(ctx);
+	gvl::qc::test_property<string_clear_property>(ctx);
 	
 }
 

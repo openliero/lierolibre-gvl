@@ -102,10 +102,10 @@ void object::test<1>()
 	{
 		int v = reader.get();
 		ensure(v == 13);
-		ensure(reader.get() == 1);
-		ensure(reader.get() == 2);
-		ensure(reader.get() == 3);
-		ensure(reader.get() == 4);
+		ensure(reader.get() == seq[0]);
+		ensure(reader.get() == seq[1]);
+		ensure(reader.get() == seq[2]);
+		ensure(reader.get() == seq[3]);
 	}
 }
 

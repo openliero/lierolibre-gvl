@@ -15,12 +15,12 @@ struct hash_set_index
 	{
 	}
 	
-	KeyT const& key() const
+	KeyT& key() const
 	{
 		return *ptr;
 	}
 	
-	KeyT const& value() const
+	KeyT& value() const
 	{
 		return *ptr;
 	}
@@ -111,15 +111,20 @@ struct hash_set : generic_hash_set<hash_set_index<KeyT>, KeyT, KeyT, Hash, Compa
 		insert(k);
 		return *k;
 	}
-	
-	
-	
+		
 	template<typename SpecKeyT>
 	KeyT* release(SpecKeyT const& v)
 	{
 		hash_set_index<KeyT>* index = base::lookup(v);
 		
 		return index ? index->release() : 0;
+	}
+	
+	template<typename SpecKeyT>
+	void erase(SpecKeyT const& v)
+	{
+		if(KeyT* k = release(v))
+			delete k;
 	}
 };
 

@@ -4,6 +4,7 @@
 #include "bits.hpp"
 #include "cstdint.hpp"
 #include "platform.hpp"
+#include "debug.hpp"
 #include <stdexcept>
 #include <utility>
 
@@ -11,6 +12,7 @@
 #include <intrin.h>
 #pragma intrinsic(__emul)
 #pragma intrinsic(__emulu)
+#pragma intrinsic(_mm_prefetch)
 #endif
 
 namespace gvl
@@ -96,6 +98,34 @@ struct prepared_division
 	}
 };
 
+#ifdef NDEBUG
+# if GVL_MSVCPP
+#  define GVL_ASSUME(x) __assume(x)
+#  define GVL_UNREACHABLE() GVL_ASSUME(0)
+#  if GVL_SSE
+#    define GVL_PREFETCH_READ(addr) _mm_prefetch((char*)(addr), _MM_HINT_T2)
+#    define GVL_PREFETCH_WRITE(addr) _mm_prefetch((char*)(addr), _MM_HINT_T2)
+#  endif
+# elif GVL_GCC
+#  define GVL_ASSUME(x) __builtin_expect((x), 1)
+#  define GVL_UNREACHABLE() __builtin_unreachable()
+#  define GVL_PREFETCH_READ(addr) __builtin_prefetch((addr), 0)
+#  define GVL_PREFETCH_WRITE(addr) __builtin_prefetch((addr), 1)
+# endif
+#endif
+
+#ifndef GVL_ASSUME
+# define GVL_ASSUME(x) sassert(x)
+#endif
+#ifndef GVL_UNREACHABLE
+# define GVL_UNREACHABLE() sassert(false)
+#endif
+#ifndef GVL_PREFETCH_READ
+# define GVL_PREFETCH_READ(addr) ((void)(addr))
+#endif
+#ifndef GVL_PREFETCH_WRITE
+# define GVL_PREFETCH_WRITE(addr) ((void)(addr))
+#endif
 
 }
 

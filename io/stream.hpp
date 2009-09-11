@@ -150,6 +150,18 @@ struct stream : shared
 		bool consumed;
 	};
 	
+	static write_status combine_write_status(write_status a, write_status b)
+	{
+		if(a == b)
+			return a;
+		else if(a == write_ok)
+			return b;
+		else if(b == write_ok)
+			return a;
+		else
+			return write_error;
+	}
+	
 	stream()
 	: cur_state(state_open)
 	{

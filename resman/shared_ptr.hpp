@@ -14,7 +14,7 @@ namespace gvl
 
 struct weak_ptr_common;
 
-struct share_ownership {};
+struct shared_ownership {};
 
 template<typename T>
 struct deferred_ptr;
@@ -37,7 +37,7 @@ struct shared_ptr // : shared_ptr_common
 	}
 	
 	// Shares ownership
-	explicit shared_ptr(T* v_init, share_ownership)
+	explicit shared_ptr(T* v_init, shared_ownership)
 	{
 		_set(v_init);
 	}
@@ -106,7 +106,7 @@ struct shared_ptr // : shared_ptr_common
 	
 	template<typename DestT>
 	shared_ptr<DestT> cast()
-	{ return shared_ptr<DestT>(dynamic_cast<DestT*>(get()), share_ownership()); }
+	{ return shared_ptr<DestT>(dynamic_cast<DestT*>(get()), shared_ownership()); }
 	
 	T& cow()
 	{
@@ -183,7 +183,7 @@ public:
 	}
 	
 	// Shares ownership
-	explicit deferred_ptr(T* v_init, share_ownership)
+	explicit deferred_ptr(T* v_init, shared_ownership)
 	{
 		_set(v_init);
 	}
@@ -318,6 +318,10 @@ private:
 	
 	mutable T* v;
 };
+
+template<typename T>
+deferred_ptr<T> share_ownership(T* ptr)
+{ return deferred_ptr<T>(ptr, shared_ownership()); }
 
 /*
 // Like a normal pointer, but ownership is assumed to belong

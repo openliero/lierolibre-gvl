@@ -3,6 +3,7 @@
 
 #include "../support/debug.hpp"
 #include "../support/opt.hpp"
+#include "../meta/as_unsigned.hpp"
 
 namespace gvl
 {
@@ -89,14 +90,32 @@ int uint_to_ascii_base(Writer& writer, T x, int min_digits = 1, bool uppercase =
 template<uint32_t Base, typename Writer, typename T>
 void int_to_ascii_base(Writer& writer, T x, int min_digits = 1, bool uppercase = false)
 {
+	typedef typename as_unsigned<T>::type unsigned_t;
+	
 	if(x < 0)
 	{
 		writer.put('-');
-		uint_to_ascii_base<Base>(writer, -x, min_digits, uppercase);
+		uint_to_ascii_base<Base>(writer, unsigned_t(-x), min_digits, uppercase);
 	}
 	else
 	{
-		uint_to_ascii_base<Base>(writer, x, min_digits, uppercase);
+		uint_to_ascii_base<Base>(writer, unsigned_t(x), min_digits, uppercase);
+	}
+}
+
+template<typename Writer, typename T>
+void int_to_ascii(Writer& writer, T x, int base = 10, int min_digits = 1, bool uppercase = false)
+{
+	typedef typename as_unsigned<T>::type unsigned_t;
+	
+	if(x < 0)
+	{
+		writer.put('-');
+		uint_to_ascii(writer, unsigned_t(-x), base, min_digits, uppercase);
+	}
+	else
+	{
+		uint_to_ascii(writer, unsigned_t(x), base, min_digits, uppercase);
 	}
 }
 

@@ -47,7 +47,9 @@ for(;
 #endif
 
 #include <iterator>
+#include <cstdlib>
 
+// Deprecated, see range.hpp
 template<typename ForwardIterator>
 struct iterator_range
 {

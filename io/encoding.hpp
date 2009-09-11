@@ -5,6 +5,7 @@
 #include "convert.hpp"
 #include "../resman/shared.hpp"
 #include "../support/algorithm.hpp"
+#include "../support/platform.hpp"
 #include <cstring>
 
 namespace gvl
@@ -345,8 +346,16 @@ struct octet_stream_writer
 		}
 	}
 	
-	// TODO: a range put that takes a uint32_t const*
-	
+	stream::write_status put(uint32_t const* p, std::size_t len)
+	{
+		stream::write_status res = stream::write_ok;
+		for(std::size_t i = 0; i < len; ++i)
+		{
+			res = stream::combine_write_status(res, put(*p++));
+		}
+		return res;	
+	}
+		
 	stream::write_status put_bucket(bucket* buf);
 	
 	shared_ptr<stream> detach()
@@ -550,6 +559,57 @@ inline D& operator<<(basic_text_writer<D>& self_, char ch)
 {
 	D& self = self_.derived();
 	self.put(static_cast<uint8_t>(ch));
+	return self;
+}
+
+struct cell : basic_text_writer<cell>
+{
+	enum placement
+	{
+		left, center, right
+	};
+	
+	cell(int width_init, placement text_placement_init)
+	: width(width_init)
+	, text_placement(text_placement_init)
+	{
+	}
+	
+	void put(uint32_t x)
+	{ buffer.push_back(x); }
+	
+	void put(uint8_t const* p, std::size_t len)
+	{
+		for(std::size_t i = 0; i < len; ++i)
+		{
+			buffer.push_back(p[i]);
+		}
+	}
+	
+	void put(uint32_t const* p, std::size_t len)
+	{
+		for(std::size_t i = 0; i < len; ++i)
+		{
+			buffer.push_back(p[i]);
+		}
+	}
+	
+	std::vector<uint32_t> buffer;
+	placement text_placement;
+	int width;
+};
+
+template<typename D>
+inline D& operator<<(basic_text_writer<D>& self_, cell& c)
+{
+	D& self = self_.derived();
+	if(c.buffer.size() > c.width)
+	{
+		int allowed = std::max(int(c.buffer.size()) - 2, 0)
+		self.put(&c.buffer[0], &c.buffer[0] + allowed);
+		if(allowed != int(c.buffer.size()))
+			self << "..";
+	}
 	return self;
 }
 

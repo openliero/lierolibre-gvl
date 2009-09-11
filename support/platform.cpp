@@ -27,4 +27,16 @@ void gvl_test_platform()
 	// Test integer assumptions
 	GVL_STATIC_ASSERT((-1>>31) == -1); // Signed right-shift must duplicate sign bit
 	GVL_STATIC_ASSERT((-1/2) == 0); // Division must round towards 0
+	
+	// Do this last since it may crash the process
+#if GVL_UNALIGNED_ACCESS
+	uint8_t volatile x[150] = {};
+	
+	for(int i = 0; i < 100; ++i)
+		*(uint32_t volatile*)(x + i) = 1;
+
+	uint32_t sum = 0;
+	for(int i = 0; i < 100; ++i)
+		sum += *(uint32_t volatile*)(x + i);
+#endif
 }

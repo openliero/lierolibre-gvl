@@ -82,6 +82,27 @@
 # endif
 #endif
 
+/* Whether or not types can be read from unaligned addresses */
+#if !defined(GVL_UNALIGNED_ACCESS)
+# if GVL_X86 || GVL_X86_64
+#  define GVL_UNALIGNED_ACCESS 1
+# else
+#  define GVL_UNALIGNED_ACCESS 0
+# endif
+#endif
+
+/* At least x86 and x86_64 provide efficient masked shift counts in shifts */
+#if !defined(GVL_MASKED_SHIFT_COUNT)
+# if GVL_X86 || GVL_X86_64
+#  define GVL_MASKED_SHIFT_COUNT 1
+# else
+#  define GVL_MASKED_SHIFT_COUNT 0
+# endif
+#endif
+
+#define GVL_DIV_ROUNDS_TOWARD_ZERO ((-1/2)==0)
+#define GVL_SIGN_EXTENDING_RIGHT_SHIFT (((-1)>>15)==-1)
+
 /* This function checks whether the above inferred
 ** characteristics are correct. It will throw gvl::assert_failure if not. */
 void gvl_test_platform();

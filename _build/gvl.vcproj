@@ -1245,6 +1245,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\io\dtoa.c"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\io\encoding.cpp"
 				>
 			</File>
@@ -1254,6 +1266,10 @@
 			</File>
 			<File
 				RelativePath="..\io\fstream.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\io\iostream.hpp"
 				>
 			</File>
 			<File
@@ -1646,6 +1662,10 @@
 		<Filter
 			Name="meta"
 			>
+			<File
+				RelativePath="..\meta\as_unsigned.hpp"
+				>
+			</File>
 			<File
 				RelativePath="..\meta\is_ptr_convertible.hpp"
 				>

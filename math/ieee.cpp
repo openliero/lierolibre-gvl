@@ -1,7 +1,7 @@
 #include "ieee.hpp"
 
 
-#if GVL_WIN32
+#if GVL_MSVCPP
 #include <fpieee.h>
 #include <excpt.h>
 #endif

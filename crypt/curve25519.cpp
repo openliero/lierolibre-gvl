@@ -9,7 +9,7 @@ namespace
 void core(uint8_t const* Px, uint8_t* s, uint8_t const* k, uint8_t const* Gx);
 int mula_small(uint8_t* p, uint8_t* q, int m, uint8_t* x, int n, int z);
 int mula32(uint8_t* p, uint8_t* x, uint8_t* y, int t, int z);
-void divmod(uint8_t* q, uint8_t* r, int n, uint8_t* d, int t);
+void divmod(uint8_t* q, uint8_t* r, int n, uint8_t const* d, int t);
 void x_to_y2(int10& t, int10& y2, int10& x);
 void sqrt(int10& x, int10& u);
 int is_negative(int10 const& x);

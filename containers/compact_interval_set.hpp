@@ -62,10 +62,15 @@ struct compact_interval_set
 			T begin = i->begin;
 			T end = i->end;
 			
+			T length = end - begin;
+			
 			sassert(begin != end);
 			
-			if(begin <= hole_begin
-			&& end >= hole_end)
+			T offset_hole_begin = hole_begin - begin;
+			T offset_hole_end = hole_end - begin;
+			
+			if(offset_hole_begin >= 0 && offset_hole_begin <= length
+			&& offset_hole_end >= 0 && offset_hole_end <= length)
 			{
 				erase_no_overlap(i, hole_begin, hole_end);
 				return;
@@ -74,6 +79,45 @@ struct compact_interval_set
 		
 		sassert(false);
 		throw std::runtime_error("Erase is not within any range");
+	}
+	
+	static bool combine_(T b1, T e1, T b2, T e2, T& retb, T& rete)
+	{
+		T len1 = e1 - b1;
+		T len2 = e2 - b2;
+		
+		T offs1 = b1 - b2;
+		T offs2 = b2 - b1;
+		
+		T retb, rete;
+		
+		if(offs1 >= 0 && offs1 < len2)
+		{
+			rete = std::max(e1 - b1, e2 - b1);
+			if(offs2 > 0)
+				retb = std::max(offs2, rete);
+			else
+				retb = 0;
+				
+			retb += b1;
+			rete += b1;
+		}
+		else if(offs2 >= 0 && offs2 < len1)
+		{
+			rete = std::max(e1 - b2, e2 - b2);
+			if(offs1 > 0)
+				retb = std::max(offs1, rete);
+			else
+				retb = 0;
+				
+			retb += b2;
+			rete += b2;
+		}
+	}
+	
+	void insert(T begin, T end)
+	{
+		
 	}
 	
 	// Amortized O(1)

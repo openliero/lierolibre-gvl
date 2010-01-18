@@ -114,9 +114,10 @@ struct prepared_division
 # endif
 #endif
 
-#ifndef GVL_ASSUME
+#if !defined(GVL_ASSUME)
 # define GVL_ASSUME(x) sassert(x)
 #endif
+
 #ifndef GVL_UNREACHABLE
 # define GVL_UNREACHABLE() sassert(false)
 #endif

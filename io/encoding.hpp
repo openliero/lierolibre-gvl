@@ -7,6 +7,7 @@
 #include "../support/algorithm.hpp"
 #include "../support/platform.hpp"
 #include <cstring>
+#include <string> // TEMP (maybe)
 
 namespace gvl
 {
@@ -65,14 +66,14 @@ struct octet_stream_reader : gvl::shared
 		return (cur_ != end_) ? (*cur_++) : underflow_get_();
 	}
 	
-	void get_c(uint8_t* dest, std::size_t len)
+	void get(uint8_t* dest, std::size_t len)
 	{
 		// TODO: Can optimize this
 		for(std::size_t i = 0; i < len; ++i)
 			dest[i] = get();
 	}
 	
-	stream::read_status get(uint8_t& ret)
+	stream::read_status try_get(uint8_t& ret)
 	{
 		if(cur_ != end_)
 		{
@@ -559,6 +560,14 @@ inline D& operator<<(basic_text_writer<D>& self_, char ch)
 {
 	D& self = self_.derived();
 	self.put(static_cast<uint8_t>(ch));
+	return self;
+}
+
+template<typename D>
+inline D& operator<<(basic_text_writer<D>& self_, std::string const& str)
+{
+	D& self = self_.derived();
+	self.put(reinterpret_cast<uint8_t const*>(str.data()), str.size());
 	return self;
 }
 

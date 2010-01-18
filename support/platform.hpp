@@ -100,8 +100,17 @@
 # endif
 #endif
 
+#ifndef GVL_DIV_ROUNDS_TOWARD_ZERO
 #define GVL_DIV_ROUNDS_TOWARD_ZERO ((-1/2)==0)
+#endif
+
+#ifndef GVL_SIGN_EXTENDING_RIGHT_SHIFT
 #define GVL_SIGN_EXTENDING_RIGHT_SHIFT (((-1)>>15)==-1)
+#endif
+
+#ifndef GVL_TWOS_COMPLEMENT
+#define GVL_TWOS_COMPLEMENT (~(-1)==0)
+#endif
 
 /* This function checks whether the above inferred
 ** characteristics are correct. It will throw gvl::assert_failure if not. */

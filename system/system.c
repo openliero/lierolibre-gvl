@@ -1,13 +1,8 @@
 #include "system.hpp"
 
 #include "../support/platform.hpp"
-#include <stdexcept>
+//#include <stdexcept>
 
-namespace gvl
-{
-uint32_t get_ticks();
-void sleep(uint32_t ms);
-}
 
 #if GVL_WIN32 || GVL_WIN64
 
@@ -19,13 +14,13 @@ void sleep(uint32_t ms);
 #pragma comment(lib, "kernel32.lib")
 #endif
 
-uint32_t gvl::get_ticks()
+uint32_t gvl_get_ticks()
 {
-	static bool setup = false;
+	static int setup = 0;
 	if(!setup)
 	{
 		TIMECAPS caps;
-		setup = true;
+		setup = 1;
 		
 		if(timeGetDevCaps(&caps, sizeof(caps)) == TIMERR_NOERROR)
 		{
@@ -33,10 +28,10 @@ uint32_t gvl::get_ticks()
 		}
 	}
 	
-	return uint32_t(timeGetTime());
+	return (uint32_t)(timeGetTime());
 }
 
-uint64_t gvl::get_hires_ticks()
+uint64_t gvl_get_hires_ticks()
 {
 	LARGE_INTEGER res;
 	QueryPerformanceCounter(&res);
@@ -44,7 +39,7 @@ uint64_t gvl::get_hires_ticks()
 	return (uint64_t)res.QuadPart;
 }
 
-uint64_t gvl::hires_ticks_per_sec()
+uint64_t gvl_hires_ticks_per_sec()
 {
 	LARGE_INTEGER res;
 	QueryPerformanceFrequency(&res);
@@ -52,7 +47,7 @@ uint64_t gvl::hires_ticks_per_sec()
 	return (uint64_t)res.QuadPart;
 }
 
-void gvl::sleep(uint32_t ms)
+void gvl_sleep(uint32_t ms)
 {
 	Sleep((DWORD)ms);
 }
@@ -65,7 +60,7 @@ void gvl::sleep(uint32_t ms)
 
 #include <time.h>
 
-uint32_t gvl::get_ticks()
+uint32_t gvl_get_ticks()
 {
 	timespec t;
 	int ret = clock_gettime(CLOCK_MONOTONIC, &t);
@@ -74,7 +69,7 @@ uint32_t gvl::get_ticks()
 	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 }
 
-uint64_t gvl::get_hires_ticks()
+uint64_t gvl_get_hires_ticks()
 {
 	timespec t;
 	int ret = clock_gettime(CLOCK_MONOTONIC, &t);
@@ -83,14 +78,14 @@ uint64_t gvl::get_hires_ticks()
 	return t.tv_sec * uint64_t(1000000000ull) + t.tv_nsec;
 }
 
-uint64_t gvl::hires_ticks_per_sec()
+uint64_t gvl_hires_ticks_per_sec()
 {
-	return uint64_t(1000000000ull);
+	return (uint64_t)(1000000000ull);
 }
 #else // !defined(_POSIX_MONOTONIC_CLOCK)
-uint32_t get_ticks()
+uint32_t gvl_get_ticks()
 {
-	passert(false, "STUB");
+	//passert(false, "STUB");
 	return 0;
 }
 #endif // !defined(_POSIX_MONOTONIC_CLOCK)
@@ -100,7 +95,7 @@ uint32_t get_ticks()
 #include <time.h>
 #include <errno.h>
 
-void gvl::sleep(uint32_t ms)
+void gvl_sleep(uint32_t ms)
 {
 	timespec t, left;
 	t.tv_sec = ms / 1000;
@@ -112,9 +107,9 @@ void gvl::sleep(uint32_t ms)
 	}
 }
 #else // !GVL_LINUX
-void gvl::sleep(uint32_t)
+void gvl_sleep(uint32_t)
 {
-	passert(false, "STUB");
+	//passert(false, "STUB");
 }
 #endif // !GVL_LINUX
 

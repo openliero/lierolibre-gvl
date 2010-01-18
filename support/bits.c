@@ -1,12 +1,9 @@
 #include "bits.hpp"
 
-namespace gvl
-{
-
 #if !defined(_MSC_VER)
 
 /* Taken mostly from http://graphics.stanford.edu/~seander/bithacks.html */
-int trailing_zeroes(uint32_t v)
+int gvl_trailing_zeroes(uint32_t v)
 {
 	static const int MultiplyDeBruijnBitPosition[32] = 
 	{
@@ -17,7 +14,7 @@ int trailing_zeroes(uint32_t v)
 	return MultiplyDeBruijnBitPosition[((uint32_t)((v & -v) * 0x077CB531UL)) >> 27];
 }
 
-int log2(uint32_t v)
+int gvl_log2(uint32_t v)
 {
 	static const char LogTable256[] = 
 	{
@@ -46,7 +43,7 @@ int log2(uint32_t v)
 		return (t = v >> 8) ? 8 + LogTable256[t] : LogTable256[v];
 }
 
-int top_bit(uint32_t v)
+int gvl_top_bit(uint32_t v)
 {
 	static const char LogTable256[] = 
 	{
@@ -75,7 +72,7 @@ int top_bit(uint32_t v)
 		return (t = v >> 8) ? 8 + LogTable256[t] : LogTable256[v];
 }
 
-int log2(uint64_t v)
+int gvl_log2_64(uint64_t v)
 {
 
 	// TODO: For 64-bit archs, use intrinsics
@@ -87,7 +84,7 @@ int log2(uint64_t v)
 		return log2((uint32_t)v);
 }
 
-int bottom_bit(uint32_t v)
+int gvl_bottom_bit(uint32_t v)
 {
 	if(!v)
 		return -1;
@@ -101,23 +98,8 @@ int bottom_bit(uint32_t v)
 	return MultiplyDeBruijnBitPosition[((uint32_t)((v & -v) * 0x077CB531UL)) >> 27];
 }
 #endif
-/*
-int even_log2(uint32_t v)
-{
-	// TODO: Special look-up table for this
-	return ((log2(v) + 1) & ~1);
-}
 
-int odd_log2(uint32_t v)
-{
-	return (log2(v) | 1);
-}
-
-int odd_log2(uint64_t v)
-{
-	return (log2(v) | 1);
-}*/
-
+#if 0
 void write_uint32(uint8_t* ptr, uint32_t v)
 {
 	ptr[0] = (uint8_t)(v >> 24);
@@ -141,5 +123,4 @@ uint32_t read_uint16(uint8_t const* ptr)
 {
 	return (ptr[0] << 8) + ptr[1];
 }
-
-} // namespace gvl
+#endif

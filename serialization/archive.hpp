@@ -6,27 +6,11 @@
 #include <gvl/io/encoding.hpp>
 #include <gvl/serialization/context.hpp>
 #include <gvl/support/cstdint.hpp>
+#include <gvl/support/bits.hpp>
 #include "except.hpp"
 
 namespace gvl
 {
-
-// TODO: Move these two to a more appropiate place, bits.hpp?
-inline int32_t uint32_as_int32(uint32_t x)
-{
-	if(x >= 0x80000000)
-		return (int32_t)(x - 0x80000000u) - 0x80000000;
-	else
-		return (int32_t)x;
-}
-
-inline uint32_t int32_as_uint32(int32_t x)
-{
-	if(x < 0)
-		return (uint32_t)(x + 0x80000000) + 0x80000000u;
-	else
-		return (uint32_t)x;
-}
 
 template<typename Context = default_serialization_context>
 struct in_archive

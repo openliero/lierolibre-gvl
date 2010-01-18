@@ -22,6 +22,18 @@ struct basic_matrix_common
 			
 		return static_cast<D&>(*this);
 	}
+	
+	static D identity()
+	{
+		D ret;
+		for(std::size_t i = 0; i < N * M; ++i)
+			ret.v[i] = T(0);
+		for(std::size_t i = 0; i < (N < M ? N : M); ++i)
+			ret.v[i + i*N] = T(1);
+		return ret;
+	}
+	
+	
 };
 
 template<typename T, int N, int M>
@@ -70,6 +82,26 @@ struct basic_matrix<T, 2, 2>
 			det * (this->v[0] * b.y - this->v[2] * b.x));
 			
 		return ret;
+	}
+	
+	/// Initialize this matrix using an angle. This matrix becomes
+	/// an orthonormal rotation matrix.
+	void assign_rotation(T angle)
+	{
+		// To enable overloading
+		using std::cos;
+		using std::sin;
+		
+		T c = cos(angle), s = sin(angle);
+		ret.v[0] = c;
+		ret.v[1] = -s;
+		ret.v[2] = s;
+		ret.v[3] = c;
+		
+		/*
+		col1.x = c; col2.x = -s;
+		col1.y = s; col2.y = c;
+		*/
 	}
 		
 	basic_vec<T, 2> operator*(basic_vec<T, 2> const& rhs) const

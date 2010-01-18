@@ -171,9 +171,18 @@ void encode(Range& range, uint32_t cp)
 		range.put(0xc0 | (cp >> 6));
 		range.put(0x80 | (cp & 0x3f));
 	}
-	else if(cp < 0x80000)
+	else if(cp < 0x10000)
 	{
-		range.put(0xc0 | (cp >> 6));
+		range.put(0xe0 | (cp >> 12));
+		range.put(0x80 | ((cp >> 6) & 0x3f));
+		range.put(0x80 | (cp & 0x3f));
+	}
+	else
+	{
+		range.put(0xf0 | (cp >> 18));
+		range.put(0x80 | ((cp >> 12) & 0x3f));
+		range.put(0x80 | ((cp >> 6) & 0x3f));
+		range.put(0x80 | (cp & 0x3f));
 	}
 }
 

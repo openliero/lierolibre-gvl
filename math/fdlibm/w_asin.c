@@ -27,7 +27,7 @@
 	double x;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_asin(x);
 #else
 	double z;

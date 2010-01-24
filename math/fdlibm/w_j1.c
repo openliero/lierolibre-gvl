@@ -25,7 +25,7 @@
 	double x;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_j1(x);
 #else
 	double z;
@@ -45,7 +45,7 @@
 	double x;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_y1(x);
 #else
 	double z;

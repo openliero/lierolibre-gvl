@@ -25,7 +25,7 @@
 	double x;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_cosh(x);
 #else
 	double z;

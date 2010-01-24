@@ -21,7 +21,7 @@
 #include "fdlibm.h"
 #include "fdlibm_intern.h"
 
-extern int signgam;
+extern int fd_signgam;
 
 #ifdef __STDC__
 	double __ieee754_gamma(double x)
@@ -30,5 +30,5 @@ extern int signgam;
 	double x;
 #endif
 {
-	return __ieee754_gamma_r(x,&signgam);
+	return __ieee754_gamma_r(x,&fd_signgam);
 }

@@ -101,10 +101,10 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_acos";
 		exc.retval = zero;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if(_LIB_VERSION == _SVID_) {
+		  if(FD_LIB_VERSION == FD_SVID_) {
 		    (void) WRITE2("fd_acos: FD_DOMAIN error\n", 19);
 		  }
 		  errno = EDOM;
@@ -115,10 +115,10 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_asin";
 		exc.retval = zero;
-		if(_LIB_VERSION == _POSIX_)
+		if(FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if(_LIB_VERSION == _SVID_) {
+		  if(FD_LIB_VERSION == FD_SVID_) {
 		    	(void) WRITE2("fd_asin: FD_DOMAIN error\n", 19);
 		  }
 		  errno = EDOM;
@@ -131,10 +131,10 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_atan2";
 		exc.retval = zero;
-		if(_LIB_VERSION == _POSIX_)
+		if(FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if(_LIB_VERSION == _SVID_) {
+		  if(FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_atan2: FD_DOMAIN error\n", 20);
 		      }
 		  errno = EDOM;
@@ -144,11 +144,11 @@ static double zero = 0.0;	/* used as const */
 		/* fd_hypot(fd_finite,fd_finite) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_hypot";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = FD_HUGE;
 		else
 		  exc.retval = HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -158,11 +158,11 @@ static double zero = 0.0;	/* used as const */
 		/* fd_cosh(fd_finite) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_cosh";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = FD_HUGE;
 		else
 		  exc.retval = HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -172,11 +172,11 @@ static double zero = 0.0;	/* used as const */
 		/* fd_exp(fd_finite) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_exp";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = FD_HUGE;
 		else
 		  exc.retval = HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -187,7 +187,7 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_UNDERFLOW;
 		exc.name = "fd_exp";
 		exc.retval = zero;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -197,14 +197,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_y0(0) = -inf */
 		exc.type = FD_DOMAIN;	/* should be FD_SING for IEEE */
 		exc.name = "fd_y0";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_y0: FD_DOMAIN error\n", 17);
 		      }
 		  errno = EDOM;
@@ -214,14 +214,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_y0(x<0) = NaN */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_y0";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_y0: FD_DOMAIN error\n", 17);
 		      }
 		  errno = EDOM;
@@ -231,14 +231,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_y1(0) = -inf */
 		exc.type = FD_DOMAIN;	/* should be FD_SING for IEEE */
 		exc.name = "fd_y1";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_y1: FD_DOMAIN error\n", 17);
 		      }
 		  errno = EDOM;
@@ -248,14 +248,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_y1(x<0) = NaN */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_y1";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_y1: FD_DOMAIN error\n", 17);
 		      }
 		  errno = EDOM;
@@ -265,14 +265,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_yn(n,0) = -inf */
 		exc.type = FD_DOMAIN;	/* should be FD_SING for IEEE */
 		exc.name = "fd_yn";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_yn: FD_DOMAIN error\n", 17);
 		      }
 		  errno = EDOM;
@@ -282,14 +282,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_yn(x<0) = NaN */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_yn";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_yn: FD_DOMAIN error\n", 17);
 		      }
 		  errno = EDOM;
@@ -299,11 +299,11 @@ static double zero = 0.0;	/* used as const */
 		/* fd_lgamma(fd_finite) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_lgamma";
-                if (_LIB_VERSION == _SVID_)
+                if (FD_LIB_VERSION == FD_SVID_)
                   exc.retval = FD_HUGE;
                 else
                   exc.retval = HUGE_VAL;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
 			errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
                         errno = ERANGE;
@@ -313,14 +313,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_lgamma(-integer) or fd_lgamma(0) */
 		exc.type = FD_SING;
 		exc.name = "fd_lgamma";
-                if (_LIB_VERSION == _SVID_)
+                if (FD_LIB_VERSION == FD_SVID_)
                   exc.retval = FD_HUGE;
                 else
                   exc.retval = HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_lgamma: FD_SING error\n", 19);
 		      }
 		  errno = EDOM;
@@ -330,14 +330,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_log(0) */
 		exc.type = FD_SING;
 		exc.name = "fd_log";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_log: FD_SING error\n", 16);
 		      }
 		  errno = EDOM;
@@ -347,14 +347,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_log(x<0) */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_log";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_log: FD_DOMAIN error\n", 18);
 		      }
 		  errno = EDOM;
@@ -364,14 +364,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_log10(0) */
 		exc.type = FD_SING;
 		exc.name = "fd_log10";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_log10: FD_SING error\n", 18);
 		      }
 		  errno = EDOM;
@@ -381,14 +381,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_log10(x<0) */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_log10";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = -FD_HUGE;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_log10: FD_DOMAIN error\n", 20);
 		      }
 		  errno = EDOM;
@@ -396,11 +396,11 @@ static double zero = 0.0;	/* used as const */
 		break;
 	    case 20:
 		/* fd_pow(0.0,0.0) */
-		/* error only if _LIB_VERSION == _SVID_ */
+		/* error only if FD_LIB_VERSION == FD_SVID_ */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_pow";
 		exc.retval = zero;
-		if (_LIB_VERSION != _SVID_) exc.retval = 1.0;
+		if (FD_LIB_VERSION != FD_SVID_) exc.retval = 1.0;
 		else if (!fd_matherr(&exc)) {
 			(void) WRITE2("fd_pow(0,0): FD_DOMAIN error\n", 23);
 			errno = EDOM;
@@ -410,7 +410,7 @@ static double zero = 0.0;	/* used as const */
 		/* fd_pow(x,y) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_pow";
-		if (_LIB_VERSION == _SVID_) {
+		if (FD_LIB_VERSION == FD_SVID_) {
 		  exc.retval = FD_HUGE;
 		  y = gM(y, 0.5);
 		  if(x<zero&&fd_rint(y)!=y) exc.retval = -FD_HUGE;
@@ -419,7 +419,7 @@ static double zero = 0.0;	/* used as const */
 		  y = gM(y, 0.5);
 		  if(x<zero&&fd_rint(y)!=y) exc.retval = -HUGE_VAL;
 		}
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -430,7 +430,7 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_UNDERFLOW;
 		exc.name = "fd_pow";
 		exc.retval =  zero;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -440,14 +440,14 @@ static double zero = 0.0;	/* used as const */
 		/* 0**neg */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_pow";
-		if (_LIB_VERSION == _SVID_) 
+		if (FD_LIB_VERSION == FD_SVID_) 
 		  exc.retval = zero;
 		else
 		  exc.retval = -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_pow(0,neg): FD_DOMAIN error\n", 25);
 		      }
 		  errno = EDOM;
@@ -457,14 +457,14 @@ static double zero = 0.0;	/* used as const */
 		/* neg**non-integral */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_pow";
-		if (_LIB_VERSION == _SVID_) 
+		if (FD_LIB_VERSION == FD_SVID_) 
 		    exc.retval = zero;
 		else 
 		    exc.retval = zero/zero;	/* X/Open allow NaN */
-		if (_LIB_VERSION == _POSIX_) 
+		if (FD_LIB_VERSION == FD_POSIX_) 
 		   errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("neg**non-integral: FD_DOMAIN error\n", 32);
 		      }
 		  errno = EDOM;
@@ -474,11 +474,11 @@ static double zero = 0.0;	/* used as const */
 		/* fd_sinh(fd_finite) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_sinh";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = ( (x>zero) ? FD_HUGE : -FD_HUGE);
 		else
 		  exc.retval = ( (x>zero) ? HUGE_VAL : -HUGE_VAL);
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -488,14 +488,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_sqrt(x<0) */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_sqrt";
-		if (_LIB_VERSION == _SVID_)
+		if (FD_LIB_VERSION == FD_SVID_)
 		  exc.retval = zero;
 		else
 		  exc.retval = zero/zero;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_sqrt: FD_DOMAIN error\n", 19);
 		      }
 		  errno = EDOM;
@@ -505,14 +505,14 @@ static double zero = 0.0;	/* used as const */
                 /* fd_fmod(x,0) */
                 exc.type = FD_DOMAIN;
                 exc.name = "fd_fmod";
-                if (_LIB_VERSION == _SVID_)
+                if (FD_LIB_VERSION == FD_SVID_)
                     exc.retval = x;
 		else
 		    exc.retval = zero/zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                   errno = EDOM;
                 else if (!fd_matherr(&exc)) {
-                  if (_LIB_VERSION == _SVID_) {
+                  if (FD_LIB_VERSION == FD_SVID_) {
                     (void) WRITE2("fd_fmod:  FD_DOMAIN error\n", 20);
                   }
                   errno = EDOM;
@@ -523,10 +523,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_DOMAIN;
                 exc.name = "fd_remainder";
                 exc.retval = gD(zero,zero);
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                   errno = EDOM;
                 else if (!fd_matherr(&exc)) {
-                  if (_LIB_VERSION == _SVID_) {
+                  if (FD_LIB_VERSION == FD_SVID_) {
                     (void) WRITE2("fd_remainder: FD_DOMAIN error\n", 24);
                   }
                   errno = EDOM;
@@ -537,10 +537,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_DOMAIN;
                 exc.name = "fd_acosh";
                 exc.retval = gD(zero,zero);
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                   errno = EDOM;
                 else if (!fd_matherr(&exc)) {
-                  if (_LIB_VERSION == _SVID_) {
+                  if (FD_LIB_VERSION == FD_SVID_) {
                     (void) WRITE2("fd_acosh: FD_DOMAIN error\n", 20);
                   }
                   errno = EDOM;
@@ -551,10 +551,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_DOMAIN;
                 exc.name = "fd_atanh";
                 exc.retval = gD(zero,zero);
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                   errno = EDOM;
                 else if (!fd_matherr(&exc)) {
-                  if (_LIB_VERSION == _SVID_) {
+                  if (FD_LIB_VERSION == FD_SVID_) {
                     (void) WRITE2("fd_atanh: FD_DOMAIN error\n", 20);
                   }
                   errno = EDOM;
@@ -565,10 +565,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_SING;
                 exc.name = "fd_atanh";
 		exc.retval = x/zero;	/* sign(x)*inf */
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                   errno = EDOM;
                 else if (!fd_matherr(&exc)) {
-                  if (_LIB_VERSION == _SVID_) {
+                  if (FD_LIB_VERSION == FD_SVID_) {
                     (void) WRITE2("fd_atanh: FD_SING error\n", 18);
                   }
                   errno = EDOM;
@@ -579,7 +579,7 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_scalb";
 		exc.retval = x > zero ? HUGE_VAL : -HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -590,7 +590,7 @@ static double zero = 0.0;	/* used as const */
 		exc.type = FD_UNDERFLOW;
 		exc.name = "fd_scalb";
 		exc.retval = fd_copysign(zero,x);
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
 		else if (!fd_matherr(&exc)) {
 			errno = ERANGE;
@@ -601,10 +601,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_TLOSS;
                 exc.name = "fd_j0";
                 exc.retval = zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                         errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
-                        if (_LIB_VERSION == _SVID_) {
+                        if (FD_LIB_VERSION == FD_SVID_) {
                                 (void) WRITE2(exc.name, 2);
                                 (void) WRITE2(": FD_TLOSS error\n", 14);
                         }
@@ -616,10 +616,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_TLOSS;
                 exc.name = "fd_y0";
                 exc.retval = zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                         errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
-                        if (_LIB_VERSION == _SVID_) {
+                        if (FD_LIB_VERSION == FD_SVID_) {
                                 (void) WRITE2(exc.name, 2);
                                 (void) WRITE2(": FD_TLOSS error\n", 14);
                         }
@@ -631,10 +631,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_TLOSS;
                 exc.name = "fd_j1";
                 exc.retval = zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                         errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
-                        if (_LIB_VERSION == _SVID_) {
+                        if (FD_LIB_VERSION == FD_SVID_) {
                                 (void) WRITE2(exc.name, 2);
                                 (void) WRITE2(": FD_TLOSS error\n", 14);
                         }
@@ -646,10 +646,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_TLOSS;
                 exc.name = "fd_y1";
                 exc.retval = zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                         errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
-                        if (_LIB_VERSION == _SVID_) {
+                        if (FD_LIB_VERSION == FD_SVID_) {
                                 (void) WRITE2(exc.name, 2);
                                 (void) WRITE2(": FD_TLOSS error\n", 14);
                         }
@@ -661,10 +661,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_TLOSS;
                 exc.name = "fd_jn";
                 exc.retval = zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                         errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
-                        if (_LIB_VERSION == _SVID_) {
+                        if (FD_LIB_VERSION == FD_SVID_) {
                                 (void) WRITE2(exc.name, 2);
                                 (void) WRITE2(": FD_TLOSS error\n", 14);
                         }
@@ -676,10 +676,10 @@ static double zero = 0.0;	/* used as const */
                 exc.type = FD_TLOSS;
                 exc.name = "fd_yn";
                 exc.retval = zero;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
                         errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
-                        if (_LIB_VERSION == _SVID_) {
+                        if (FD_LIB_VERSION == FD_SVID_) {
                                 (void) WRITE2(exc.name, 2);
                                 (void) WRITE2(": FD_TLOSS error\n", 14);
                         }
@@ -690,11 +690,11 @@ static double zero = 0.0;	/* used as const */
 		/* fd_gamma(fd_finite) overflow */
 		exc.type = FD_OVERFLOW;
 		exc.name = "fd_gamma";
-                if (_LIB_VERSION == _SVID_)
+                if (FD_LIB_VERSION == FD_SVID_)
                   exc.retval = FD_HUGE;
                 else
                   exc.retval = HUGE_VAL;
-                if (_LIB_VERSION == _POSIX_)
+                if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = ERANGE;
                 else if (!fd_matherr(&exc)) {
                   errno = ERANGE;
@@ -704,14 +704,14 @@ static double zero = 0.0;	/* used as const */
 		/* fd_gamma(-integer) or fd_gamma(0) */
 		exc.type = FD_SING;
 		exc.name = "fd_gamma";
-                if (_LIB_VERSION == _SVID_)
+                if (FD_LIB_VERSION == FD_SVID_)
                   exc.retval = FD_HUGE;
                 else
                   exc.retval = HUGE_VAL;
-		if (_LIB_VERSION == _POSIX_)
+		if (FD_LIB_VERSION == FD_POSIX_)
 		  errno = EDOM;
 		else if (!fd_matherr(&exc)) {
-		  if (_LIB_VERSION == _SVID_) {
+		  if (FD_LIB_VERSION == FD_SVID_) {
 			(void) WRITE2("fd_gamma: FD_SING error\n", 18);
 		      }
 		  errno = EDOM;
@@ -719,12 +719,12 @@ static double zero = 0.0;	/* used as const */
 		break;
 	    case 42:
 		/* fd_pow(NaN,0.0) */
-		/* error only if _LIB_VERSION == _SVID_ & _XOPEN_ */
+		/* error only if FD_LIB_VERSION == FD_SVID_ & _XOPEN_ */
 		exc.type = FD_DOMAIN;
 		exc.name = "fd_pow";
 		exc.retval = x;
-		if (_LIB_VERSION == _IEEE_ ||
-		    _LIB_VERSION == _POSIX_) exc.retval = 1.0;
+		if (FD_LIB_VERSION == FD_IEEE_ ||
+		    FD_LIB_VERSION == FD_POSIX_) exc.retval = 1.0;
 		else if (!fd_matherr(&exc)) {
 			errno = EDOM;
 		}

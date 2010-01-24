@@ -144,7 +144,7 @@ Q5  =  -2.01099218183624371326e-07; /* BE8AFDB7 6E09C32D */
 	if(xsb==0) y=x; else y= -x;	/* y = |x| */
 	hx &= 0x7fffffff;		/* high word of |x| */
 
-    /* filter out huge and non-fd_finite argument */
+    /* filter out huge and non-finite argument */
 	if(hx >= 0x4043687A) {			/* if |x|>=56*ln2 */
 	    if(hx >= 0x40862E42) {		/* if |x|>=709.78... */
                 if(hx>=0x7ff00000) {
@@ -164,9 +164,9 @@ Q5  =  -2.01099218183624371326e-07; /* BE8AFDB7 6E09C32D */
 	if(hx > 0x3fd62e42) {		/* if  |x| > 0.5 ln2 */ 
 	    if(hx < 0x3FF0A2B2) {	/* and |x| < 1.5 ln2 */
 		if(xsb==0)
-		    {hi = x - ln2_hi; lo =  ln2_lo;  k =  1;}
+		    {hi = gS(x, ln2_hi); lo =  ln2_lo;  k =  1;}
 		else
-		    {hi = x + ln2_hi; lo = -ln2_lo;  k = -1;}
+		    {hi = gA(x, ln2_hi); lo = -ln2_lo;  k = -1;}
 	    } else {
 		k  = gA(gM(invln2,x), ((xsb==0)?0.5:-0.5));
 		t  = k;

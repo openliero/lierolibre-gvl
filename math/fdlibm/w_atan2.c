@@ -26,7 +26,7 @@
 	double y,x;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_atan2(y,x);
 #else
 	double z;

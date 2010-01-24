@@ -33,7 +33,7 @@ u_threshold= -7.45133219101941108420e+02;  /* 0xc0874910, 0xD52D3051 */
 	double x;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_exp(x);
 #else
 	double z;

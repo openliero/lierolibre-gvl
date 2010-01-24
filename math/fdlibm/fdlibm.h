@@ -26,18 +26,8 @@ inline double fd_r(double x)
    return x;
 }*/
 
-#define _IEEE_LIBM
-
-typedef union fd_double_int_
-{
-	struct i_
-	{
-		int first, second;
-	} i;
-
-	double d;
-} fd_double_int;
-
+#undef FD_IEEE_LIBM
+#define FD_IEEE_LIBM 1
 
 #if 1
 #if GVL_LITTLE_ENDIAN
@@ -53,9 +43,19 @@ typedef union fd_double_int_
 #endif
 
 #else
-/* These cannot be assigned to so cannot be used at the moment.
+/* These cannot be assigned to, thus cannot be used at the moment.
 ** It would be great to fix this so that we don't violate aliasing
 ** rules with the above. */
+
+typedef union fd_double_int_
+{
+	struct i_
+	{
+		int first, second;
+	} i;
+
+	double d;
+} fd_double_int;
 
 GVL_INLINE int FD_HIp(double* x)
 {
@@ -94,7 +94,7 @@ GVL_INLINE int FD_LOp(double* x)
  * ANSI/POSIX
  */
 
-extern int signgam;
+extern int fd_signgam;
 
 #define	FD_MAXFLOAT	((float)3.40282346638528860e+38)
 
@@ -110,7 +110,7 @@ enum fdversion {fdlibm_ieee = -1, fdlibm_svid, fdlibm_xopen, fdlibm_posix};
  * s_lib_version.c) during compile time, it cannot be modified
  * in the middle of a program
  */
-//extern  FD_LIB_VERSION_TYPE  FD_LIB_VERSION;
+extern  FD_LIB_VERSION_TYPE  FD_LIB_VERSION;
 
 #define FD_IEEE_  fdlibm_ieee
 #define FD_SVID_  fdlibm_svid
@@ -220,8 +220,8 @@ extern double fd_expm1 fd_P((double));
 extern double fd_log1p fd_P((double));
 
 /*
- * Reentrant version of fd_gamma & fd_lgamma; passes signgam back by reference
- * as the second argument; user must allocate space for signgam.
+ * Reentrant version of fd_gamma & fd_lgamma; passes fd_signgam back by reference
+ * as the second argument; user must allocate space for fd_signgam.
  */
 #ifdef _REENTRANT
 extern double fd_gamma_r fd_P((double, int *));

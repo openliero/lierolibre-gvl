@@ -64,7 +64,7 @@
  * 	we have
  * 		G(x) = pi/(fd_sin(pi*x)*(-x)*G(-x))
  *	since G(-x) is positive, sign(G(x)) = sign(fd_sin(pi*x)) for x<0
- *	Hence, for x<0, signgam = sign(fd_sin(pi*x)) and 
+ *	Hence, for x<0, fd_signgam = sign(fd_sin(pi*x)) and 
  *		fd_lgamma(x) = fd_log(|Gamma(x)|)
  *			  = fd_log(pi/(|x*fd_sin(pi*x)|)) - fd_lgamma(-x);
  *	Note: one should avoid compute pi*(-x) directly in the 

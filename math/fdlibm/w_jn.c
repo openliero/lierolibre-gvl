@@ -47,7 +47,7 @@
 	double x; int n;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_jn(n,x);
 #else
 	double z;
@@ -67,7 +67,7 @@
 	double x; int n;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return __ieee754_yn(n,x);
 #else
 	double z;

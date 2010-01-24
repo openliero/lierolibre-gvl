@@ -26,7 +26,7 @@
 	double x,y;
 #endif
 {
-#ifdef _IEEE_LIBM
+#ifdef FD_IEEE_LIBM
 	return  __ieee754_pow(x,y);
 #else
 	double z;

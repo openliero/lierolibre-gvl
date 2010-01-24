@@ -13,17 +13,17 @@ namespace gvl
 namespace qc
 {
 
+enum chk_result
+{
+	chk_ok, // Checked out
+	chk_ok_reuse, // Checked out, and passed object can be reused
+	chk_fail, // Check failed
+	chk_not_applicable // Check is not applicable to the generated objects
+};
+
 template<typename T>
 struct property
 {
-	enum chk_result
-	{
-		chk_ok, // Checked out
-		chk_ok_reuse, // Checked out, and passed object can be reused
-		chk_fail, // Check failed
-		chk_not_applicable // Check is not applicable to the generated objects
-	};
-	
 	virtual shared_ptr_any<T> generate(context& ctx)
 	{
 		return ctx.generate_any<T>();
@@ -97,10 +97,9 @@ static gvl::shared_ptr_any<T> cur_generate(std::string const& name, T* = 0)
 
 #define QC_BEGIN_PROP(name, type) \
 struct name : gvl::qc::property<type> { \
-	using gvl::qc::property<type>::chk_result; \
 	typedef type t; \
 	typedef gvl::shared_ptr_any<type> ptr_t; \
-	virtual chk_result do_check(gvl::qc::context& ctx) \
+	virtual gvl::qc::chk_result do_check(gvl::qc::context& ctx) \
 	{ return check(ctx); }
 
 #define QC_END_PROP() };
@@ -108,10 +107,9 @@ struct name : gvl::qc::property<type> { \
 #define QC_BEGIN_GENERIC_PROP(name) \
 template<typename T_> \
 struct name : gvl::qc::property<T_> { \
-	using typename gvl::qc::property<T_>::chk_result; \
 	typedef T_ t; \
 	typedef gvl::shared_ptr_any<T_> ptr_t; \
-	virtual chk_result do_check(gvl::qc::context& ctx) \
+	virtual gvl::qc::chk_result do_check(gvl::qc::context& ctx) \
 	{ return check(ctx); }
 	
 #define QC_CUR_CTX (*gvl::qc::context::current)

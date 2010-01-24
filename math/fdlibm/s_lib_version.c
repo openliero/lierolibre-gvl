@@ -19,18 +19,18 @@
 #include "fdlibm_intern.h"
 
 /*
- * define and initialize _LIB_VERSION
+ * define and initialize FD_LIB_VERSION
  */
 #ifdef _POSIX_MODE
-_LIB_VERSION_TYPE _LIB_VERSION = _POSIX_;
+FD_LIB_VERSION_TYPE FD_LIB_VERSION = FD_POSIX_;
 #else
 #ifdef _XOPEN_MODE
-_LIB_VERSION_TYPE _LIB_VERSION = _XOPEN_;
+FD_LIB_VERSION_TYPE FD_LIB_VERSION = FD_XOPEN_;
 #else
 #ifdef _SVID3_MODE
-_LIB_VERSION_TYPE _LIB_VERSION = _SVID_;
-#else					/* default _IEEE_MODE */
-_LIB_VERSION_TYPE _LIB_VERSION = _IEEE_;
+FD_LIB_VERSION_TYPE FD_LIB_VERSION = FD_SVID_;
+#else					/* default FD_IEEE_MODE */
+FD_LIB_VERSION_TYPE FD_LIB_VERSION = FD_IEEE_;
 #endif
 #endif
 #endif

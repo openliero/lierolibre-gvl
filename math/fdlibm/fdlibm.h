@@ -100,8 +100,8 @@ extern int signgam;
 
 enum fdversion {fdlibm_ieee = -1, fdlibm_svid, fdlibm_xopen, fdlibm_posix};
 
-#define _LIB_VERSION_TYPE enum fdversion
-#define _LIB_VERSION _fdlib_version
+#define FD_LIB_VERSION_TYPE enum fdversion
+#define FD_LIB_VERSION _fdlib_version
 
 /* if global variable _LIB_VERSION is not desirable, one may
  * change the following to be a constant by:
@@ -110,12 +110,12 @@ enum fdversion {fdlibm_ieee = -1, fdlibm_svid, fdlibm_xopen, fdlibm_posix};
  * s_lib_version.c) during compile time, it cannot be modified
  * in the middle of a program
  */
-extern  _LIB_VERSION_TYPE  _LIB_VERSION;
+//extern  FD_LIB_VERSION_TYPE  FD_LIB_VERSION;
 
-#define _IEEE_  fdlibm_ieee
-#define _SVID_  fdlibm_svid
-#define _XOPEN_ fdlibm_xopen
-#define _POSIX_ fdlibm_posix
+#define FD_IEEE_  fdlibm_ieee
+#define FD_SVID_  fdlibm_svid
+#define FD_XOPEN_ fdlibm_xopen
+#define FD_POSIX_ fdlibm_posix
 
 struct fd_exception {
 	int type;

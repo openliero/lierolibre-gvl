@@ -154,10 +154,10 @@ struct context
 
 
 #define QC_ASSERT(desc, cond) if(!(cond)) \
-{ if(!ctx.assert_fail(#cond, __FILE__, __LINE__, desc)) return chk_fail; } else (void)0
+{ if(!ctx.assert_fail(#cond, __FILE__, __LINE__, desc)) return ::gvl::qc::chk_fail; } else (void)0
 
 #define QC_FATAL_ASSERT(desc, cond) if(!(cond)) \
-{ ctx.assert_fail(#cond, __FILE__, __LINE__, desc); return chk_fail; } else (void)0
+{ ctx.assert_fail(#cond, __FILE__, __LINE__, desc); return ::gvl::qc::chk_fail; } else (void)0
 
 } // namespace qc
 } // namespace gvl

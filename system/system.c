@@ -2,7 +2,8 @@
 
 #include "../support/platform.hpp"
 //#include <stdexcept>
-
+#include "stdio.h"
+#include "stdlib.h"
 
 #if GVL_WIN32 || GVL_WIN64
 
@@ -62,20 +63,26 @@ void gvl_sleep(uint32_t ms)
 
 uint32_t gvl_get_ticks()
 {
-	timespec t;
+	struct timespec t;
 	int ret = clock_gettime(CLOCK_MONOTONIC, &t);
 	if(ret < 0)
-		throw std::runtime_error("clock_gettime failed");
+	{
+		fprintf(stderr, "clock_gettime failed");
+		exit(1);
+	}
 	return t.tv_sec * 1000 + t.tv_nsec / 1000000;
 }
 
 uint64_t gvl_get_hires_ticks()
 {
-	timespec t;
+	struct timespec t;
 	int ret = clock_gettime(CLOCK_MONOTONIC, &t);
 	if(ret < 0)
-		throw std::runtime_error("clock_gettime failed");
-	return t.tv_sec * uint64_t(1000000000ull) + t.tv_nsec;
+	{
+		fprintf(stderr, "clock_gettime failed");
+		exit(1);
+	}
+	return t.tv_sec * (uint64_t)(1000000000ull) + t.tv_nsec;
 }
 
 uint64_t gvl_hires_ticks_per_sec()
@@ -97,7 +104,7 @@ uint32_t gvl_get_ticks()
 
 void gvl_sleep(uint32_t ms)
 {
-	timespec t, left;
+	struct timespec t, left;
 	t.tv_sec = ms / 1000;
 	t.tv_nsec = (ms % 1000) * 1000000;
 	while(nanosleep(&t, &left) == -1

@@ -72,24 +72,24 @@ QC_BEGIN_GEN(sorted_list_gen, integer_list)
 QC_END_GEN()
 
 QC_BEGIN_PROP(list_integrity_property, integer_list)
-	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
+	gvl::qc::chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
 		obj->integrity_check();
-		return chk_ok_reuse;
+		return gvl::qc::chk_ok_reuse;
 	}
 QC_END_PROP()
 
 QC_BEGIN_GENERIC_PROP(list_pop_front_property)
-	chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
+	gvl::qc::chk_result check(gvl::qc::context& ctx, QC_GEN_ANY(t, obj))
 	{
 		if(obj->empty())
-			return chk_not_applicable;
+			return gvl::qc::chk_not_applicable;
 			
 		std::size_t before_count = obj->size();
 		obj->pop_front();
 		std::size_t after_count = obj->size();
 		QC_ASSERT("pop_front decrease count with 1", after_count + 1 == before_count);
-		return chk_ok_reuse;
+		return gvl::qc::chk_ok_reuse;
 	}
 QC_END_PROP()
 

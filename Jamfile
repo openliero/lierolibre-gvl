@@ -12,6 +12,9 @@ Library libgvl :
 	crypt/curve25519.cpp
 	
 	io/stream.cpp
+	io/encoding.cpp
+	io/convert.cpp
+	
 	
 	math/ieee.cpp
 	math/tt800.cpp
@@ -102,13 +105,13 @@ Library libgvl :
 	sockets/sockets.cpp
 	sockets/socketstream.cpp
 	
-	support/bits.cpp
+	support/bits.c
 	support/debug.cpp
 	support/hash.cpp
 	support/log.cpp
 	support/profile.cpp
 	
-	system/system.cpp
+	system/system.c
 	
 	zlib/adler32.c
 	zlib/compress.c
@@ -122,6 +125,8 @@ Library libgvl :
 	zlib/trees.c
 	zlib/uncompr.c
 	zlib/zutil.c
+	
+	tut/quickcheck/context.cpp
 	;
 	
 Main gvltest :

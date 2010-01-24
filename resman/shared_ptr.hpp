@@ -169,7 +169,7 @@ struct deferred_ptr // : shared_ptr_common
 private:
 	
 public:
-	template<typename T>
+	template<typename T2>
 	friend struct shared_ptr;
 	
 	deferred_ptr()
@@ -548,7 +548,7 @@ struct shared_ptr_any
 	
 	shared_ptr_any release()
 	{
-		shared_ptr_any ret(n);
+		shared_ptr_any ret(*this);
 		reset();
 		return ret;
 	}

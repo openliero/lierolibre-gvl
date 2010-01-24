@@ -21,7 +21,7 @@ stream::write_status octet_stream_writer::flush_buffer(bucket_size new_buffer_si
 			estimated_needed_buffer_size_ <<= 1;
 		else if(size + 256 < estimated_needed_buffer_size_)
 			estimated_needed_buffer_size_ >>= 1;
-		estimated_needed_buffer_size_ = std::max(estimated_needed_buffer_size_, default_initial_bucket_size);
+		estimated_needed_buffer_size_ = std::max(estimated_needed_buffer_size_, bucket_size(default_initial_bucket_size));
 		
 		if(new_buffer_size == 0)
 			cap_ = estimated_needed_buffer_size_;

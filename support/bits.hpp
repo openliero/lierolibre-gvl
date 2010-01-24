@@ -96,7 +96,7 @@ GVL_INLINE uint32_t gvl_bswap(uint32_t v)
 
 GVL_INLINE uint64_t gvl_bswap_64(uint64_t v)
 {
-	return bswap(uint32_t(v >> 32)) | (uint64_t(bswap(uint32_t(v))) << 32);
+	return gvl_bswap((uint32_t)(v >> 32)) | ((uint64_t)gvl_bswap((uint32_t)v) << 32);
 }
 
 #endif
@@ -105,7 +105,7 @@ GVL_INLINE int gvl_popcount(uint32_t v)
 {
 	v = v - ((v >> 1) & 0x55555555);                    /* reuse input as temporary */
 	v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     /* temp */
-	return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; /* count */
+	return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24; /* count */
 }
 
 GVL_INLINE int gvl_ceil_log2(uint32_t v)

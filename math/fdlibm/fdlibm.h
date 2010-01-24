@@ -28,7 +28,18 @@ inline double fd_r(double x)
 
 #define _IEEE_LIBM
 
+typedef union fd_double_int_
+{
+	struct i_
+	{
+		int first, second;
+	} i;
 
+	double d;
+} fd_double_int;
+
+
+#if 1
 #if GVL_LITTLE_ENDIAN
 #define FD_HI(x) *(1+(int*)&x)
 #define FD_LO(x) *(int*)&x
@@ -39,6 +50,38 @@ inline double fd_r(double x)
 #define FD_LO(x) *(1+(int*)&x)
 #define FD_HIp(x) *(int*)x
 #define FD_LOp(x) *(1+(int*)x)
+#endif
+
+#else
+/* These cannot be assigned to so cannot be used at the moment.
+** It would be great to fix this so that we don't violate aliasing
+** rules with the above. */
+
+GVL_INLINE int FD_HIp(double* x)
+{
+	fd_double_int u;
+	u.d = *x;
+#if GVL_LITTLE_ENDIAN
+	return u.i.second;
+#else
+	return u.i.first;
+#endif
+}
+
+GVL_INLINE int FD_LOp(double* x)
+{
+	fd_double_int u;
+	u.d = *x;
+#if GVL_LITTLE_ENDIAN
+	return u.i.first;
+#else
+	return u.i.second;
+#endif
+}
+
+#define FD_HI(x) FD_HIp(&(x))
+#define FD_LO(x) FD_LOp(&(x))
+
 #endif
 
 #ifndef __STDC__

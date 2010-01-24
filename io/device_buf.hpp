@@ -21,7 +21,7 @@ struct stream_error : std::exception
 	{
 	}
 	
-	virtual char const* what() const
+	virtual char const* what() const throw()
 	{
 		return "Stream error";
 	}
@@ -36,7 +36,7 @@ struct stream_eof : stream_error
 	{
 	}
 	
-	virtual char const* what() const
+	virtual char const* what() const throw()
 	{
 		return "EOF";
 	}
@@ -89,7 +89,7 @@ struct device_buf
 	
 	bool good() const
 	{
-		state.no(eof_bit | error_bit);
+		return state.no(eof_bit | error_bit);
 	}
 
 protected:

@@ -529,7 +529,7 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		bool empty() const
 		{ return cur >= end; }
 		
-		void put(uint8_t c) const
+		void put(uint8_t c)
 		{
 			sassert(!empty());
 			if(Cow)

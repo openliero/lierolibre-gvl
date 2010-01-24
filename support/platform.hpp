@@ -112,6 +112,10 @@
 #define GVL_TWOS_COMPLEMENT (~(-1)==0)
 #endif
 
+#if !defined(GVL_WINDOWS)
+#define GVL_WINDOWS (GVL_WIN64 || GVL_WIN32)
+#endif
+
 /* This function checks whether the above inferred
 ** characteristics are correct. It will throw gvl::assert_failure if not. */
 void gvl_test_platform();

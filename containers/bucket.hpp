@@ -3,6 +3,7 @@
 
 #include <new>
 #include <cstddef>
+#include <cstring>
 #include "../containers/list.hpp"
 #include "../resman/shared_ptr.hpp"
 #include "../support/cstdint.hpp"

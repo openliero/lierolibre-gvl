@@ -79,9 +79,9 @@ int gvl_log2_64(uint64_t v)
 	unsigned int ttt;
 	
 	if((ttt = (uint32_t)(v >> 32)))
-		return 32 + log2(ttt);
+		return 32 + gvl_log2(ttt);
 	else
-		return log2((uint32_t)v);
+		return gvl_log2((uint32_t)v);
 }
 
 int gvl_bottom_bit(uint32_t v)

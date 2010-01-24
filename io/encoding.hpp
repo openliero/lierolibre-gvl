@@ -272,8 +272,12 @@ struct octet_stream_writer
 	: basic_text_writer<octet_stream_writer>
 	, gvl::shared
 {
-	static bucket_size const default_initial_bucket_size = 512;
-	static bucket_size const default_max_bucket_size = 32768;
+	enum
+	{
+		default_initial_bucket_size = 512,
+		default_max_bucket_size = 32768
+	};
+	
 	
 	octet_stream_writer(shared_ptr<stream> sink)
 	: sink_()
@@ -579,8 +583,8 @@ struct cell : basic_text_writer<cell>
 	};
 	
 	cell(int width_init, placement text_placement_init)
-	: width(width_init)
-	, text_placement(text_placement_init)
+	: text_placement(text_placement_init)
+	, width(width_init)
 	{
 	}
 	
@@ -614,7 +618,7 @@ inline D& operator<<(basic_text_writer<D>& self_, cell& c)
 	D& self = self_.derived();
 	if(c.buffer.size() > c.width)
 	{
-		int allowed = std::max(int(c.buffer.size()) - 2, 0)
+		int allowed = std::max(int(c.buffer.size()) - 2, 0);
 		self.put(&c.buffer[0], &c.buffer[0] + allowed);
 		if(allowed != int(c.buffer.size()))
 			self << "..";

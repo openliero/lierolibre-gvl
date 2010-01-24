@@ -25,6 +25,7 @@ struct shared_count
 	{
 		shared_count n(b);
 		swap(n);
+		return *this;
 	}
 	
 	~shared_count()

@@ -205,11 +205,13 @@ struct pairing_heap : Compare, Deleter
 		return downcast(ret);
 	}
 	
+#if 0
 	void print_tree()
 	{
 		print_siblings_(0, root);
 	}
 	
+
 	// TEMP
 	void print_siblings_(int indent, pairing_node_common* el)
 	{
@@ -222,6 +224,7 @@ struct pairing_heap : Compare, Deleter
 			print_siblings_(indent + 1, el->left_child);
 		}
 	}
+#endif
 	
 	T* unlink(T* el_)
 	{

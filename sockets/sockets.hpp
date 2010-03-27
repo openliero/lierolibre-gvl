@@ -53,19 +53,24 @@ struct socket
 	{ bind(0); }
 };
 
-struct internet_addr_impl : gvl::shared
+int const SS_MAXSIZE = 128;                 // Maximum size
+int const SS_ALIGNSIZE = (sizeof(__int64)); // Desired alignment
+int const SS_PAD1SIZE = (SS_ALIGNSIZE - sizeof(short));
+int const SS_PAD2SIZE = (SS_MAXSIZE - (sizeof(short) + SS_PAD1SIZE + SS_ALIGNSIZE));
+
+struct sockaddr_storage
 {
-	friend struct internet_addr;
-	
-	internet_addr_impl()
-	{
-	}
-	
-	virtual ~internet_addr_impl()
-	{
-	}
-	
-	virtual internet_addr_impl* clone() = 0;
+    short ss_family;               // Address family.
+
+    char _ss_pad1[SS_PAD1SIZE];  // 6 byte pad, this is to make
+                                   //   implementation specific pad up to
+                                   //   alignment field that follows explicit
+                                   //   in the data structure
+    int64_t _ss_align;            // Field to force desired structure
+    char _ss_pad2[SS_PAD2SIZE];  // 112 byte pad to achieve desired size;
+                                   //   _SS_MAXSIZE value minus size of
+                                   //   ss_family, __ss_pad1, and
+                                   //   __ss_align fields is 112
 };
 
 struct internet_addr
@@ -79,8 +84,7 @@ struct internet_addr
 	internet_addr(socket s);
 	internet_addr(uint32_t ip, int port);
 	
-	operator void const*() const
-	{ return ptr; }
+	bool valid();
 	
     int  port() const;
     void port(int port_new);
@@ -88,12 +92,14 @@ struct internet_addr
     uint32_t ip() const;
     void     ip(uint32_t ip_new);
     
-    void reset()
-    { ptr.reset(); }
+    void reset();
 
     friend bool operator==(internet_addr const&, internet_addr const&);
+	
+	bool operator!=(internet_addr const& other) const
+	{ return !(*this == other); }
     
-    gvl::shared_ptr<internet_addr_impl> ptr;
+	sockaddr_storage storage_;
 };
 
 

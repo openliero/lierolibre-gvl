@@ -1007,6 +1007,7 @@ private:
                 test_result::warn, ex);
             return tr;
         }
+#if 0
         catch (const failure& ex)
         {
             // test failed because of ensure() or similar method
@@ -1062,6 +1063,7 @@ private:
                 test_result::ex);
             return tr;
         }
+#endif
 
         // test passed
         test_result tr(name_,ti->first, current_test_name, test_result::ok);

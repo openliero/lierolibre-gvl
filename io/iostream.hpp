@@ -2,13 +2,14 @@
 #define GVL_IOSTREAM_HPP
 
 #include "encoding.hpp"
+#include "fstream.hpp"
 
 namespace gvl
 {
 
 inline octet_stream_writer& cout()
 {
-	static octet_stream_writer sr(new fstream(stdout));
+	static octet_stream_writer sr(shared_ptr<stream>(new fstream(stdout)));
 	return sr;
 }
 

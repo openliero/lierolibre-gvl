@@ -6,6 +6,7 @@
 namespace gvl
 {
 
+#if 0
 template<typename T, void (T::*)(T&)>
 struct check_swap
 { typedef T type; };
@@ -30,6 +31,7 @@ void swap(ref_wrapper<T> x, T& y)
 	x.v = y;
 	y = temp;
 }
+#endif
 
 template<typename InputIterator, typename StrictWeakOrdering>
 bool is_sorted(InputIterator b, InputIterator e, StrictWeakOrdering comp)
@@ -53,8 +55,21 @@ bool is_sorted(InputIterator b, InputIterator e, StrictWeakOrdering comp)
 template<typename InputIterator>
 bool is_sorted(InputIterator b, InputIterator e)
 {
-	return is_sorted(b, e, std::less<
+	return gvl::is_sorted(b, e, std::less<
 		typename std::iterator_traits<InputIterator>::value_type>());
+}
+
+template<typename Range, typename Pred>
+Range drop_while(Range r, Pred pred)
+{
+	while(!r.empty())
+	{
+		if(!pred(r.front()))
+			break;
+		r.pop_front();
+	}
+
+	return r;
 }
 
 } // namespace gvl

@@ -81,7 +81,9 @@ private:
 		delete this;
 	}
 	
-	void _clear_weak_ptrs() const;
+	void _clear_weak_ptrs() const
+	{
+	}
 	
 	mutable int _ref_count; // You should be able to have shared_ptr<T const>
 	weak_ptr_common* _first;

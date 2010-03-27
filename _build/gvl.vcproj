@@ -513,6 +513,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\containers\critbit.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\containers\critbit.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\containers\deque.hpp"
 				>
 			</File>

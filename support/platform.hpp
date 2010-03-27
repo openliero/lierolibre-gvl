@@ -3,6 +3,8 @@
 
 /* NOTE: Keep this usable from C */
 
+#include <stddef.h>
+
 #if !defined(GVL_WIN64)
 # if defined(WIN64) || defined(_WIN64) /* TODO: Check for Cygwin */
 #  define GVL_WIN64 1
@@ -71,6 +73,14 @@
 # define GVL_INLINE static
 #endif
 
+#if !defined(GVL_CPP0X)
+# if GVL_MSVCPP >= 1600
+#  define GVL_CPP0X 1 // C++0x level 1
+# else
+#  define GVL_CPP0X 0
+# endif
+#endif
+
 /* Whether or not the compiler may generate x87 code for floating point calculations.
 ** GVL_X87 == 1 means the gvl IEEE support functions will take measures to work-around
 ** x87 issues that make results non-reproducible. */
@@ -112,9 +122,27 @@
 #define GVL_TWOS_COMPLEMENT (~(-1)==0)
 #endif
 
+
 #if !defined(GVL_WINDOWS)
 #define GVL_WINDOWS (GVL_WIN64 || GVL_WIN32)
 #endif
+
+#if !defined(GVL_PTR64)
+#if GVL_WIN64
+#define GVL_PTR64 1
+#else
+#define GVL_PTR64 0
+#endif
+#endif
+
+#if GVL_CPP0X && defined(__cplusplus)
+#include <utility>
+#define GVL_MOVE(x) (::std::move(x))
+#else
+#define GVL_MOVE(x) (x)
+#endif
+
+typedef ptrdiff_t intptr_t;
 
 /* This function checks whether the above inferred
 ** characteristics are correct. It will throw gvl::assert_failure if not. */

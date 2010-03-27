@@ -93,7 +93,7 @@ struct socketstream : stream, flags
 		*/
 		
 		internet_addr server(addr, port);
-		if(!server)
+		if(!server.valid())
 			return;
 		
 		socket s = tcp_socket();
@@ -124,7 +124,7 @@ protected:
 		
 		if(r == (int)size)
 		{
-			std::cout << "Full write: " << size << "b" << std::endl;
+			//std::cout << "Full write: " << size << "b" << std::endl;
 			
 			gvl::unlink(b);
 			delete b;
@@ -134,7 +134,7 @@ protected:
 		{
 			if(r > 0)
 			{
-				std::cout << "Partial write: " << r << "b" << std::endl;
+				//std::cout << "Partial write: " << r << "b" << std::endl;
 				b->cut_front(r);
 				return write_result(write_part, false);
 			}

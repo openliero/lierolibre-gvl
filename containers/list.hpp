@@ -457,6 +457,28 @@ struct list : list_common, protected Deleter, protected Ownership
 
 		gvl_list_node* ptr_;
 	};
+
+	struct range
+	{
+		range(gvl_list_node* front_init, gvl_list_node* end_init)
+		: front_(front_init)
+		, end_(end_init)
+		{
+		}
+
+		bool empty()
+		{ return front_ == end_; }
+
+		void pop_front()
+		{ front_ = front_->next; }
+
+		T& front()
+		{ return *downcast(front_); }
+
+	private:
+		gvl_list_node* front_;
+		gvl_list_node* end_;
+	};
 	
 	list(/*Deleter const& deleter = Deleter(), */Ownership const& ownership = Ownership())
 	: /*Deleter(deleter)
@@ -567,6 +589,11 @@ struct list : list_common, protected Deleter, protected Ownership
 	reverse_iterator rend()
 	{
 		return reverse_iterator(&sentinel_);
+	}
+
+	range all()
+	{
+		return range(list_common::first(), &sentinel_);
 	}
 
 	T& front()

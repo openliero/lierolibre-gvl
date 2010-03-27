@@ -20,12 +20,14 @@ struct common_obitstream
 	
 };
 
-template<typename DerivedT, typename WordT = uint8_t>
+template<typename DerivedT>
 struct basic_ibitstream // : common_ibitstream
 {
-	typedef WordT word;
-	static std::size_t const word_bits = sizeof(word) * CHAR_BIT;
-	
+	//typedef WordT word;
+	typedef uint8_t byte;
+	//static std::size_t const word_bits = sizeof(word) * CHAR_BIT;
+	typedef unsigned int bitbuf_t; // We hope unsigned int is the fastest type to deal with
+
 	basic_ibitstream()
 	: in_bits(0)
 	, in_bits_left(0)
@@ -33,7 +35,7 @@ struct basic_ibitstream // : common_ibitstream
 	}
 		
 	template<typename T2>
-	basic_ibitstream(basic_ibitstream<T2, WordT> const& b)
+	basic_ibitstream(basic_ibitstream<T2> const& b)
 	: in_bits(b.in_bits)
 	, in_bits_left(b.in_bits_left)
 	{
@@ -50,7 +52,7 @@ struct basic_ibitstream // : common_ibitstream
 	// point.
 	std::size_t in_bytes_required(std::size_t bits) const
 	{
-		return (bits + word_bits - 1 - in_bits_left) / word_bits;
+		return (bits + 8 - 1 - in_bits_left) / 8;
 	}
 	
 	void swap(basic_ibitstream& b)
@@ -66,6 +68,11 @@ struct basic_ibitstream // : common_ibitstream
 	uint32_t get_lim(uint32_t low, uint32_t high);
 	void resetg();
 	
+	// NOTE: Assumes that the stream has been read up to a byte boundary.
+	// Stream contents becomes undefined if this isn't true.
+	inline uint8_t unsafe_aligned_get_byte();
+	inline bool is_aligned();
+	
 	void get_debug_mark();
 	
 	uint32_t get_trunc(uint32_t count);
@@ -73,25 +80,26 @@ struct basic_ibitstream // : common_ibitstream
 	uint32_t get_golomb(uint32_t m);
 	uint32_t get_rice(uint32_t shift);
 	
-	
-	unsigned int in_bits; // We hope unsigned int is the fastest type to deal with
-	uint32_t     in_bits_left;
+	bitbuf_t in_bits;
+	uint32_t in_bits_left;
 };
 
-template<typename DerivedT, typename WordT = uint8_t>
+template<typename DerivedT>
 struct basic_obitstream : common_obitstream
 {
-	typedef WordT word;
-	static std::size_t const word_bits = sizeof(word) * CHAR_BIT;
+	//typedef WordT word;
+	//static std::size_t const word_bits = sizeof(word) * CHAR_BIT;
+	typedef uint8_t byte;
+	typedef unsigned int bitbuf_t; // We hope unsigned int is the fastest type to deal with
 	
 	basic_obitstream()
 	: out_bits(0)
-	, out_bits_left(word_bits)
+	, out_bits_left(8)
 	{
 	}
 		
 	template<typename T2>
-	basic_obitstream(basic_obitstream<T2, WordT> const& b)
+	basic_obitstream(basic_obitstream<T2> const& b)
 	: out_bits(b.out_bits)
 	, out_bits_left(b.out_bits_left)
 	{
@@ -105,10 +113,10 @@ struct basic_obitstream : common_obitstream
 	
 	
 	// Bits written if 'bytes' calls to put_byte were made
-	// after an initial state of out_bits_left == word_bits.
+	// after an initial state of out_bits_left == 8.
 	std::size_t out_bits_written(std::size_t bytes) const
 	{
-		return bytes * word_bits + (word_bits - out_bits_left);
+		return bytes * 8 + (8 - out_bits_left);
 	}
 	
 	void swap(basic_obitstream& b)
@@ -130,6 +138,11 @@ struct basic_obitstream : common_obitstream
 	void resetp();
 	void finish();
 	
+	// NOTE: Assumes that the stream has been written up to a byte boundary.
+	// Stream contents becomes undefined if this isn't true.
+	inline void unsafe_aligned_put_byte(uint8_t w);
+	inline bool is_aligned();
+	
 	void put_debug_mark();
 	
 	void put_trunc(uint32_t v, uint32_t count);
@@ -137,8 +150,8 @@ struct basic_obitstream : common_obitstream
 	void put_golomb(uint32_t v, uint32_t m);
 	void put_rice(uint32_t v, uint32_t shift);
 	
-	unsigned int out_bits; // We hope unsigned int is the fastest type to deal with
-	uint32_t     out_bits_left;
+	bitbuf_t out_bits;
+	uint32_t out_bits_left;
 };
 
 // Dummy obitstream to allow normalization of interface of bitstreams.

@@ -1,34 +1,12 @@
-#include <gvl/tut/tut.hpp>
+#include "../../test/test.hpp"
 
-#include <gvl/io/bitstream.hpp>
-#include <gvl/io/common_bitstream.hpp>
-#include <gvl/math/tt800.hpp>
-#include <gvl/support/cstdint.hpp>
-#include <gvl/support/macros.hpp>
+#include "../common_bitstream.hpp"
+#include "../../math/tt800.hpp"
+#include "../../support/cstdint.hpp"
+#include "../../support/macros.hpp"
 #include <functional>
 #include <vector>
 #include <utility>
-
-namespace tut
-{
-
-struct bitstream_data
-{
-	
-};
-
-typedef test_group<bitstream_data> factory;
-typedef factory::object object;
-
-}
-
-namespace
-{
-	tut::factory tf("gvl::bitstream");
-} // namespace
-
-namespace tut
-{
 
 template<typename T, std::size_t N>
 std::size_t array_size(T(&)[N])
@@ -36,9 +14,9 @@ std::size_t array_size(T(&)[N])
 	return N;
 }
 
-template<>
-template<>
-void object::test<1>()
+GVLTEST_SUITE(gvl, bitstream)
+
+GVLTEST(gvl, bitstream, put_get_ignore)
 {
 	typedef std::vector<std::pair<uint32_t, uint32_t> > SampleVec;
 	SampleVec samples;
@@ -68,14 +46,14 @@ void object::test<1>()
 		uint32_t a = bs.get_uint(20);
 		uint32_t b = bs.get_uint(16);
 
-		ensure("a is correct", a == 0xabcde);
-		ensure("b is correct", b == 0xf012);
+		ASSERTEQM("a is correct", a, 0xabcde);
+		ASSERTEQM("b is correct", b, 0xf012);
 
 		bs.rewindg();
 
 		bs.ignore(20);
 		b = bs.get_uint(16);
-		ensure("b is correct", b == 0xf012);
+		ASSERTEQM("b is correct", b, 0xf012);
 
 		bs.clear();
 	}
@@ -90,7 +68,7 @@ void object::test<1>()
 	FOREACH(SampleVec, i, samples)
 	{
 		uint32_t v = bs.get_uint(i->first);
-		ensure("integers encoded right", v == i->second);
+		ASSERTEQM("integers encoded right", v, i->second);
 	}
 	
 	bs.rewindg();
@@ -109,7 +87,7 @@ void object::test<1>()
 				ignoreLen = 0;
 			}
 			uint32_t v = bs.get_uint(i->first);
-			ensure("integers encoded right", v == i->second);
+			ASSERTEQM("integers encoded right", v, i->second);
 			
 		}
 	}
@@ -126,9 +104,7 @@ void object::test<1>()
 	FOREACH(SampleVec, i, samples)
 	{
 		uint32_t v = bs.get();
-		ensure("bits encoded right", v == (i->second & 1));
+		ASSERTEQM("bits encoded right", v, (i->second & 1));
 	}
 	
 }
-
-} // namespace tut

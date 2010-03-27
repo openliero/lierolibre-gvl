@@ -59,6 +59,22 @@ struct shared_ptr // : shared_ptr_common
 		_set(p);
 	}
 
+#if GVL_CPP0X
+	shared_ptr(shared_ptr&& b)
+	{
+		v = b.get();
+		b.v = 0;
+	}
+
+	template<typename SrcT>
+	shared_ptr(shared_ptr<SrcT>&& b)
+	{
+		T* p = b.get();
+		v = p;
+		b.v = 0;
+	}
+#endif
+
 	// These two take over reference from b
 	shared_ptr(deferred_ptr<T> const& b);
 	shared_ptr& operator=(deferred_ptr<T> const& b);
@@ -76,6 +92,24 @@ struct shared_ptr // : shared_ptr_common
 		_reset_shared(p);
 		return *this;
 	}
+
+#if GVL_CPP0X
+	shared_ptr& operator=(shared_ptr&& b)
+	{
+		_reset_shared(b.get());
+		b.v = 0;
+		return *this;
+	}
+
+	template<typename SrcT>
+	shared_ptr& operator=(shared_ptr<SrcT>&& b)
+	{
+		T* p = b.get();
+		_reset_shared(p);
+		b.v = 0;
+		return *this;
+	}
+#endif
 		
 	operator void const*() const
 	{ return v; }

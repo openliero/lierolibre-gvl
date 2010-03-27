@@ -12,36 +12,24 @@ socket socket::invalid()
 	return socket();
 }
 
-struct internet_addr_sockaddr_in : internet_addr_impl
+sockaddr_in* get_sockaddr_in(internet_addr& self)
 {
-	// Default copy-ctor and op= are fine
-	
-	internet_addr_impl* clone();
-	
-	sockaddr_in s;
-};
+	return reinterpret_cast<sockaddr_in*>(&self.storage_);
+}
 
-sockaddr_in* get_sockaddr_in(internet_addr_impl& impl)
+sockaddr_in const* get_sockaddr_in(internet_addr const& self)
 {
-	if(internet_addr_sockaddr_in* p = dynamic_cast<internet_addr_sockaddr_in*>(&impl))
-		return &p->s;
-	return 0;
+	return reinterpret_cast<sockaddr_in const*>(&self.storage_);
 }
 
 sockaddr* get_sockaddr(internet_addr& self)
 {
-	if(!self.ptr)
-		return 0;
-	if(internet_addr_sockaddr_in* p = dynamic_cast<internet_addr_sockaddr_in*>(self.ptr.get()))
-		return reinterpret_cast<sockaddr*>(&p->s);
-	return 0;
+	return reinterpret_cast<sockaddr*>(&self.storage_);
 }
 
-sockaddr_in const* get_sockaddr_in(internet_addr_impl const& impl)
+void clear_initialized(internet_addr& self)
 {
-	if(internet_addr_sockaddr_in const* p = dynamic_cast<internet_addr_sockaddr_in const*>(&impl))
-		return &p->s;
-	return 0;
+	memset(&self.storage_, 0, sizeof(self.storage_));
 }
 
 #if GVL_WIN32 || GVL_WIN64
@@ -381,21 +369,15 @@ typedef uint64_t sckimpl_sa_align_t;
 std::size_t const sckimpl_sa_maxsize = 32; // IPv6 needs 28 bytes
 */
 
-internet_addr_impl* internet_addr_sockaddr_in::clone()
-{
-	return new internet_addr_sockaddr_in(*this);
-}
-
-
 int internet_addr::port() const
 {
-	sockaddr_in* s = get_sockaddr_in(*ptr);
+	sockaddr_in const* s = get_sockaddr_in(*this);
 	return ntohs(s->sin_port);
 }
 
 uint32_t internet_addr::ip() const
 {
-	sockaddr_in* s = get_sockaddr_in(*ptr);
+	sockaddr_in const* s = get_sockaddr_in(*this);
 #if GVL_WIN32 || GVL_WIN64
 	return ntohl(s->sin_addr.S_un.S_addr);
 #else
@@ -404,11 +386,10 @@ uint32_t internet_addr::ip() const
 }
 
 internet_addr::internet_addr(uint32_t addr, int port)
-: ptr(new internet_addr_sockaddr_in)
 {
-	sockaddr_in* s = get_sockaddr_in(*ptr);
-	
-	memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
+	clear_initialized(*this);
+
+	sockaddr_in* s = get_sockaddr_in(*this);
 	
 	s->sin_family = AF_INET;
 	s->sin_port = htons( (u_short)port );
@@ -417,14 +398,14 @@ internet_addr::internet_addr(uint32_t addr, int port)
 
 internet_addr::internet_addr(char const* name, int port)
 {
+	clear_initialized(*this);
+
 	hostent* p = gethostbyname(name);
 	if(p)
 	{
-		ptr.reset(new internet_addr_sockaddr_in);
-		sockaddr_in* s = get_sockaddr_in(*ptr);
+		sockaddr_in* s = get_sockaddr_in(*this);
 		
-		memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
-		memmove(reinterpret_cast<char *>(&s->sin_addr), p->h_addr_list[0], p->h_length);
+		memmove(&s->sin_addr, p->h_addr_list[0], p->h_length);
 		s->sin_family = p->h_addrtype;
 		s->sin_port = htons( (u_short)port );
 	}
@@ -432,55 +413,52 @@ internet_addr::internet_addr(char const* name, int port)
 
 internet_addr::internet_addr(socket s)
 {
+	clear_initialized(*this);
+
 	sockaddr_in addr;
-	
 	socklen_t t = sizeof(sockaddr_in);
 	
 	if(getsockname(native_socket(s), reinterpret_cast<sockaddr*>(&addr), &t) != error_ret)
 	{
-		ptr.reset(new internet_addr_sockaddr_in);
-		*get_sockaddr_in(*ptr) = addr;
+		*get_sockaddr_in(*this) = addr;
 	}
 }
 
 internet_addr::internet_addr()
-: ptr(new internet_addr_sockaddr_in)
 {
-	sockaddr_in* s = get_sockaddr_in(*ptr);
-	
-	memset(reinterpret_cast<char *>(s->sin_zero), 0, sizeof(s->sin_zero));
+	clear_initialized(*this);
+
+	sockaddr_in* s = get_sockaddr_in(*this);
 	
 	s->sin_family = AF_INET;
 	s->sin_port = htons( 0 );
 	s->sin_addr.s_addr = htonl( INADDR_ANY );
 }
 
+void internet_addr::reset()
+{
+	clear_initialized(*this);
+}
 
+bool internet_addr::valid()
+{
+	return get_sockaddr(*this)->sa_family != 0;
+}
 
 bool operator==(internet_addr const& a, internet_addr const& b)
 {
-	if(!a.ptr || !b.ptr)
-	{
-		return !a.ptr && !b.ptr;
-	}
-	
-	sockaddr_in const* as = get_sockaddr_in(*a.ptr);
-	sockaddr_in const* bs = get_sockaddr_in(*b.ptr);
-	return as->sin_addr.s_addr == bs->sin_addr.s_addr
-	    && as->sin_port == bs->sin_port;
+	return 0 == std::memcmp(&a.storage_, &b.storage_, sizeof(a.storage_));
 }
 
 void internet_addr::port(int port)
 {
-	ptr.cow();
-	sockaddr_in* s = get_sockaddr_in(*ptr);
+	sockaddr_in* s = get_sockaddr_in(*this);
 	s->sin_port = htons( (u_short)port );
 }
 
 void internet_addr::ip(uint32_t addr)
 {
-	ptr.cow();
-	sockaddr_in* s = get_sockaddr_in(*ptr);
+	sockaddr_in* s = get_sockaddr_in(*this);
 	s->sin_addr.s_addr = htonl( addr );
 }
 

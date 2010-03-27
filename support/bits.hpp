@@ -69,7 +69,7 @@ GVL_INLINE int gvl_trailing_zeroes(uint32_t v)
 
 GVL_INLINE uint32_t gvl_bswap(uint32_t v)
 {
-	int ulong_shift = (sizeof(unsigned long) - sizeof(uint32_t)) * CHAR_BIT;
+	int const ulong_shift = (sizeof(unsigned long) - sizeof(uint32_t)) * CHAR_BIT;
 	
 	return (uint32_t)(_byteswap_ulong((unsigned long)v << ulong_shift));
 }
@@ -100,6 +100,34 @@ GVL_INLINE uint64_t gvl_bswap_64(uint64_t v)
 }
 
 #endif
+
+GVL_INLINE uint32_t gvl_bswap_le(uint32_t v)
+{
+#if GVL_LITTLE_ENDIAN
+	return v;
+#else
+	return gvl_bswap(v);
+#endif
+}
+
+GVL_INLINE uint32_t gvl_bswap_be(uint32_t v)
+{
+#if GVL_LITTLE_ENDIAN
+	return gvl_bswap(v);
+#else
+	return v;
+#endif
+}
+
+GVL_INLINE uint32_t gvl_rot(uint32_t v, int c)
+{
+	return (v << c) | (v >> (32-c));
+}
+
+GVL_INLINE uint64_t gvl_rot_64(uint64_t v, int c)
+{
+	return (v << c) | (v >> (64-c));
+}
 
 GVL_INLINE int gvl_popcount(uint32_t v)
 {
@@ -187,6 +215,12 @@ GVL_INLINE uint32_t gvl_shl_1_32(uint32_t v, uint32_t o)
 	return (v << (o - 1)) << 1;
 }
 
+/* Right shift that works for o in [1, 32] */
+GVL_INLINE uint32_t gvl_shr_1_32(uint32_t v, uint32_t o)
+{
+	return (v >> (o - 1)) >> 1;
+}
+
 GVL_INLINE int gvl_all_set(uint32_t v, uint32_t f)
 {
 	return (v & f) == f;
@@ -218,6 +252,8 @@ GVL_INLINE int log2(uint64_t v) { return gvl_log2_64(v); }
 GVL_INLINE int trailing_zeroes(uint32_t v) { return gvl_trailing_zeroes(v); }
 GVL_INLINE uint32_t bswap(uint32_t v) { return gvl_bswap(v); }
 GVL_INLINE uint64_t bswap(uint64_t v) { return gvl_bswap_64(v); }
+GVL_INLINE uint32_t bswap_le(uint32_t v) { return gvl_bswap_le(v); }
+GVL_INLINE uint32_t bswap_be(uint32_t v) { return gvl_bswap_be(v); }
 GVL_INLINE int popcount(uint32_t v) { return gvl_popcount(v); }
 GVL_INLINE int ceil_log2(uint32_t v) { return gvl_ceil_log2(v); }
 GVL_INLINE int even_log2(uint32_t v) { return gvl_even_log2(v); }
@@ -230,6 +266,7 @@ GVL_INLINE int32_t uint32_as_int32(uint32_t x) { return gvl_uint32_as_int32(x); 
 GVL_INLINE uint32_t int32_as_uint32(int32_t x) { return gvl_int32_as_uint32(x); }
 GVL_INLINE uint32_t lsb_mask(int x) { return gvl_lsb_mask(x); }
 GVL_INLINE uint32_t shl_1_32(uint32_t v, uint32_t o) { return gvl_shl_1_32(v, o); }
+GVL_INLINE uint32_t shr_1_32(uint32_t v, uint32_t o) { return gvl_shr_1_32(v, o); }
 GVL_INLINE bool all_set(uint32_t v, uint32_t f) { return gvl_all_set(v, f) != 0; }
 GVL_INLINE bool is_power_of_two(uint32_t x) { return gvl_is_power_of_two(x) != 0; }
 

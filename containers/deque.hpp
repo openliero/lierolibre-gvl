@@ -7,9 +7,8 @@
 #include <cstdlib>
 #include <new>
 #include "../support/debug.hpp"
-//#include "memory.hpp"
 #include "../support/functional.hpp"
-//#include "common.hpp"
+#include "../support/platform.hpp"
 
 namespace gvl
 {
@@ -27,7 +26,46 @@ struct deque : Deleter
 	, begin(0), end(0), len_mask(len - 1)
 	{
 	}
+
+	~deque()
+	{
+		clear();
+	}
+
+#if GVL_CPP0X
+	deque(deque&& other)
+	: Deleter(std::forward<Deleter>(other))
+	, len(other.len)
+	, buf(other.buf)
+	, begin(other.begin)
+	, end(other.end)
+	, len_mask(other.len_mask)
+	{
+		// Minimal necessary to make destruction safe
+		other.buf = 0;
+		other.begin = 0;
+		other.end = 0;
+	}
+
+	deque& operator=(deque&& other)
+	{
+		clear();
+		len = other.len;
+		buf = other.buf;
+		begin = other.begin;
+		end = other.end;
+		len_mask = other.len_mask;
+
+		// Minimal necessary to make destruction safe
+		other.buf = 0;
+		other.begin = 0;
+		other.end = 0;
+		return *this;
+	}
+
+#endif
 	
+#if 0 // TODO
 	T extract(std::size_t i)
 	{
 		T& r = buf[(begin + i) & len_mask];
@@ -35,6 +73,7 @@ struct deque : Deleter
 		r = T();
 		return v;
 	}
+#endif
 	
 	T& operator[](std::size_t i) { return buf[(begin + i) & len_mask]; }
 	
@@ -42,10 +81,36 @@ struct deque : Deleter
 	void set(std::size_t i, T const& c)
 	{ buf[(begin + i) & len_mask] = c; }
 	*/
+
+#if GVL_CPP0X
+	void push_back(T&& c)
+	{
+		cons_(buf + end, std::move(c));
+
+		end = (end + 1) & len_mask;
+		if(end == begin)
+			expand();
+	}
+
+	void push_front(T&& c)
+	{
+		// Nothing is updated before the construction is done
+		// for exception safety.
+		std::size_t newbegin = (begin - 1) & len_mask;
+		cons_(buf + newbegin, std::move(c));
+
+		begin = newbegin;
+		if(end == begin)
+			expand();
+	}
+#endif
 	
 	void push_back(T const& c)
 	{
+		// Nothing is updated before the construction is done
+		// for exception safety.
 		cons_(buf + end, c);
+
 		end = (end + 1) & len_mask;
 		if(end == begin)
 			expand();
@@ -53,27 +118,22 @@ struct deque : Deleter
 	
 	void push_front(T const& c)
 	{
-		begin = (begin - 1) & len_mask;
-		cons_(buf + begin, c);
+		// Nothing is updated before the construction is done
+		// for exception safety.
+		std::size_t newbegin = (begin - 1) & len_mask;
+		cons_(buf + newbegin, c);
+
+		begin = newbegin;
 		if(end == begin)
 			expand();
 	}
 	
-	/*
-	simple_construct<T> push_back_inplace()
-	{
-		void* mem = buf + end;
-		end = (end + 1) & len_mask;
-		if(end == begin)
-			expand();
-		return mem;
-	}*/
-	
 	void pop_front()
 	{
 		passert(begin != end, "Empty deque");
-		dest_(buf + begin);
+		std::size_t oldbegin = begin;
 		begin = (begin + 1) & len_mask;
+		dest_(buf + oldbegin);
 	}
 	
 	void pop_back()
@@ -83,21 +143,23 @@ struct deque : Deleter
 		dest_(buf + end);
 	}
 	
-	T const& extract_front()
+#if 0 // TODO
+	T extract_front()
 	{
 		passert(begin != end, "Empty deque");
 		T* p = buf + begin;
 		begin = (begin + 1) & len_mask;
-		return *p;
+		return GVL_MOVE(*p);
 	}
 	
-	T const& extract_back()
+	T extract_back()
 	{
 		passert(begin != end, "Empty deque");
 		end = (end - 1) & len_mask;
 		T* p = buf + end;
-		return *p;
+		return GVL_MOVE(*p);
 	}
+#endif
 
 	void pop_front_n(size_t n)
 	{
@@ -123,7 +185,7 @@ struct deque : Deleter
 		//begin = end = 0;
 	}
 
-	bool empty() { return begin == end; }
+	bool empty() const { return begin == end; }
 	
 	T& back()
 	{
@@ -137,7 +199,7 @@ struct deque : Deleter
 		return buf[(begin) & len_mask];
 	}
 
-	std::size_t size()
+	std::size_t size() const
 	{
 		return (end - begin) & len_mask;
 	}
@@ -160,17 +222,29 @@ private:
 
 	void expand()
 	{
+		// TODO: This isn't exception safe at all
+
 		passert(begin == end, "expand can only be called when begin == end");
 		
 		std::size_t count = len;
 		std::size_t new_len = len * 2;
 		T* new_buf = talloc<T>(new_len);
-		
+
 		size_t part1_len = (count - begin);
 		size_t part2_len = end;
-		std::memcpy(new_buf, buf + begin, part1_len * sizeof(T));
-		std::memcpy(new_buf + part1_len, buf, part2_len * sizeof(T));
-		
+
+		T* p;
+		T* e;
+		T* d;
+
+		for(p = buf + begin, e = p + part1_len, d = new_buf; p != e; ++p, ++d)
+			cons_(d, GVL_MOVE(*p));
+
+		for(p = buf, e = p + part2_len, d = new_buf + part1_len; p != e; ++p, ++d)
+			cons_(d, GVL_MOVE(*p));
+
+		dest_(buf, buf + count);
+
 		begin = 0;
 		end = count;
 		len = new_len;
@@ -178,6 +252,13 @@ private:
 		std::free(buf);
 		buf = new_buf;
 	}
+
+#if GVL_CPP0X
+	void cons_(T* p, T&& v)
+	{
+		new (p) T(std::move(v));
+	}
+#endif
 	
 	void cons_(T* p, T const& v = T())
 	{
@@ -188,6 +269,12 @@ private:
 	{
 		Deleter::operator()(*p);
 		p->~T();
+	}
+
+	void dest_(T* b, T* e)
+	{
+		for(; b != e; ++b)
+			dest_(b);
 	}
 
 	// Disallow copying

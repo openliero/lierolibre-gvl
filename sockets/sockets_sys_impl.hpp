@@ -4,12 +4,18 @@
 #include "sockets.hpp"
 
 #if GVL_WIN32 || GVL_WIN64
-#ifndef NOGDI
+#undef  NOGDI
 #define NOGDI
-#endif
-#ifndef NOMINMAX
+#undef  NOMINMAX
 #define NOMINMAX
-#endif
+#undef  WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#undef  NONAMELESSUNION
+#define NONAMELESSUNION
+#undef  NOKERNEL
+#define NOKERNEL
+#undef  NONLS
+#define NONLS
 
 /*
 #ifndef POINTER_64

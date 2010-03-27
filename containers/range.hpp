@@ -2,6 +2,8 @@
 #define UUID_4800C387FBD44D146E8D33AE59C4A598
 
 #include <iterator>
+#include "../support/cstdint.hpp"
+#include "../support/debug.hpp"
 
 namespace gvl
 {
@@ -52,6 +54,7 @@ template<typename It>
 struct delimited_iterator_range
 {
 	typedef typename std::iterator_traits<It>::value_type value_type;
+	typedef typename std::iterator_traits<It>::reference reference;
 	
 	delimited_iterator_range(It i_init, It e_init)
 	: i(i_init), e(e_init)
@@ -71,13 +74,13 @@ struct delimited_iterator_range
 			put(*x++);
 		}
 	}
-	
+
 	bool empty() const
 	{
 		return i == e;
 	}
 	
-	value_type& front()
+	reference front()
 	{
 		sassert(i != e);
 		return *i;
@@ -145,6 +148,13 @@ template<typename Container>
 unsafe_delimited_iterator_range<typename Container::iterator> iter_range(Container& cont)
 {
 	return unsafe_delimited_iterator_range<typename Container::iterator>(cont.begin(), cont.end());
+}
+
+template<typename T, typename F>
+void for_range(T range, F func)
+{
+	for(; !range.empty(); range.pop_front())
+		func(range.front());
 }
 
 }

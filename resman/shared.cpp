@@ -3,6 +3,7 @@
 namespace gvl
 {
 
+#if 0 // TODO
 void shared::_clear_weak_ptrs() const
 {
 #if 0 // TODO
@@ -16,5 +17,6 @@ void shared::_clear_weak_ptrs() const
 	}
 #endif
 }
+#endif
 
 } // namespace gvl

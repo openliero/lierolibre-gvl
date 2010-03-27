@@ -3,6 +3,7 @@
 
 #include "bitstream.hpp"
 #include "../support/cstdint.hpp"
+#include "../containers/deque.hpp"
 #include <vector>
 #include <stdexcept>
 
@@ -11,13 +12,15 @@ namespace gvl
 
 struct vector_bitstream;
 
-template<typename RandomAccessIterator>
+template<typename RandomAccessIterator, int BufBytes>
 struct range_ibitstream
-	: gvl::basic_ibitstream<range_ibitstream<RandomAccessIterator> >
+	: gvl::basic_ibitstream<range_ibitstream<RandomAccessIterator, BufBytes>, BufBytes>
 	// obitstream that throws on output operations.
 	// Needed to normalize interface for templates (notably uevent<>)
 	, gvl::dummy_obitstream
 {
+	typedef gvl::basic_ibitstream<range_ibitstream<RandomAccessIterator, BufBytes>, BufBytes> ibase;
+
 	range_ibitstream(
 		RandomAccessIterator cur,
 		RandomAccessIterator end)
@@ -25,22 +28,24 @@ struct range_ibitstream
 	, end(end)
 	{
 	}
-		
+
 	range_ibitstream(vector_bitstream const&);
 	
 	// Default copy ctor and op= are fine
-	
-	uint8_t get_byte()
+
+	template<int C>
+	unsigned int get_chunk()
 	{
+		sassert(C == BufBytes);
 		if(cur == end)
-		{
 			throw std::runtime_error("Bitstream exhausted");
-		}
 		return *cur++;
 	}
-	
-	void ignore_bytes(std::size_t c)
+
+	template<int C>
+	void ignore_chunks(int c)
 	{
+		sassert(C == BufBytes);
 		if(end - cur < c)
 			throw std::runtime_error("Bitstream exhausted");
 		cur += c;
@@ -48,57 +53,75 @@ struct range_ibitstream
 	
 	std::size_t bits_left() const
 	{
-		return (end - cur) * 8 + this->in_bits_left;
+		return (end - cur) * 8 + (ibase::in_buf_bits - this->in_bit_count);
 	}
 	
 	RandomAccessIterator cur;
 	RandomAccessIterator end;
 };
 
-typedef range_ibitstream<uint8_t const*> array_ibitstream;
+typedef range_ibitstream<uint32_t const*, 4> array_ibitstream;
 
-/*
-struct array_ibitstream
-	: gvl::basic_ibitstream<array_ibitstream>
+
+template<typename OutputRange, int BufBytes>
+struct range_obitstream
+	: gvl::basic_obitstream<range_obitstream<OutputRange, BufBytes>, BufBytes>
+	, gvl::dummy_ibitstream
 {
-	array_ibitstream(
-		uint8_t const* ptr,
-		uint8_t const* end)
-	: ptr(ptr)
-	, end(end)
+	typedef gvl::basic_obitstream<range_obitstream<OutputRange, BufBytes>, BufBytes> obase;
+
+	range_obitstream(OutputRange r)
+	: range(r)
 	{
 	}
-		
-	array_ibitstream(vector_bitstream const&);
-	
+
 	// Default copy ctor and op= are fine
 	
-	uint8_t get_byte()
+	template<int C>
+	inline void put_chunk(unsigned int chunk)
 	{
-		if(ptr == end)
-		{
-			throw std::runtime_error("Bitstream exhausted");
-		}
-		return *ptr++;
+		sassert(C == BufBytes);
+		range.put(chunk);
 	}
 	
-	std::size_t bits_left() const
-	{
-		return (end - ptr) * 8 + in_bits_left;
-	}
-	
-	uint8_t const* ptr;
-	uint8_t const* end;
-};*/
+	OutputRange range;
+};
+
 
 struct vector_bitstream
-	: gvl::basic_ibitstream<vector_bitstream>
-	, gvl::basic_obitstream<vector_bitstream>
+	: gvl::basic_ibitstream<vector_bitstream, 4>
+	, gvl::basic_obitstream<vector_bitstream, 4>
 {
+	typedef gvl::basic_ibitstream<vector_bitstream, 4> ibase;
+	typedef gvl::basic_obitstream<vector_bitstream, 4> obase;
+
 	vector_bitstream()
 	: in_pos(0), size_(0)
 	{
 	}
+
+#if GVL_CPP0X
+	vector_bitstream(vector_bitstream&& other)
+	: ibase(std::move(other))
+	, obase(std::move(other))
+	, in_pos(other.in_pos)
+	, size_(other.size_)
+	, data(std::move(other.data))
+	{
+		// Destruction is safe already
+	}
+
+	vector_bitstream& operator=(vector_bitstream&& other)
+	{
+		ibase::operator=(std::move(other));
+		obase::operator=(std::move(other));
+
+		in_pos = other.in_pos;
+		size_ = other.size_;
+		data = std::move(other.data);
+		return *this;
+	}
+#endif
 	
 	// NOTE: Caller is expected to verify that the number of bits
 	// left in (bs) is at least (size_init).
@@ -106,7 +129,7 @@ struct vector_bitstream
 	: gvl::basic_ibitstream<vector_bitstream>(bs)
 	, in_pos(0)
 	, size_(size_init)
-	, data(bs.cur, bs.cur + bs.in_bytes_required(size_))
+	, data(bs.cur, bs.cur + bs.in_chunks_required(size_))
 	{
 	}
 	
@@ -115,30 +138,17 @@ struct vector_bitstream
 		size_ = out_bits_written(data.size());
 	}
 	
-	void put_byte(uint8_t v)
-	{
-		data.push_back(v);
-	}
-	
-	uint8_t get_byte()
-	{
-		if(in_pos == data.size())
-		{
-			throw std::runtime_error("Bitstream exhausted");
-		}
-		return data[in_pos++];
-	}
-	
-	void ignore_bytes(std::size_t c)
-	{
-		if(data.size() - in_pos < c)
-			throw std::runtime_error("Bitstream exhausted");
-		in_pos += c;
-	}
+	template<int C>
+	inline unsigned int get_chunk();
+
+	template<int C>
+	inline void put_chunk(unsigned int chunk);
+
+	template<int C>
+	inline void ignore_chunks(int c);
 	
 	std::size_t size() const
 	{
-		//update_size(); // TODO: Try to do this less often
 		return out_bits_written(data.size());
 	}
 	
@@ -158,10 +168,10 @@ struct vector_bitstream
 	// NOTE: Does not consume anything from bs
 	void put(vector_bitstream& bs)
 	{
-		put_uint(bs.in_bits, bs.in_bits_left);
+		put_uint(bs.in_bits_as_uint(), bs.in_bits_in_buffer());
 		for(std::size_t i = bs.in_pos; i < bs.data.size(); ++i)
-			put_uint(bs.data[i], 8);
-		put_uint(bs.out_bits >> bs.out_bits_left, 8 - bs.out_bits_left);
+			put_uint(bs.data[i], 32);
+		put_uint(bs.out_bits_as_uint(), bs.out_bits_in_buffer());
 	}
 	
 	void rewindg()
@@ -180,7 +190,7 @@ struct vector_bitstream
 	
 	std::size_t in_pos;
 	std::size_t size_;
-	std::vector<uint8_t> data;
+	std::vector<uint32_t> data;
 	
 private:
 	// Non-copyable
@@ -188,22 +198,139 @@ private:
 	vector_bitstream& operator=(vector_bitstream const&);
 };
 
-template<typename RandomAccessIterator>
-inline range_ibitstream<RandomAccessIterator>::range_ibitstream(vector_bitstream const& bs)
-: gvl::basic_ibitstream<range_ibitstream<RandomAccessIterator> >(bs)
+template<>
+inline unsigned int vector_bitstream::get_chunk<4>()
+{
+	if(in_pos == data.size())
+		throw std::runtime_error("Bitstream exhausted");
+	return gvl::bswap_le(data[in_pos++]);
+}
+
+template<>
+inline void vector_bitstream::put_chunk<4>(unsigned int chunk)
+{
+	data.push_back(gvl::bswap_le(chunk));
+}
+
+template<>
+inline void vector_bitstream::ignore_chunks<4>(int c)
+{
+	if(data.size() - in_pos < c)
+		throw std::runtime_error("Bitstream exhausted");
+	in_pos += c;
+}
+
+template<typename RandomAccessIterator, int BufBytes>
+inline range_ibitstream<RandomAccessIterator, BufBytes>::range_ibitstream(vector_bitstream const& bs)
+: gvl::basic_ibitstream<range_ibitstream<RandomAccessIterator, BufBytes> >(bs)
 , cur(bs.data.empty() ? 0 : (&bs.data[0] + bs.in_pos))
-, end(cur + bs.in_bytes_required(bs.size()))
+, end(cur + bs.in_chunks_required(bs.size()))
 {
 }
 
-/*
-inline array_ibitstream::array_ibitstream(vector_bitstream const& bs)
-: gvl::basic_ibitstream<array_ibitstream>(bs)
-, ptr(bs.data.empty() ? 0 : (&bs.data[0] + bs.in_pos))
-, end(ptr + bs.in_bytes_required(bs.size()))
+struct deque_bitstream :
+	gvl::basic_ibitstream<deque_bitstream, 4>,
+	gvl::basic_obitstream<deque_bitstream, 4> 
 {
-}*/
+	typedef gvl::basic_ibitstream<deque_bitstream, 4> ibase;
+	typedef gvl::basic_obitstream<deque_bitstream, 4> obase;
 
-} // namespace psync
+	deque_bitstream()
+	{
+	}
+
+#if GVL_CPP0X
+	deque_bitstream(deque_bitstream&& other)
+	: ibase(std::move(other))
+	, obase(std::move(other))
+	, data(std::move(other.data))
+	{
+		// Destruction is safe already
+	}
+
+	deque_bitstream& operator=(deque_bitstream&& other)
+	{
+		ibase::operator=(std::move(other));
+		obase::operator=(std::move(other));
+
+		data = std::move(other.data);
+		return *this;
+	}
+#endif
+			
+	template<int C>
+	inline void put_chunk(unsigned int v);
+
+	template<int C>
+	inline unsigned int get_chunk();
+
+	template<int C>
+	inline void ignore_chunks(std::size_t c);
+	
+	std::size_t size() const
+	{
+		return out_bits_written(data.size());
+	}
+	
+#if 0
+	void swap(deque_bitstream& b)
+	{
+		gvl::basic_obitstream<deque_bitstream>::swap(b);
+		
+		data.swap(b.data);
+	}
+#endif
+	
+	// To be able to overload put
+	using gvl::basic_obitstream<deque_bitstream>::put;
+	
+	// NOTE: Does not consume anything from bs
+	void put(vector_bitstream const& bs)
+	{
+		put_uint(bs.in_bits_as_uint(), bs.in_bits_in_buffer());
+		for(std::size_t i = bs.in_pos; i < bs.data.size(); ++i)
+			put_uint(bs.data[i], 32);
+		put_uint(bs.out_bits_as_uint(), bs.out_bits_in_buffer());
+	}
+	
+	void clear()
+	{
+		resetp();
+		data.clear();
+	}
+	
+	gvl::deque<uint32_t> data;
+	
+private:
+	// Non-copyable
+	deque_bitstream(deque_bitstream const&);
+	deque_bitstream& operator=(deque_bitstream const&);
+};
+
+template<>
+inline void deque_bitstream::put_chunk<4>(unsigned int v)
+{
+	data.push_back(gvl::bswap_le(v));
+}
+
+template<>
+inline unsigned int deque_bitstream::get_chunk<4>()
+{
+	if(data.empty())
+		throw std::runtime_error("Bitstream exhausted");
+	unsigned int v = gvl::bswap_le(data.front());
+	data.pop_front();
+}
+
+template<>
+inline void deque_bitstream::ignore_chunks<4>(std::size_t c)
+{
+	if(data.size() < c)
+		throw std::runtime_error("Bitstream exhausted");
+	data.pop_front_n(c);
+}
+
+
+} // namespace gvl
 
 #endif // UUID_706A361125654B859FE4FABB7193DE74

@@ -17,7 +17,7 @@ struct in_archive
 {
 	static bool const in = true;
 	static bool const out = false;
-	
+	static bool const reread = false;
 	
 	in_archive(gvl::octet_stream_reader& reader, Context& context)
 	: reader(reader), context(context)
@@ -183,11 +183,15 @@ struct in_archive
 	Context& context;
 };
 
-template<typename Context = default_serialization_context, typename Writer = gvl::octet_stream_writer>
+template<
+	typename Context = default_serialization_context,
+	typename Writer = gvl::octet_stream_writer,
+	bool Reread = true>
 struct out_archive
 {
 	static bool const in = false;
 	static bool const out = true;
+	static bool const reread = Reread;
 	
 	out_archive(Writer& writer, Context& context)
 	: writer(writer), context(context)
@@ -353,7 +357,7 @@ struct versioned_archive
 	#define FUNC(name) template<typename T> \
 	versioned_archive& name(T& v, T const& def) { \
 		if(enable) base.name(v); \
-		else v = def; \
+		else if(base.in || base.reread) v = def; \
 		return *this; \
 	}
 	

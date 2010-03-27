@@ -1,8 +1,8 @@
-#include <gvl/tut/tut.hpp>
+#include "../../test/test.hpp"
 
-#include <gvl/containers/pairing_heap.hpp>
-#include <gvl/math/tt800.hpp>
-#include <gvl/support/algorithm.hpp>
+#include "../pairing_heap.hpp"
+#include "../../math/tt800.hpp"
+#include "../../support/algorithm.hpp"
 #include <functional>
 #include <cmath>
 #include <set>
@@ -11,15 +11,12 @@
 #include <set>
 #include <queue>
 
-#include <gvl/tut/quickcheck/context.hpp>
-#include <gvl/tut/quickcheck/generator.hpp>
-#include <gvl/tut/quickcheck/property.hpp>
+#include "../../tut/quickcheck/context.hpp"
+#include "../../tut/quickcheck/generator.hpp"
+#include "../../tut/quickcheck/property.hpp"
 
-#include <gvl/support/log.hpp>
-#include <gvl/support/profile.hpp>
-
-namespace tut
-{
+#include "../../support/log.hpp"
+#include "../../support/profile.hpp"
 
 struct pairing_heap_integer : gvl::pairing_node<>
 {
@@ -165,24 +162,6 @@ QC_BEGIN_PROP(heap_integrity_property, test_type)
 	}
 QC_END_PROP()
 
-struct pairing_heap_data
-{
-	
-};
-
-typedef test_group<pairing_heap_data> factory;
-typedef factory::object object;
-
-}
-
-namespace
-{
-	tut::factory tf("gvl::pairing_heap");
-} // namespace
-
-namespace tut
-{
-
 /*
 template<typename T>
 struct greater : std::binary_function<T const&, T const&, bool>
@@ -193,12 +172,10 @@ struct greater : std::binary_function<T const&, T const&, bool>
 	}
 };*/
 
-template<>
-template<>
-void object::test<1>()
+GVLTEST_SUITE(gvl, pairing_heap)
+
+GVLTEST(gvl, pairing_heap, push_pop)
 {
-	
-	
 	h_t heap;
 	
 	int const count = 1000;
@@ -217,15 +194,13 @@ void object::test<1>()
 	
 	for(int i = 0; i < count; ++i)
 	{
-		ensure("not empty", !heap.empty());
-		ensure("all items are present and popped in the right order", added[i] == heap.min().v);
+		ASSERT("not empty", !heap.empty());
+		ASSERT("all items are present and popped in the right order", added[i] == heap.min().v);
 		heap.erase_min();
 	}
 }
 
-template<>
-template<>
-void object::test<2>()
+GVLTEST(gvl, pairing_heap, quickcheck)
 {
 	gvl::qc::context ctx;
 	ctx.add("singleton", new singleton_heap_gen, 0.5);
@@ -237,9 +212,7 @@ void object::test<2>()
 	gvl::qc::test_property<heap_integrity_property>(ctx, 1000, 500);
 }
 
-template<>
-template<>
-void object::test<3>()
+GVLTEST(gvl, pairing_heap, profiling)
 {
 #if GVL_PROFILE
 	std::vector<pairing_heap_integer> added;
@@ -299,5 +272,3 @@ void object::test<3>()
 	
 #endif
 }
-
-} // namespace tut

@@ -6,29 +6,80 @@
 namespace gvl
 {
 
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put(uint32_t bit)
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put(uint32_t bit)
 {
 	uint32_t left = out_bits_left - 1;
 
 	unsigned int bits = out_bits | (bit << left);
 	if(left == 0)
 	{
-		derived().put_byte(word(bits));
+		derived().put_byte(byte(bits));
 		out_bits = 0;
-		out_bits_left = word_bits;
+		out_bits_left = 8;
 	}
 	else
 	{
-		if(out_bits_left == word_bits)
+		if(out_bits_left == 8)
 			allocate_out_byte(); // Just began on this byte, allocate it
 		out_bits_left = left;
 		out_bits = bits;
 	}
 }
 
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_uint(uint32_t i, uint32_t bits)
+
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_uint2(uint32_t i, uint32_t bits)
+{
+	// Bits must be at most 32
+	sassert(bits <= 32);
+	
+	if(bits == 0) // Need this special case, as lsb_mask is not defined for 0
+		return;
+
+	i &= gvl::lsb_mask(bits); /* Clear bits that won't get written */
+
+	uint32_t local_out_bits_left = out_bits_left;
+	bitbuf_t local_out_bits = out_bits;
+
+	if(local_out_bits_left > bits)
+	{
+		/* We can fit it in */
+		out_bits = (local_out_bits << bits) | i;
+		out_bits_left = local_out_bits_left - bits;
+	}
+	else
+	{
+		// local_out_bits_left <= bits
+		// local_out_bits_left >= 1
+		int left_over = bits - local_out_bits_left;
+
+		// local_out_bits_left may be 32 here, but in those cases local_out_bits == 0.
+		local_out_bits = (local_out_bits << local_out_bits_left) | (i >> left_over);
+
+		while(true)
+		{
+			derived().put_byte(byte(local_out_bits >> 24));
+			derived().put_byte(byte(local_out_bits >> 16));
+			derived().put_byte(byte(local_out_bits >> 8));
+			derived().put_byte(byte(local_out_bits));
+
+			int const bufbits = 32;
+
+			if(bufbits >= 32 || left_over < bufbits)
+				break;
+
+			left_over -= bufbits;
+			local_out_bits = (i >> left_over) & ((1 << bufbits) - 1); // Mask away all but the first bufbits bits. TODO: Fix this mask
+		}
+
+		out_bits_left = bufbits - left_over; // left_over <= bufbits - 1, therefore out_bits_left >= 1
+		out_bits = (i & ((~uint32_t(0) >> 1) >> (out_bits_left - 1))); // This shift works for out_bits_left == [1, 32]
+	}
+}
+
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_uint(uint32_t i, uint32_t bits)
 {
 	// Bits must be at most 32
 	sassert(bits <= 32);
@@ -39,36 +90,7 @@ void basic_obitstream<DerivedT, WordT>::put_uint(uint32_t i, uint32_t bits)
 	/* TODO: Reserve memory first and use unchecked put byte */
 	
 	i &= gvl::lsb_mask(bits); /* Clear bits that won't get written */
-	if(bits > out_bits_left)
-	{
-		bits -= out_bits_left; /* bits is now the amount to right shift (bits left to write afterwards) */
-		/* bits will be in [1, 31] as out_bits_left is at least 1 */
-		out_bits |= i >> bits;
-		derived().put_byte(word(out_bits));
-		if(bits > 0)
-			derived().allocate_out_byte();
-			
-		for(; bits >= word_bits; )
-		{
-			bits -= word_bits; /* bits is now the amount to right shift (bits left to write afterwards) */
-			derived().put_byte(word(i >> bits));
-			if(bits > 0)
-				derived().allocate_out_byte();
-		}
-		
-		/* We know bits < 8, so we can just write in the rest into out_bits */
-		out_bits = (i << (word_bits - bits));
-		out_bits_left = word_bits - bits;
-	}
-	else if(bits == out_bits_left)
-	{
-		/* Fitting exactly */
-		out_bits |= i; /* No need to shift in place because it is already */
-		derived().put_byte(word(out_bits));
-		out_bits = 0;
-		out_bits_left = word_bits;
-	}
-	else
+	if(out_bits_left > bits)
 	{
 		/* We can fit it in */
 		out_bits_left -= bits; /* out_bits_left is now the amount to left shift */
@@ -76,10 +98,40 @@ void basic_obitstream<DerivedT, WordT>::put_uint(uint32_t i, uint32_t bits)
 		** after the last written bit. */
 		out_bits |= i << out_bits_left;
 	}
+	else if(bits > out_bits_left)
+	{
+		bits -= out_bits_left; /* bits is now the amount to right shift (bits left to write afterwards) */
+		/* bits will be in [1, 31] as out_bits_left is at least 1 */
+		out_bits |= i >> bits;
+		derived().put_byte(byte(out_bits));
+		if(bits > 0)
+			derived().allocate_out_byte();
+			
+		for(; bits >= 8; )
+		{
+			bits -= 8; /* bits is now the amount to right shift (bits left to write afterwards) */
+			derived().put_byte(byte(i >> bits));
+			if(bits > 0)
+				derived().allocate_out_byte();
+		}
+		
+		/* We know bits < 8, so we can just write in the rest into out_bits */
+		out_bits = (i << (8 - bits));
+		out_bits_left = 8 - bits;
+	}
+	else if(bits == out_bits_left)
+	{
+		/* Fitting exactly */
+		out_bits |= i; /* No need to shift in place because it is already */
+		derived().put_byte(byte(out_bits));
+		out_bits = 0;
+		out_bits_left = 8;
+	}
+	
 }
 
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_block(void const* ptr_, size_t len)
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_block(void const* ptr_, size_t len)
 {
 	uint8_t const* ptr = static_cast<uint8_t const*>(ptr_);
 	uint8_t const* end;
@@ -89,7 +141,7 @@ void basic_obitstream<DerivedT, WordT>::put_block(void const* ptr_, size_t len)
 
 	/* TODO: Reserve memory first and use unchecked put byte */
 	
-	if(out_bits_left == word_bits)
+	if(out_bits_left == 8)
 	{
 		/* Just write
 		** TODO: memcpy */
@@ -108,13 +160,13 @@ void basic_obitstream<DerivedT, WordT>::put_block(void const* ptr_, size_t len)
 		unsigned int v = out_bits;
 		
 		unsigned int left = out_bits_left;
-		unsigned int right = word_bits - left;
+		unsigned int right = 8 - left;
 		
 		do
 		{
 			unsigned int b = *ptr++;
 			v += (b >> right);
-			derived().put_byte(word(v));
+			derived().put_byte(byte(v));
 			derived().allocate_out_byte();
 			v = (b << left);
 		}
@@ -149,8 +201,8 @@ void bitstream::put_lim(uint32_t v, uint32_t low, uint32_t high)
 #if 1
 // NOTE: Untested
 // Integer in [0, count)
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_trunc(uint32_t v, uint32_t count)
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_trunc(uint32_t v, uint32_t count)
 {
 	uint32_t bits = gvl::ceil_log2(count);
 	uint32_t p2 = (1 << bits);
@@ -162,8 +214,8 @@ void basic_obitstream<DerivedT, WordT>::put_trunc(uint32_t v, uint32_t count)
 }
 
 // NOTE: Untested
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_unary(uint32_t v)
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_unary(uint32_t v)
 {
 	for(; v >= 32; v -= 32)
 		put_uint(0, 32);
@@ -171,8 +223,8 @@ void basic_obitstream<DerivedT, WordT>::put_unary(uint32_t v)
 }
 
 // NOTE: Untested
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_golomb(uint32_t v, uint32_t m)
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_golomb(uint32_t v, uint32_t m)
 {
 	uint32_t quot = v / m;
 	uint32_t rem = v % m;
@@ -182,8 +234,8 @@ void basic_obitstream<DerivedT, WordT>::put_golomb(uint32_t v, uint32_t m)
 }
 
 // NOTE: Untested
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_rice(uint32_t v, uint32_t shift)
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_rice(uint32_t v, uint32_t shift)
 {
 	sassert(shift > 0);
 	uint32_t quot = v >> shift;
@@ -194,20 +246,20 @@ void basic_obitstream<DerivedT, WordT>::put_rice(uint32_t v, uint32_t shift)
 }
 #endif
 
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::put_debug_mark()
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::put_debug_mark()
 {
 	put_uint((1<<15)|1, 16);
 }
 
 
-template<typename DerivedT, typename WordT>
-void basic_ibitstream<DerivedT, WordT>::ignore(uint32_t bits)
+template<typename DerivedT>
+void basic_ibitstream<DerivedT>::ignore(uint32_t bits)
 {
-	uint32_t cursor = word_bits - in_bits_left;
+	uint32_t cursor = 8 - in_bits_left;
 	cursor += bits;
 	
-	uint32_t bytes_to_read = cursor / word_bits;
+	uint32_t bytes_to_read = cursor / 8;
 	
 	if(bytes_to_read >= 1)
 	{
@@ -215,24 +267,24 @@ void basic_ibitstream<DerivedT, WordT>::ignore(uint32_t bits)
 		in_bits = derived().get_byte();
 	}
 	
-	in_bits_left = word_bits - (cursor % word_bits);
+	in_bits_left = 8 - (cursor % 8);
 }
 
-template<typename DerivedT, typename WordT>
-uint32_t basic_ibitstream<DerivedT, WordT>::get()
+template<typename DerivedT>
+uint32_t basic_ibitstream<DerivedT>::get()
 {
 	if(in_bits_left == 0)
 	{
 		in_bits = derived().get_byte();
-		in_bits_left = word_bits;
+		in_bits_left = 8;
 	}
 	
 	return (in_bits >> --in_bits_left) & 1;
 }
 
 
-template<typename DerivedT, typename WordT>
-uint32_t basic_ibitstream<DerivedT, WordT>::get_uint(uint32_t bits)
+template<typename DerivedT>
+uint32_t basic_ibitstream<DerivedT>::get_uint(uint32_t bits)
 {
 	// Bits must be at most 32
 	sassert(bits <= 32);
@@ -252,26 +304,20 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_uint(uint32_t bits)
 		//v = gvl::shl_1_32(in_bits, bits);
 		v = in_bits;
 		
-		for(; bits >= word_bits; )
+		for(; bits >= 8; )
 		{
-			bits -= word_bits; /* bits is now the amount to left shift (bits left to read afterwards) */
-			v = (v << word_bits) | derived().get_byte();
+			bits -= 8; /* bits is now the amount to left shift (bits left to read afterwards) */
+			v = (v << 8) | derived().get_byte();
 		}
 		
 		if(bits > 0)
 		{
-			in_bits_left = word_bits - bits;
+			in_bits_left = 8 - bits;
 			in_bits = derived().get_byte();
 			v = (v << bits) | (in_bits >> in_bits_left);
 		}
 		else
 			in_bits_left = 0;
-	}
-	else if(bits == in_bits_left)
-	{
-		/* Exactly what we have */
-		v = in_bits;
-		in_bits_left = 0;
 	}
 	else
 	{
@@ -285,8 +331,8 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_uint(uint32_t bits)
 	return v & gvl::lsb_mask(orig_bits);
 }
 
-template<typename DerivedT, typename WordT>
-void basic_ibitstream<DerivedT, WordT>::get_block(void* ptr_, size_t len)
+template<typename DerivedT>
+void basic_ibitstream<DerivedT>::get_block(void* ptr_, size_t len)
 {
 	if(len == 0)
 		return;
@@ -308,7 +354,7 @@ void basic_ibitstream<DerivedT, WordT>::get_block(void* ptr_, size_t len)
 		/* We need to shift */
 
 		unsigned int right = in_bits_left;
-		unsigned int left = word_bits - right;
+		unsigned int left = 8 - right;
 		unsigned int v = in_bits << left;
 		
 		unsigned int b;
@@ -316,12 +362,12 @@ void basic_ibitstream<DerivedT, WordT>::get_block(void* ptr_, size_t len)
 		{
 			b = derived().get_byte();
 			v += (b >> right);
-			*ptr++ = word(v);
+			*ptr++ = byte(v);
 			v = (b << left);
 		}
 		while(ptr != end);
 		
-		in_bits = word(b);
+		in_bits = byte(b);
 		/* in_bits_left is correct since we've only written whole bytes */
 	}
 }
@@ -343,8 +389,8 @@ uint32_t bitstream::get_lim(uint32_t low, uint32_t high)
 */
 
 #if 1
-template<typename DerivedT, typename WordT>
-uint32_t basic_ibitstream<DerivedT, WordT>::get_trunc(uint32_t count)
+template<typename DerivedT>
+uint32_t basic_ibitstream<DerivedT>::get_trunc(uint32_t count)
 {
 	uint32_t bits = gvl::ceil_log2(count);
 	uint32_t p2 = (1 << bits);
@@ -357,8 +403,8 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_trunc(uint32_t count)
 }
 
 // NOTE: Untested
-template<typename DerivedT, typename WordT>
-uint32_t basic_ibitstream<DerivedT, WordT>::get_unary()
+template<typename DerivedT>
+uint32_t basic_ibitstream<DerivedT>::get_unary()
 {
 	uint32_t v = 0;
 	for(; !get(); ++v)
@@ -367,8 +413,8 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_unary()
 }
 
 // NOTE: Untested
-template<typename DerivedT, typename WordT>
-uint32_t basic_ibitstream<DerivedT, WordT>::get_golomb(uint32_t m)
+template<typename DerivedT>
+uint32_t basic_ibitstream<DerivedT>::get_golomb(uint32_t m)
 {
 	uint32_t quot = get_unary();
 	uint32_t rem = get_trunc(m);
@@ -377,8 +423,8 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_golomb(uint32_t m)
 }
 
 // NOTE: Untested
-template<typename DerivedT, typename WordT>
-uint32_t basic_ibitstream<DerivedT, WordT>::get_rice(uint32_t shift)
+template<typename DerivedT>
+uint32_t basic_ibitstream<DerivedT>::get_rice(uint32_t shift)
 {
 	sassert(shift > 0);
 	
@@ -390,50 +436,76 @@ uint32_t basic_ibitstream<DerivedT, WordT>::get_rice(uint32_t shift)
 
 #endif
 
-template<typename DerivedT, typename WordT>
-void basic_ibitstream<DerivedT, WordT>::get_debug_mark()
+template<typename DerivedT>
+void basic_ibitstream<DerivedT>::get_debug_mark()
 {
 	uint32_t m = get_uint(16);
 	passert(m == ((1<<15)|1), "Debug mark not found");
 }
 
-template<typename DerivedT, typename WordT>
-void basic_ibitstream<DerivedT, WordT>::resetg()
+template<typename DerivedT>
+void basic_ibitstream<DerivedT>::resetg()
 {
 	in_bits_left = 0;
 	in_bits = 0;
 }
 
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::resetp()
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::resetp()
 {
-	out_bits_left = word_bits;
+	out_bits_left = 8;
 	out_bits = 0;
 }
 
+template<typename DerivedT>
+inline bool basic_ibitstream<DerivedT>::is_aligned()
+{
+	return in_bits_left == 0;
+}
+
+template<typename DerivedT>
+inline bool basic_obitstream<DerivedT>::is_aligned()
+{
+	return out_bits_left == 8;
+}
+
+template<typename DerivedT>
+inline uint8_t basic_ibitstream<DerivedT>::unsafe_aligned_get_byte()
+{
+	sassert(is_aligned()); // Must be aligned
+	return derived().get_byte();
+}
+
+template<typename DerivedT>
+inline void basic_obitstream<DerivedT>::unsafe_aligned_put_byte(byte w)
+{
+	sassert(is_aligned()); // Must be aligned
+	derived().put_byte(w);
+}
+
 /*
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::clear()
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::clear()
 {
 	resetp();
 	derived().clear();
 }
 
-template<typename DerivedT, typename WordT>
-void basic_ibitstream<DerivedT, WordT>::clear()
+template<typename DerivedT>
+void basic_ibitstream<DerivedT>::clear()
 {
 	resetg();
 	derived().clear();
 }*/
 
-template<typename DerivedT, typename WordT>
-void basic_obitstream<DerivedT, WordT>::finish()
+template<typename DerivedT>
+void basic_obitstream<DerivedT>::finish()
 {
-	if(out_bits_left < word_bits)
+	if(out_bits_left < 32)
 	{
-		derived().put_byte(word(out_bits));
+		derived().put_byte(byte(out_bits));
 		out_bits = 0;
-		out_bits_left = word_bits;
+		out_bits_left = 32;
 	}
 }
 

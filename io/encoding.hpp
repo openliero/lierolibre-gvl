@@ -9,6 +9,7 @@
 #include <cstring>
 #include <string> // TEMP (maybe)
 
+
 namespace gvl
 {
 
@@ -574,6 +575,7 @@ inline D& operator<<(basic_text_writer<D>& self_, std::string const& str)
 	self.put(reinterpret_cast<uint8_t const*>(str.data()), str.size());
 	return self;
 }
+
 
 struct cell : basic_text_writer<cell>
 {

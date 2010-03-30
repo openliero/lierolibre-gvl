@@ -1,0 +1,833 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="uthread">
+      <UniqueIdentifier>{11e80509-ce5f-4c3d-876e-e4d9a1b0e567}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="support">
+      <UniqueIdentifier>{55cec4dd-3c9a-4c16-a330-9ae0e4b91bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="containers">
+      <UniqueIdentifier>{e11dc92c-cf10-4e5a-b6ce-8603988d10d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="containers\trees">
+      <UniqueIdentifier>{c41c8202-dffd-4722-8a1e-11ab79b654e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resman">
+      <UniqueIdentifier>{92d0d3a1-ae27-4906-861f-54ca9930e914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{4b1584f8-7ad4-4695-8cef-f85647734331}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math\fdlibm">
+      <UniqueIdentifier>{c5619518-0165-47e9-a9c5-a2da6e6304e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{a5c5508b-a34d-4126-94a6-25aedc20834c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sockets">
+      <UniqueIdentifier>{19ecccd3-e7e4-4253-aaa8-b13fbc6d1d65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="system">
+      <UniqueIdentifier>{37e564b6-7826-4b3e-b193-052dd24cf7a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="crypt">
+      <UniqueIdentifier>{3e900672-0e79-40bf-bc17-858f790ce831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="text">
+      <UniqueIdentifier>{8f2b2f49-5ca5-4ef2-95f8-56d92b07450d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="serialization">
+      <UniqueIdentifier>{b1fa008e-4fb0-44a3-9e33-7e966ce3db24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="zlib">
+      <UniqueIdentifier>{5ba8f0d1-b806-4ef6-8e06-e91a4dad970f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tut">
+      <UniqueIdentifier>{6ce3af90-9709-45ef-9bd6-82ce645e7ec0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tut\quickcheck">
+      <UniqueIdentifier>{97f9af1f-9489-401c-a222-0f74673e1596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meta">
+      <UniqueIdentifier>{3b487da1-cb03-4a27-8584-ff1140608dec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hash_set">
+      <UniqueIdentifier>{f49ece83-6500-49e0-8c78-abbf7e4843da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{e25b10a9-00b5-4e21-8e25-864f1e721d50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="containers\tests">
+      <UniqueIdentifier>{12c28440-c648-4b57-8fbc-343a5203bd7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\tests">
+      <UniqueIdentifier>{4d8f82df-5bcd-453a-9520-f929eecb3eb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math\tests">
+      <UniqueIdentifier>{baa86fe2-1718-4fba-aeed-7d84ec8bc342}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="support\tests">
+      <UniqueIdentifier>{90f4d4d5-7e10-4543-8f28-3bc11f6d66c9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\uthread\uthread.cpp">
+      <Filter>uthread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\bits.c">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\debug.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\hash.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\log.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\platform.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\profile.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\string_pool.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\buffer.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\critbit.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\list.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\resman\shared.cpp">
+      <Filter>resman</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\ieee.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\tt800.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_acos.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_acosh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_asin.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_atan2.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_atanh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_cosh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_exp.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_fmod.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_gamma.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_gamma_r.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_hypot.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_j0.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_j1.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_jn.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_lgamma.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_lgamma_r.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_log.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_log10.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_pow.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_rem_pio2.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_remainder.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_scalb.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_sinh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\e_sqrt.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\k_cos.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\k_rem_pio2.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\k_sin.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\k_standard.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\k_tan.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_asinh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_atan.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_cbrt.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_ceil.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_copysign.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_cos.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_erf.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_expm1.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_fabs.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_finite.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_floor.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_frexp.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_ilogb.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_isnan.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_ldexp.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_lib_version.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_log1p.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_logb.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_matherr.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_modf.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_nextafter.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_rint.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_scalbn.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_signgam.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_significand.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_sin.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_tan.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\s_tanh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_acos.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_acosh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_asin.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_atan2.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_atanh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_cosh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_exp.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_fmod.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_gamma.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_gamma_r.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_hypot.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_j0.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_j1.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_jn.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_lgamma.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_lgamma_r.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_log.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_log10.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_pow.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_remainder.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_scalb.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_sinh.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\fdlibm\w_sqrt.c">
+      <Filter>math\fdlibm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\convert.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\device_buf.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\encoding.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\stream.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sockets\fd_set.cpp">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sockets\sockets.cpp">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sockets\socketstream.cpp">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system\system.c">
+      <Filter>system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\crypt\curve25519.cpp">
+      <Filter>crypt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\adler32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\compress.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\crc32.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\deflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\gzio.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\infback.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\inffast.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\inflate.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\inftrees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\trees.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\uncompr.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib\zutil.c">
+      <Filter>zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tut\quickcheck\context.cpp">
+      <Filter>tut\quickcheck</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\tests\deque.cpp">
+      <Filter>containers\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\gvl_tests.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\tests\list.cpp">
+      <Filter>containers\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\tests\pairing_heap.cpp">
+      <Filter>containers\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\tests\treap.cpp">
+      <Filter>containers\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\tests\bitstream.cpp">
+      <Filter>io\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\tests\stream.cpp">
+      <Filter>io\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\tests\reproducible_floats.cpp">
+      <Filter>math\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\tests\bits.cpp">
+      <Filter>support\tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\uthread\uthread.hpp">
+      <Filter>uthread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\uthread\uthread_config.hpp">
+      <Filter>uthread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\algorithm.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\align.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\bits.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\borrow.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\cheap_flags.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\config.h">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\cstdint.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\debug.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\disjoint_set.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\flags.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\foreach.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\functional.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\hash.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\log.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\macros.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\move.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\object_model.h">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\opt.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\platform.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\profile.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\string_pool.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\support\type_info.hpp">
+      <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\accurate_rectangle_packing.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\avl_tree.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\bounded_rectangle_packing.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\bucket.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\compact_interval_set.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\critbit.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\deque.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\generic_hash_set.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\hash_map.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\hash_set.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\int_set.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\iterator.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\linked_vector.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\list.h">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\list.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\list3.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\pairing_heap.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\pod_vector.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\range.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\string.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\treap.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\treap2.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\node_base.hpp">
+      <Filter>containers\trees</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\allocator.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\linked_object.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\scoped_array.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\shared.h">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\shared.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\shared_count.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\shared_list.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resman\shared_ptr.hpp">
+      <Filter>resman</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\cmwc.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\float.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\ieee.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\math.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\matrix.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\normal_distribution.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\random.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\rect.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\tt800.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\vec.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\fdlibm\fdlibm.h">
+      <Filter>math\fdlibm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\fdlibm\fdlibm_intern.h">
+      <Filter>math\fdlibm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\common_bitstream.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\convert.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\deflate_filter.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\devnull.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\encoding.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\fstream.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\iostream.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\range_coder.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\unicode.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sockets\fd_set.hpp">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sockets\sockets.hpp">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sockets\sockets_sys_impl.hpp">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\system.hpp">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\trees\node_base.hpp">
+      <Filter>containers\trees</Filter>
+    </ClInclude>
+    <ClInclude Include="..\crypt\curve25519.hpp">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\crypt\gash.hpp">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\crypt\gciph.hpp">
+      <Filter>crypt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\text\utf8.hpp">
+      <Filter>text</Filter>
+    </ClInclude>
+    <ClInclude Include="..\serialization\archive.hpp">
+      <Filter>serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\serialization\context.hpp">
+      <Filter>serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\serialization\except.hpp">
+      <Filter>serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\crc32.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\deflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\inffast.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\inffixed.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\inflate.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\inftrees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\trees.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\zconf.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\zconf.in.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\zlib.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib\zutil.h">
+      <Filter>zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\tut.hpp">
+      <Filter>tut</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\tut_reporter.hpp">
+      <Filter>tut</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\tut_restartable.hpp">
+      <Filter>tut</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\quickcheck\context.hpp">
+      <Filter>tut\quickcheck</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\quickcheck\generator.hpp">
+      <Filter>tut\quickcheck</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\quickcheck\property.hpp">
+      <Filter>tut\quickcheck</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tut\quickcheck\quickcheck.hpp">
+      <Filter>tut\quickcheck</Filter>
+    </ClInclude>
+    <ClInclude Include="..\meta\as_unsigned.hpp">
+      <Filter>meta</Filter>
+    </ClInclude>
+    <ClInclude Include="..\meta\is_ptr_convertible.hpp">
+      <Filter>meta</Filter>
+    </ClInclude>
+    <ClInclude Include="..\meta\meta.hpp">
+      <Filter>meta</Filter>
+    </ClInclude>
+    <ClInclude Include="..\meta\static_log2.hpp">
+      <Filter>meta</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dense_int_set.hpp" />
+    <ClInclude Include="..\linked_hash_set.hpp" />
+    <ClInclude Include="..\list.hpp" />
+    <ClInclude Include="..\support.hpp" />
+    <ClInclude Include="..\containers\xlist.hpp">
+      <Filter>containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\debug.hpp" />
+    <ClInclude Include="..\cstdint.hpp" />
+    <ClInclude Include="..\io\bitstream_old.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\bitstream_templ_old.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\bitstream.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\bitstream_templ.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\test\test.hpp">
+      <Filter>test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\io\encoding_compat.hpp">
+      <Filter>io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\test\gvl_tests.hpp">
+      <Filter>test</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="..\containers\buffer.hpp">
+      <Filter>containers</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\io\brigade2.h">
+      <Filter>io</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\io\brigade2.hpp">
+      <Filter>io</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\io\device_buf.hpp">
+      <Filter>io</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\io\stream.hpp">
+      <Filter>io</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\sockets\socketstream.hpp">
+      <Filter>sockets</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+</Project>

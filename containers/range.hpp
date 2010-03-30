@@ -79,6 +79,11 @@ struct delimited_iterator_range
 	{
 		return i == e;
 	}
+
+	std::size_t size() const
+	{
+		return std::distance(i, e);
+	}
 	
 	reference front()
 	{
@@ -121,6 +126,11 @@ struct unsafe_delimited_iterator_range
 	bool empty() const
 	{
 		return i == e;
+	}
+
+	std::size_t size() const
+	{
+		return std::distance(i, e);
 	}
 	
 	value_type& front()

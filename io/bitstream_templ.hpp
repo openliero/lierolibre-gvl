@@ -143,6 +143,32 @@ void put_rice(BitWriter& writer, uint32_t v, uint32_t shift)
 	writer.put_uint(rem, shift);
 }
 
+template<typename BitWriter>
+void put_exprice(BitWriter& writer, uint32_t v, uint32_t shift)
+{
+	sassert(shift > 0);
+	uint32_t quot = v >> shift;
+	uint32_t rem = v & gvl::lsb_mask(shift);
+
+	uint32_t prefix = quot + 1;
+	int prefix_bits = gvl::log2(prefix) + 1;
+
+	put_unary(writer, prefix_bits);
+	if(prefix_bits > 0)
+		writer.put_uint(prefix - (1<<prefix_bits), prefix_bits);
+	writer.put_uint(rem, shift);
+}
+
+inline uint32_t unary_max_size(uint32_t max_v)
+{
+	return max_v + 1;
+}
+
+inline uint32_t rice_max_size(uint32_t max_v, uint32_t shift)
+{
+	return unary_max_size(max_v >> shift) + shift;
+}
+
 template<typename DerivedT, int BufBytes>
 void basic_obitstream<DerivedT, BufBytes>::put_debug_mark()
 {

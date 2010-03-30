@@ -122,8 +122,13 @@ struct basic_obitstream
 	
 	// Bits written if 'bytes' calls to put_byte were made
 	// after an initial state of out_bit_count == 0.
-	std::size_t out_bits_written(std::size_t bytes) const
+	uint32_t out_bits_written(uint32_t bytes) const
 	{ return bytes * 8 + out_bit_count;	}
+
+	// Bits that can be written before 'bytes' calls to
+	// put_byte is issued.
+	uint32_t out_bits_writable(uint32_t bytes) const
+	{ return bytes * 8 - out_bit_count;	}
 
 	template<int C>
 	void put_chunk(bitbuf_t);

@@ -76,7 +76,7 @@ struct range_obitstream
 	}
 
 	// Default copy ctor and op= are fine
-	
+		
 	template<int C>
 	inline void put_chunk(unsigned int chunk)
 	{
@@ -96,7 +96,7 @@ struct vector_bitstream
 	typedef gvl::basic_obitstream<vector_bitstream, 4> obase;
 
 	vector_bitstream()
-	: in_pos(0), size_(0)
+	: in_pos(0)
 	{
 	}
 
@@ -105,7 +105,6 @@ struct vector_bitstream
 	: ibase(std::move(other))
 	, obase(std::move(other))
 	, in_pos(other.in_pos)
-	, size_(other.size_)
 	, data(std::move(other.data))
 	{
 		// Destruction is safe already
@@ -117,7 +116,6 @@ struct vector_bitstream
 		obase::operator=(std::move(other));
 
 		in_pos = other.in_pos;
-		size_ = other.size_;
 		data = std::move(other.data);
 		return *this;
 	}
@@ -128,14 +126,8 @@ struct vector_bitstream
 	vector_bitstream(array_ibitstream& bs, std::size_t size_init)
 	: gvl::basic_ibitstream<vector_bitstream>(bs)
 	, in_pos(0)
-	, size_(size_init)
-	, data(bs.cur, bs.cur + bs.in_chunks_required(size_))
+	, data(bs.cur, bs.cur + bs.in_chunks_required(size_init))
 	{
-	}
-	
-	void update_size()
-	{
-		size_ = out_bits_written(data.size());
 	}
 	
 	template<int C>
@@ -147,7 +139,7 @@ struct vector_bitstream
 	template<int C>
 	inline void ignore_chunks(int c);
 	
-	std::size_t size() const
+	uint32_t size() const
 	{
 		return out_bits_written(data.size());
 	}
@@ -158,7 +150,6 @@ struct vector_bitstream
 		gvl::basic_obitstream<vector_bitstream>::swap(b);
 		
 		std::swap(in_pos, b.in_pos);
-		std::swap(size_, b.size_);
 		data.swap(b.data);
 	}
 	
@@ -189,7 +180,6 @@ struct vector_bitstream
 	}
 	
 	std::size_t in_pos;
-	std::size_t size_;
 	std::vector<uint32_t> data;
 	
 private:
@@ -267,7 +257,7 @@ struct deque_bitstream :
 	template<int C>
 	inline void ignore_chunks(std::size_t c);
 	
-	std::size_t size() const
+	uint32_t size() const
 	{
 		return out_bits_written(data.size());
 	}

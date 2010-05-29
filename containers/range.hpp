@@ -148,6 +148,28 @@ struct unsafe_delimited_iterator_range
 	It i, e;
 };
 
+template<typename Cont>
+struct container_output_range
+{
+	typedef typename Cont::value_type value_type;
+	typedef typename Cont::reference reference;
+	
+	void put(value_type const& x)
+	{
+		cont.push_back(x);
+	}
+	
+	void put(value_type const* x, uint32_t count)
+	{
+		while(count-- > 0)
+		{
+			put(*x++);
+		}
+	}
+
+	Cont cont;
+};
+
 template<typename ForwardIterator>
 unsafe_delimited_iterator_range<ForwardIterator> iter_range(ForwardIterator const& b, ForwardIterator const& e)
 {

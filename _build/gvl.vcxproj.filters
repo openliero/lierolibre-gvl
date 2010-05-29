@@ -447,6 +447,12 @@
     <ClCompile Include="..\support\tests\bits.cpp">
       <Filter>support\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\sockets\socket_listener.cpp">
+      <Filter>sockets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\text\util.cpp">
+      <Filter>text</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\uthread\uthread.hpp">
@@ -808,6 +814,15 @@
     </ClInclude>
     <ClInclude Include="..\test\gvl_tests.hpp">
       <Filter>test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sockets\socket_listener.hpp">
+      <Filter>sockets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\text\util.hpp">
+      <Filter>text</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\windows.hpp">
+      <Filter>system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

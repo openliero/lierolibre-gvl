@@ -221,25 +221,26 @@ socket udp_socket()
 	return s;
 }
 
-void socket::set_nonblocking()
+void socket::set_nonblocking(bool no_blocking)
 {
 #if GVL_WIN32==1
-	unsigned long non_blocking = 1;
-	ioctlsocket(native_socket(*this), FIONBIO, &non_blocking);
+	unsigned long no_blocking_int = 1;
+	ioctlsocket(native_socket(*this), FIONBIO, &no_blocking_int);
 #else
-	fcntl(native_socket(*this), F_SETFL, O_NONBLOCK);
+	fcntl(native_socket(*this), F_SETFL, no_blocking ? O_NONBLOCK : 0);
 #endif
 }
 
-int socket::set_nodelay(int no_delay)
+int socket::set_nodelay(bool no_delay)
 {
+	char no_delay_int = no_delay;
 #if !defined(BEOS_NET_SERVER)
 	return setsockopt(
 		native_socket(*this),
 		IPPROTO_TCP,
 		TCP_NODELAY,
-		reinterpret_cast<char*>(&no_delay),
-		sizeof(no_delay)) == 0;
+		reinterpret_cast<char*>(&no_delay_int),
+		sizeof(no_delay_int)) == 0;
 #else
 	return 1;
 #endif

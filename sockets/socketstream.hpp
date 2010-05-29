@@ -6,7 +6,7 @@
 #include "../io/stream.hpp"
 #include "../support/flags.hpp"
 #include <memory>
-#include <iostream>
+//#include <iostream>
 
 namespace gvl
 {
@@ -40,6 +40,14 @@ struct socketstream : stream, flags
 		//open(new socket_bucket(this));
 		
 		connect(addr, port);
+	}
+
+	// sock_init must be connected
+	socketstream(socket sock_init)
+	: flags(connected)
+	, sock(sock_init)
+	{
+		
 	}
 	
 	/*
@@ -108,6 +116,10 @@ struct socketstream : stream, flags
 		flags::replace(connecting);
 	}
 	
+	socket underlying_socket()
+	{
+		return sock;
+	}
 		
 protected:
 	/*override*/ read_result read_bucket(size_type amount = 0, bucket* dest = 0);
@@ -142,6 +154,16 @@ protected:
 				return write_result(write_would_block, false);
 		}
 		return write_result(write_error, false);
+	}
+
+	/*override*/ write_status propagate_close()
+	{
+		if(flags::any(connected | connecting))
+		{
+			sock.close();
+			flags::reset(connected | connecting | error_occured);
+		}
+		return write_ok;
 	}
 	
 	socket sock;

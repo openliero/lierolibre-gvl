@@ -6,6 +6,7 @@
 #include "../resman/shared.hpp"
 #include "../support/algorithm.hpp"
 #include "../support/platform.hpp"
+#include "../containers/string.hpp"
 #include <cstring>
 #include <string> // TEMP (maybe)
 
@@ -73,6 +74,7 @@ struct octet_stream_reader : gvl::shared
 		for(std::size_t i = 0; i < len; ++i)
 			dest[i] = get();
 	}
+
 	
 	stream::read_status try_get(uint8_t& ret)
 	{
@@ -87,6 +89,64 @@ struct octet_stream_reader : gvl::shared
 		}
 	}
 	
+	std::size_t try_get(uint8_t* dest, std::size_t len)
+	{
+		// TODO: Can optimize this
+		for(std::size_t i = 0; i < len; ++i)
+		{
+			stream::read_status s = try_get(dest[i]);
+			if(s != stream::read_ok)
+			{
+				return i;
+			}
+		}
+
+		return len;
+	}
+
+	// Try to buffer //len// bytes.
+	stream::read_status try_buffer(std::size_t len)
+	{
+		if(first_left() >= len)
+			return stream::read_ok; // Already buffered
+		else
+			return underflow_try_buffer_(len);
+	}
+
+	stream::read_status underflow_try_buffer_(std::size_t len)
+	{
+		// TODO: This is quite crude, but it's not expected to be used a lot.
+		// TODO: Exception safety
+		std::size_t found_amount = first_left();
+
+		std::vector<bucket*> stack;
+		stream::read_status s = stream::read_ok;
+
+		while(found_amount < len)
+		{
+			stream::read_result r = read_bucket_and_return_(len - found_amount);
+
+			if(r.s != stream::read_ok)
+			{
+				s = r.s;
+				break;
+			}
+
+			found_amount += r.b->size();
+			stack.push_back(r.b);
+		}
+
+		// Put back in reverse order
+
+		while(!stack.empty())
+		{
+			source_->unread(stack.back());
+			stack.pop_back();
+		}
+
+		return s;
+	}
+		
 	bool at_eos()
 	{
 		if(cur_ != end_)
@@ -96,7 +156,7 @@ struct octet_stream_reader : gvl::shared
 		if(status == stream::read_eos)
 			return true;
 	
-		return false; // TODO: Is erroring count as eos?	
+		return false; // TODO: Does erroring count as eos?	
 	}
 	
 	// TODO: A get that returns a special value for EOF
@@ -127,16 +187,29 @@ struct octet_stream_reader : gvl::shared
 	
 	shared_ptr<stream> detach()
 	{
-		correct_first_bucket_();
+		if(has_source())
+		{
+			correct_first_bucket_();
 
-		shared_ptr<stream> ret = source_.release();
-		source_->unread(first_.release());
-		cur_ = end_ = 0;
-		sassert(cur_ == end_);
-		sassert(!first_.get());
-		
-		return ret;
+			shared_ptr<stream> ret = source_.release();
+			
+			if(first_.get())
+				ret->unread(first_.release());
+			cur_ = end_ = 0;
+			sassert(cur_ == end_);
+			sassert(!first_.get());
+
+			return ret;
+		}
+		else
+			return source_.release();
 	}
+
+	stream& source()
+	{ return *source_; }
+
+	bool has_source() const
+	{ return source_.get() != 0; }
 	
 	void attach(shared_ptr<stream> source_new)
 	{
@@ -212,6 +285,8 @@ private:
 		if(!source_)
 			throw stream_read_error(stream::read_error, "No source assigned to octet_stream_reader");
 	}
+
+	
 		
 	// May throw
 	stream::read_result read_bucket_and_return_(size_type amount)
@@ -366,13 +441,22 @@ struct octet_stream_writer
 	
 	shared_ptr<stream> detach()
 	{
-		flush_buffer();
+		if(has_sink())
+		{
+			flush_buffer();
 		
-		// Buffer any remaining buckets
-		// partial_flush already does this: sink_->write_buffered(mem_buckets_);
+			// Buffer any remaining buckets
+			// partial_flush already does this: sink_->write_buffered(mem_buckets_);
+		}
 		
 		return sink_.release();
 	}
+
+	stream& sink()
+	{ return *sink_; }
+
+	bool has_sink() const
+	{ return sink_.get() != 0; }
 	
 	void attach(shared_ptr<stream> new_sink)
 	{
@@ -576,6 +660,25 @@ inline D& operator<<(basic_text_writer<D>& self_, std::string const& str)
 	return self;
 }
 
+template<typename D>
+inline D& operator<<(basic_text_writer<D>& self_, gvl::string const& str)
+{
+	D& self = self_.derived();
+	self.put(reinterpret_cast<uint8_t const*>(str.data()), str.size());
+	return self;
+}
+
+struct endl_tag_ {};
+inline void endl(endl_tag_) {}
+
+template<typename D>
+inline D& operator<<(basic_text_writer<D>& self_, void (*)(endl_tag_))
+{
+	D& self = self_.derived();
+	self.put('\n');
+	self.flush();
+	return self;
+}
 
 struct cell : basic_text_writer<cell>
 {

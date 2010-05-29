@@ -21,6 +21,10 @@
 # endif
 #endif
 
+#if !defined(GVL_WINDOWS)
+# define GVL_WINDOWS (GVL_WIN32 || GVL_WIN64)
+#endif
+
 #if !defined(GVL_MSVCPP)
 # if defined(_MSC_VER)
 #  define GVL_MSVCPP _MSC_VER

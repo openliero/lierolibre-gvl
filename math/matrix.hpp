@@ -10,10 +10,17 @@ namespace gvl
 
 // Only N == M == 2 supported at the moment
 
+// N = columns
+// M = rows
 template<typename T, int N, int M, typename D>
 struct basic_matrix_common
 {
 	T v[N * M];
+
+	T& operator()(int row, int column)
+	{
+		return v[row*N + column];
+	}
 	
 	D& operator+=(D const& rhs)
 	{
@@ -46,26 +53,26 @@ template<typename T>
 struct basic_matrix<T, 2, 2>
 : basic_matrix_common<T, 2, 2, basic_matrix<T, 2, 2> >
 {
-	T inv_det() const
+	T det() const
 	{
 		return (this->v[0] * this->v[3] - this->v[1] * this->v[2]);
 	}
 	
 	basic_matrix invert() const
 	{
-		T idet = inv_det();
-		sassert(idet != T(0));
-		T det = T(1) / idet;
+		T determinant = det();
+		sassert(determinant != T(0));
+		T idet = T(1) / determinant;
 		
 		T a = this->v[0], b = this->v[1],
 		  c = this->v[2], d = this->v[3];
 		
 		basic_matrix ret;
 		
-		ret.v[0] = d *  det;
-		ret.v[1] = b * -det;
-		ret.v[2] = c * -det;
-		ret.v[3] = a *  det;
+		ret.v[0] = d *  idet;
+		ret.v[1] = b * -idet;
+		ret.v[2] = c * -idet;
+		ret.v[3] = a *  idet;
 		
 		return ret;
 	}
@@ -73,13 +80,13 @@ struct basic_matrix<T, 2, 2>
 	// Solve A * x = b
 	basic_vec<T, 2> solve(basic_vec<T, 2> b) const
 	{
-		T idet = inv_det();
-		sassert(idet != T(0));
-		T det = T(1) / idet;
+		T determinant = inv_det();
+		sassert(determinant != T(0));
+		T idet = T(1) / determinant;
 		
 		basic_vec<T, 2> ret(
-			det * (this->v[3] * b.x - this->v[1] * b.y),
-			det * (this->v[0] * b.y - this->v[2] * b.x));
+			idet * (this->v[3] * b.x - this->v[1] * b.y),
+			idet * (this->v[0] * b.y - this->v[2] * b.x));
 			
 		return ret;
 	}
@@ -113,6 +120,8 @@ struct basic_matrix<T, 2, 2>
 		return ret;
 	}
 };
+
+typedef basic_matrix<float, 2, 2> fmat2x2;
 
 } // namespace gvl
 

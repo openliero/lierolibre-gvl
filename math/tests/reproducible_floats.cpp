@@ -7,8 +7,6 @@
 #include <cmath>
 #include <ctime>
 #include <limits>
-#include <iostream>
-#include <iomanip>
 
 bool equivalent(double x, double y)
 {

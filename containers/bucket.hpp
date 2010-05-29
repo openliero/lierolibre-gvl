@@ -56,7 +56,15 @@ struct bucket_data_mem : bucket_data
 {	
 	static std::size_t compute_size(bucket_size n)
 	{
-		return sizeof(bucket_data_mem) + n*sizeof(uint8_t) - 1*sizeof(uint8_t);
+		// We would normally subtract 1 from this to get it right.
+		// However, we allocate one byte extra to fit the zero-
+		// terminator in gvl::string.
+		return sizeof(bucket_data_mem) + n*sizeof(uint8_t);
+	}
+
+	static bucket_data_mem* create(bucket_size size)
+	{
+		return create(size, size);
 	}
 	
 	static bucket_data_mem* create(bucket_size capacity, bucket_size size)
@@ -125,6 +133,8 @@ struct bucket_data_mem : bucket_data
 	std::size_t size_;
 	uint8_t data[1];
 };
+
+typedef shared_ptr<bucket_data_mem> data_buf_ptr;
 
 struct bucket : list_node<>
 {
@@ -223,7 +233,7 @@ struct bucket : list_node<>
 		end_ = 0;
 		return data_.release();
 	}
-	
+
 	bool bucket_begins_at_zero() const
 	{
 		return begin_ == 0;

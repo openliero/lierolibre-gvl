@@ -67,6 +67,9 @@ struct shared_ptr // : shared_ptr_common
 	}
 
 	template<typename SrcT>
+	friend struct shared_ptr;
+
+	template<typename SrcT>
 	shared_ptr(shared_ptr<SrcT>&& b)
 	{
 		T* p = b.get();
@@ -123,6 +126,11 @@ struct shared_ptr // : shared_ptr_common
 	// Takes ownership, v_new assumed fresh (no add_ref!)
 	void reset(T* v_new)
 	{ _reset(v_new); }
+
+	void reset(T* v_new, shared_ownership)
+	{
+		_reset_shared(v_new);
+	}
 	
 	void reset()
 	{ _release(); v = 0; }
@@ -141,6 +149,10 @@ struct shared_ptr // : shared_ptr_common
 	template<typename DestT>
 	shared_ptr<DestT> cast()
 	{ return shared_ptr<DestT>(dynamic_cast<DestT*>(get()), shared_ownership()); }
+
+	template<typename DestT>
+	shared_ptr<DestT> static_cast_()
+	{ return shared_ptr<DestT>(static_cast<DestT*>(get()), shared_ownership());	}
 	
 	T& cow()
 	{

@@ -34,8 +34,8 @@ struct socket
 	bool is_valid();
 	void close();
 	
-	void        set_nonblocking();
-	int         set_nodelay(int no_delay);
+	void        set_nonblocking(bool no_blocking = true);
+	int         set_nodelay(bool no_delay = true);
 	int         bind(int port);
 	int         listen();
 	socket      accept(internet_addr& addr);

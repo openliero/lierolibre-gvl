@@ -94,7 +94,8 @@ void basic_obitstream<DerivedT, BufBytes>::put(basic_ibitstream<T, BufBytes2>& s
 		bits -= 32;
 	}
 
-	put_uint(src.get_uint(bits), bits);
+	if(bits > 0)
+		put_uint(src.get_uint(bits), bits);
 }
 
 // NOTE: Untested

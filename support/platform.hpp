@@ -69,6 +69,7 @@
 
 #if defined(__cplusplus)
 # define GVL_INLINE inline
+# define GVL_FORCE_INLINE __forceinline
 #elif GVL_GCC
 # define GVL_INLINE static inline
 #elif GVL_MSVCPP

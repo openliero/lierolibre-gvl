@@ -70,6 +70,10 @@ struct range_obitstream
 {
 	typedef gvl::basic_obitstream<range_obitstream<OutputRange, BufBytes>, BufBytes> obase;
 
+	range_obitstream()
+	{
+	}
+
 	range_obitstream(OutputRange r)
 	: range(r)
 	{
@@ -141,7 +145,7 @@ struct vector_bitstream
 	
 	uint32_t size() const
 	{
-		return out_bits_written(data.size());
+		return out_bits_written(uint32_t(data.size()));
 	}
 	
 	void swap(vector_bitstream& b)
@@ -259,7 +263,7 @@ struct deque_bitstream :
 	
 	uint32_t size() const
 	{
-		return out_bits_written(data.size());
+		return out_bits_written(uint32_t(data.size()));
 	}
 	
 #if 0

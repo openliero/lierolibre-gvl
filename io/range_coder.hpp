@@ -25,13 +25,15 @@ struct range_coder_defs
 	static int const ShiftBits = ValueBits - 9;
 	static int const ExtraBits = (ValueBits - 2) % 8 + 1;
 	static range_value const BottomValue = (TopValue >> 8);
+
+	inline range_value muldiv32(range_value v, range_value s)
+	{
+		return (uint64_t(v) * s) >> 32;
+	}
 };
 
 
-inline range_value muldiv32(range_value v, range_value s)
-{
-	return (uint64_t(v) * s) >> 32;
-}
+
 
 template<typename DerivedT>
 struct range_coder : range_coder_defs

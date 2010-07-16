@@ -84,9 +84,10 @@ GVL_INLINE int FD_LOp(double* x)
 
 #endif
 
+/*
 #ifndef __STDC__
 #define __STDC__ 1
-#endif
+#endif*/
 
 #define	fd_P(p)	p
 

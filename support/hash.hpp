@@ -4,55 +4,60 @@
 #include <cstddef>
 #include <utility>
 #include <string>
+#include "cstdint.hpp"
 
 namespace gvl
 {
 
-inline std::size_t hash(std::size_t v);
+typedef uint32_t hash_t;
+int const hash_bits = 32;
 
-inline std::size_t hash(int v)
+inline hash_t hash(uint32_t v, uint32_t p = 0x3C618459)
 {
-	return hash(std::size_t(v));
+	v ^= p;
+	v *= v * 2 + 1;
+	return p - v;
 }
 
-inline std::size_t hash(std::size_t v)
-{
-	return v * 2654435761ul ^ (v >> 16);
-}
+inline hash_t hash(int v, uint32_t p = 0x3C618459)
+{ return hash(uint32_t(v), p); }
+
+inline hash_t hash(void const* v, uint32_t p = 0x3C618459)
+{ return hash(hash_t(std::size_t(v)), p); }
 
 template<typename T1, typename T2>
-inline std::size_t hash(std::pair<T1, T2> const& v)
+inline hash_t hash(std::pair<T1, T2> const& v)
 {
 	return (hash(v.first) * 2654435761ul) ^ hash(v.second);
 }
 
-inline std::size_t hash(std::string const& v)
+inline hash_t hash(std::string const& v, unsigned p = 0x3C618459)
 {
 	std::size_t amount = 512;
 	
 	if(amount > v.size())
 		amount = v.size();
 		
-	std::size_t h = 0x77a53b93;
+	hash_t h = p;
 	for(std::size_t i = 0; i < amount; ++i)
 	{
-		h = h*33 + (unsigned char)v[i];
+		h = h*33 ^ (unsigned char)v[i];
 	}
 	return h;
 }
 
 template<typename T>
-inline std::size_t hash(T const& v)
+inline hash_t hash(T const& v, unsigned p = 0x3C618459)
 {
-	return v.hash();
+	return v.hash(p);
 }
 
 struct hash_functor
 {
 	template<typename T>
-	std::size_t operator()(T const& v) const
+	hash_t operator()(T const& v, unsigned p = 0x3C618459) const
 	{
-		return hash(v);
+		return hash(v, p);
 	}
 };
 

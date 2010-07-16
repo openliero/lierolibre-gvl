@@ -28,6 +28,13 @@ struct scoped_array
 	{
 		return arr[idx];
 	}
+
+	T* release()
+	{
+		T* ret = arr;
+		arr = 0;
+		return ret;
+	}
 	
 private:
 	// Non-copyable

@@ -4,7 +4,7 @@
 #include "stream.hpp"
 
 #include <cstdio>
-#include "../support/log.hpp"
+//#include "../support/log.hpp"
 
 namespace gvl
 {

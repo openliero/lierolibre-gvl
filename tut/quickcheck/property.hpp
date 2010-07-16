@@ -6,7 +6,7 @@
 
 #include <map>
 #include <string>
-
+#include "../../io/iostream.hpp"
 
 namespace gvl
 {
@@ -51,7 +51,7 @@ struct property
 				++tests_ran;
 				if(res == chk_fail || ctx.get_assert_fails() > 0)
 				{
-					std::cout << "Property failed on test " << tests_ran << std::endl;
+					gvl::cout() << "Property failed on test " << tests_ran << gvl::endl;
 					return false;
 				}
 				

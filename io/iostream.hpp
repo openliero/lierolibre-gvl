@@ -13,6 +13,12 @@ inline octet_stream_writer& cout()
 	return sr;
 }
 
+inline octet_stream_writer& cerr()
+{
+	static octet_stream_writer sr(shared_ptr<stream>(new fstream(stderr)));
+	return sr;
+}
+
 }
 
 #endif // GVL_IOSTREAM_HPP

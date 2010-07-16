@@ -44,7 +44,7 @@ struct socket
 	/* Communication */
 	int send(void const* msg, std::size_t len);
 	int recv(void* msg, std::size_t len);
-	int sendto(void const* msg, std::size_t len, internet_addr& dest);
+	int sendto(void const* msg, std::size_t len, internet_addr const& dest);
 	int recvfrom(void* msg, std::size_t len, internet_addr& src);
 	
 	int opt_error();

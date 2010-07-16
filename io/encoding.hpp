@@ -75,6 +75,20 @@ struct octet_stream_reader : gvl::shared
 			dest[i] = get();
 	}
 
+	stream::read_status try_skip()
+	{
+		if(cur_ != end_)
+		{
+			++cur_;
+			return stream::read_ok;
+		}
+		else
+		{
+			uint8_t dummy;
+			return underflow_get_(dummy);
+		}
+
+	}
 	
 	stream::read_status try_get(uint8_t& ret)
 	{
@@ -95,6 +109,21 @@ struct octet_stream_reader : gvl::shared
 		for(std::size_t i = 0; i < len; ++i)
 		{
 			stream::read_status s = try_get(dest[i]);
+			if(s != stream::read_ok)
+			{
+				return i;
+			}
+		}
+
+		return len;
+	}
+
+	std::size_t try_skip(std::size_t len)
+	{
+		// TODO: Can optimize this
+		for(std::size_t i = 0; i < len; ++i)
+		{
+			stream::read_status s = try_skip();
 			if(s != stream::read_ok)
 			{
 				return i;

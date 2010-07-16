@@ -27,6 +27,11 @@ sockaddr* get_sockaddr(internet_addr& self)
 	return reinterpret_cast<sockaddr*>(&self.storage_);
 }
 
+sockaddr const* get_sockaddr(internet_addr const& self)
+{
+	return reinterpret_cast<sockaddr const*>(&self.storage_);
+}
+
 void clear_initialized(internet_addr& self)
 {
 	memset(&self.storage_, 0, sizeof(self.storage_));
@@ -331,7 +336,7 @@ int socket::recv(void* msg, size_t len)
 	return translate_comm_ret(ret);
 }
 
-int socket::sendto(void const* msg, size_t len, internet_addr& dest)
+int socket::sendto(void const* msg, size_t len, internet_addr const& dest)
 {
 	int ret = ::sendto(
 		native_socket(*this),

@@ -46,21 +46,25 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Gvl Standard Config.props" />
     <Import Project="Gvl C++0x.props" />
+    <Import Project="Gvl IEEE SEE2.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Gvl Standard Config.props" />
     <Import Project="Gvl C++0x.props" />
+    <Import Project="Gvl IEEE SEE2.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Gvl Standard Config.props" />
     <Import Project="Gvl C++0x.props" />
+    <Import Project="Gvl IEEE SEE2.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Gvl Standard Config.props" />
     <Import Project="Gvl C++0x.props" />
+    <Import Project="Gvl IEEE SEE2.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -90,6 +94,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <FloatingPointExceptions>
       </FloatingPointExceptions>
+      <StringPooling>true</StringPooling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -105,6 +110,7 @@
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -138,15 +144,18 @@
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <StringPooling>true</StringPooling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\containers\tests\deque.cpp" />
+    <ClCompile Include="..\containers\tests\hash_set.cpp" />
     <ClCompile Include="..\containers\tests\list.cpp" />
     <ClCompile Include="..\containers\tests\pairing_heap.cpp" />
     <ClCompile Include="..\containers\tests\treap.cpp" />
     <ClCompile Include="..\io\tests\bitstream.cpp" />
     <ClCompile Include="..\io\tests\stream.cpp" />
+    <ClCompile Include="..\math\dtoa.c" />
     <ClCompile Include="..\math\tests\reproducible_floats.cpp" />
     <ClCompile Include="..\sockets\socket_listener.cpp" />
     <ClCompile Include="..\support\tests\bits.cpp" />
@@ -260,6 +269,8 @@
     <ClCompile Include="..\io\device_buf.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\io\encoding.cpp" />
     <ClCompile Include="..\io\stream.cpp" />
@@ -301,11 +312,14 @@
     <ClInclude Include="..\containers\xlist.hpp" />
     <ClInclude Include="..\cstdint.hpp" />
     <ClInclude Include="..\debug.hpp" />
+    <ClInclude Include="..\hash_set\generic_hash_set.hpp" />
+    <ClInclude Include="..\hash_set\hash_set.hpp" />
     <ClInclude Include="..\io\bitstream.hpp" />
     <ClInclude Include="..\io\bitstream_old.hpp" />
     <ClInclude Include="..\io\bitstream_templ.hpp" />
     <ClInclude Include="..\io\bitstream_templ_old.hpp" />
     <ClInclude Include="..\io\encoding_compat.hpp" />
+    <ClInclude Include="..\math\dtoa.hpp" />
     <ClInclude Include="..\sockets\socket_listener.hpp" />
     <ClInclude Include="..\system\windows.hpp" />
     <ClInclude Include="..\test\gvl_tests.hpp" />

@@ -621,6 +621,20 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		return iterator(list_common::unlink(upcast(i)));
 	}
+
+	void unlink_front(range& r)
+	{
+		T* f = &r.front();
+		r.pop_front();
+		unlink(f);
+	}
+
+	void erase_front(range& r)
+	{
+		T* f = &r.front();
+		r.pop_front();
+		erase(f);
+	}
 	
 	iterator relink(iterator b, T* el)
 	{

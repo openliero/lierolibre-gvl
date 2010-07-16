@@ -17,7 +17,7 @@ struct cstr_comp
 
 struct log_streams
 {
-	typedef std::map<char const*, std::ostream*, cstr_comp> stream_map;
+	typedef std::map<char const*, gvl::octet_stream_writer*, cstr_comp> stream_map;
 
 	log_streams()
 	{
@@ -31,12 +31,13 @@ struct log_streams
 		}
 	}
 	
-	std::ostream& get(char const* name, char const* path)
+	gvl::octet_stream_writer& get(char const* name, char const* path)
 	{
 		stream_map::iterator i = streams.find(name);
 		if(i == streams.end())
 		{
-			std::ostream* str = new std::ofstream(path);
+			gvl::octet_stream_writer* str = new gvl::octet_stream_writer(
+				gvl::stream_ptr(new gvl::fstream(path, "wb")));
 			streams[name] = str;
 			return *str;
 		}
@@ -68,10 +69,10 @@ log_options::log_options()
 void location::print(std::string const& msg) const
 {
 	if(file)
-		std::cerr << *file << ':' << line << ": " << msg << '\n';
+		gvl::cerr() << *file << ':' << line << ": " << msg << gvl::endl;
 }
 
-std::ostream& get_named_stream(char const* name, char const* path)
+gvl::octet_stream_writer& get_named_stream(char const* name, char const* path)
 {
 	return log_streams::instance().get(name, path);
 }

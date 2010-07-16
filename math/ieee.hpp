@@ -7,10 +7,14 @@
 #include "fdlibm/fdlibm.h"
 #include <math.h>
 
-#if GVL_MSVCPP && GVL_FORCE_SSE2_FPU
+#if !defined(GVL_FORCE_SSE_FPU) && GVL_FORCE_SSE2_FPU
+#define GVL_FORCE_SSE_FPU 1
+#endif
+
+#if GVL_MSVCPP
 /* We may want to use intrinsics */
 #include <emmintrin.h>
-#pragma intrinsic(_mm_mul_sd, _mm_div_sd)
+//#pragma intrinsic(_mm_mul_sd, _mm_div_sd, _mm_mul_ss, _mm_div_ss)
 #endif
 
 #ifdef __cplusplus
@@ -224,7 +228,7 @@ GVL_INLINE double gSqrt(double x)
 
 GVL_INLINE double gM(double x, double y)
 {
-#if GVL_MSVCPP && GVL_FORCE_SSE2_FPU
+#if GVL_MSVCPP && GVL_FORCE_SSE2_FPU && !GVL_X86_64
 	/* Use SSE2 intrinsics to make sure VC++ doesn't cause
 	** incorrect subnormal rounding here. NOTE: This might worsen optimization
 	** somewhat. */
@@ -238,7 +242,7 @@ GVL_INLINE double gM(double x, double y)
 
 GVL_INLINE double gD(double x, double y)
 {
-#if GVL_MSVCPP && GVL_FORCE_SSE2_FPU
+#if GVL_MSVCPP && GVL_FORCE_SSE2_FPU && !GVL_X86_64
 	/* Use SSE2 intrinsics to make sure VC++ doesn't cause
 	** incorrect subnormal rounding here. NOTE: This might worsen optimization
 	** somewhat. */
@@ -274,7 +278,79 @@ GVL_INLINE double gSqrt(double x)
 	res = sqrt(x);
 	return res;
 }
+
+// NOTE: g*f variants are currently only available with SSE or SSE2 enabled and
+// not with x87.
+
+
+GVL_INLINE float gMf(float x, float y)
+{
+#if GVL_MSVCPP && GVL_FORCE_SSE2_FPU && !GVL_X86_64
+	/* Use SSE intrinsics to make sure VC++ doesn't cause
+	** incorrect subnormal rounding here. NOTE: This might worsen optimization
+	** somewhat. */
+	float r;
+	_mm_store_ss(&r, _mm_mul_ss(_mm_load_ss(&x), _mm_load_ss(&y)));
+	return r;
+#else
+	return x * y;
 #endif
+}
+
+GVL_INLINE float gDf(float x, float y)
+{
+#if GVL_MSVCPP && GVL_FORCE_SSE_FPU && !GVL_X86_64
+	/* Use SSE intrinsics to make sure VC++ doesn't cause
+	** incorrect subnormal rounding here. NOTE: This might worsen optimization
+	** somewhat. */
+	float r;
+	_mm_store_ss(&r, _mm_div_ss(_mm_load_ss(&x), _mm_load_ss(&y)));
+	return r;
+#else
+	return x / y;
+#endif
+}
+
+GVL_INLINE float gAf(float x, float y)
+{
+#if GVL_MSVCPP && GVL_FORCE_SSE_FPU && !GVL_X86_64
+	// VC++ generates stupid code for just (x+y) in x86. Intrinsics are actually faster!
+	float r;
+	_mm_store_ss(&r, _mm_add_ss(_mm_load_ss(&x), _mm_load_ss(&y)));
+	return r;
+#else
+	return x + y;
+#endif
+}
+
+GVL_INLINE float gSf(float x, float y)
+{
+#if GVL_MSVCPP && GVL_FORCE_SSE_FPU && !GVL_X86_64
+	// VC++ generates stupid code for just (x-y) in x86. Intrinsics are actually faster!
+	float r;
+	_mm_store_ss(&r, _mm_sub_ss(_mm_load_ss(&x), _mm_load_ss(&y)));
+	return r;
+#else
+	return x - y;
+#endif
+}
+
+GVL_INLINE float gSqrtf(float x)
+{
+#if GVL_MSVCPP
+	float r;
+	_mm_store_ss(&r, _mm_sqrt_ss(_mm_load_ss(&x)));
+	return r;
+#else
+	return sqrtf(x);
+#endif
+}
+#endif
+
+GVL_INLINE float gdtof(double x)
+{
+	return (float)x;
+}
 
 #ifdef __cplusplus
 
@@ -321,28 +397,42 @@ struct rdouble
 		return *this;
 	}
 
-	rdouble operator+(rdouble b) const
-	{
-		return gA(value, b.value);
-	}
-
-	rdouble operator-(rdouble b) const
-	{
-		return gS(value, b.value);
-	}
-
-	rdouble operator*(rdouble b) const
-	{
-		return gM(value, b.value);
-	}
-
-	rdouble operator/(rdouble b) const
-	{
-		return gD(value, b.value);
-	}
+	rdouble operator-() const
+	{ return -value; }
 
 	double value;
 };
+
+inline rdouble operator+(rdouble a, rdouble b)
+{ return gA(a.value, b.value); }
+
+inline rdouble operator-(rdouble a, rdouble b)
+{ return gS(a.value, b.value); }
+
+inline rdouble operator*(rdouble a, rdouble b)
+{ return gM(a.value, b.value); }
+
+inline rdouble operator/(rdouble a, rdouble b)
+{ return gD(a.value, b.value); }
+
+inline bool operator<(rdouble a, rdouble b)
+{ return a.value < b.value; }
+
+inline bool operator<=(rdouble a, rdouble b)
+{ return a.value <= b.value; }
+
+inline bool operator>(rdouble a, rdouble b)
+{ return a.value > b.value; }
+
+inline bool operator>=(rdouble a, rdouble b)
+{ return a.value >= b.value; }
+
+inline bool operator!=(rdouble a, rdouble b)
+{ return a.value != b.value; }
+
+inline bool operator==(rdouble a, rdouble b)
+{ return a.value == b.value; }
+
 
 inline rdouble sqrt(rdouble x)
 { return gSqrt(x.value); }
@@ -356,7 +446,119 @@ inline rdouble cos(rdouble x)
 inline rdouble sin(rdouble x)
 { return fd_sin(x.value); }
 
+inline rdouble atan2(rdouble a, rdouble b)
+{ return fd_atan2(a.value, b.value); }
+
+inline rdouble floor(rdouble x)
+{ return fd_floor(x.value); }
+
+
+struct rfloat
+{
+	rfloat()
+	//: value(0.f)
+	{
+	}
+	
+	rfloat(float value)
+	: value(value)
+	{
+
+	}
+
+	explicit rfloat(double value_d)
+	: value(gdtof(value_d))
+	{
+	}
+
+
+	float value;
+};
+
+
+GVL_FORCE_INLINE rfloat& operator+=(rfloat& a, rfloat const& b)
+{
+	a.value = gAf(a.value, b.value);
+	return a;
 }
+
+GVL_FORCE_INLINE rfloat& operator-=(rfloat& a, rfloat const& b)
+{
+	a.value = gSf(a.value, b.value);
+	return a;
+}
+
+GVL_FORCE_INLINE rfloat& operator*=(rfloat& a, rfloat const& b)
+{
+	a.value = gMf(a.value, b.value);
+	return a;
+}
+
+GVL_FORCE_INLINE rfloat& operator/=(rfloat& a, rfloat const& b)
+{
+	a.value = gDf(a.value, b.value);
+	return a;
+}
+
+GVL_FORCE_INLINE rfloat operator-(rfloat const& a)
+{ return -a.value; }
+
+GVL_FORCE_INLINE rfloat operator+(rfloat const& a, rfloat const& b)
+{ return gAf(a.value, b.value); }
+
+GVL_FORCE_INLINE rfloat operator-(rfloat const& a, rfloat const& b)
+{ return gSf(a.value, b.value); }
+
+GVL_FORCE_INLINE rfloat operator*(rfloat const& a, rfloat const& b)
+{ return gMf(a.value, b.value); }
+
+GVL_FORCE_INLINE rfloat operator/(rfloat const& a, rfloat const& b)
+{ return gDf(a.value, b.value); }
+
+GVL_FORCE_INLINE bool operator<(rfloat const& a, rfloat const& b)
+{ return a.value < b.value; }
+
+GVL_FORCE_INLINE bool operator<=(rfloat const& a, rfloat const& b)
+{ return a.value <= b.value; }
+
+GVL_FORCE_INLINE bool operator>(rfloat const& a, rfloat const& b)
+{ return a.value > b.value; }
+
+GVL_FORCE_INLINE bool operator>=(rfloat const& a, rfloat const& b)
+{ return a.value >= b.value; }
+
+GVL_FORCE_INLINE bool operator!=(rfloat const& a, rfloat const& b)
+{ return a.value != b.value; }
+
+GVL_FORCE_INLINE bool operator==(rfloat const& a, rfloat const& b)
+{ return a.value == b.value; }
+
+
+GVL_FORCE_INLINE rfloat sqrt(rfloat x)
+{ return gSqrtf(x.value); }
+
+GVL_FORCE_INLINE rfloat log(rfloat x)
+{ return gdtof(fd_log(x.value)); }
+
+GVL_FORCE_INLINE rfloat cos(rfloat x)
+{ return gdtof(fd_cos(x.value)); }
+
+GVL_FORCE_INLINE rfloat sin(rfloat x)
+{ return gdtof(fd_sin(x.value)); }
+
+GVL_FORCE_INLINE rfloat atan2(rfloat a, rfloat b)
+{ return gdtof(fd_atan2(a.value, b.value)); }
+
+GVL_FORCE_INLINE rfloat floor(rfloat x)
+{ return gdtof(fd_floor(x.value)); }
+
+}
+
+inline float to_float(gvl::rfloat v)
+{ return v.value; }
+
+inline float to_float(float v)
+{ return v; }
 
 #endif
 

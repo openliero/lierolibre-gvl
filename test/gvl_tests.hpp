@@ -9,6 +9,7 @@ GVLTEST_REG_SUITE(gvl, deque)
 GVLTEST_REG_SUITE(gvl, list)
 GVLTEST_REG_SUITE(gvl, pairing_heap)
 GVLTEST_REG_SUITE(gvl, treap)
+GVLTEST_REG_SUITE(gvl, hash_set_new)
 
 GVLTEST_REG_SUITE(gvl, bitstream)
 GVLTEST_REG_SUITE(gvl, stream)

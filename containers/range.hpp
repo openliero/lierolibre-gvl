@@ -2,6 +2,7 @@
 #define UUID_4800C387FBD44D146E8D33AE59C4A598
 
 #include <iterator>
+#include <stdexcept>
 #include "../support/cstdint.hpp"
 #include "../support/debug.hpp"
 
@@ -50,12 +51,24 @@ private:
 	value_type val;
 };
 
-template<typename It>
+struct delimited_iterator_range_overflow : std::exception
+{
+	delimited_iterator_range_overflow()
+	{
+	}
+};
+
+template<typename It, bool Except = false>
 struct delimited_iterator_range
 {
 	typedef typename std::iterator_traits<It>::value_type value_type;
 	typedef typename std::iterator_traits<It>::reference reference;
 	
+	delimited_iterator_range()
+	: i(), e()
+	{
+	}
+
 	delimited_iterator_range(It i_init, It e_init)
 	: i(i_init), e(e_init)
 	{
@@ -65,6 +78,8 @@ struct delimited_iterator_range
 	{
 		if(i != e)
 			*i++ = x;
+		else if(Except)
+			throw delimited_iterator_range_overflow();
 	}
 	
 	void put(value_type const* x, uint32_t count)

@@ -1,8 +1,9 @@
 #ifndef UUID_D58C3D2694ED41DD5D5AEA8CEECD46B2
 #define UUID_D58C3D2694ED41DD5D5AEA8CEECD46B2
 
-#include <iostream>
-#include <ostream>
+//#include <iostream>
+//#include <ostream>
+#include "../io/iostream.hpp"
 #include <string>
 #include <map>
 #include "macros.hpp"
@@ -41,7 +42,7 @@ struct log_options
 
 extern log_options global_log_options;
 
-std::ostream& get_named_stream(char const* name, char const* path);
+gvl::octet_stream_writer& get_named_stream(char const* name, char const* path);
 
 #define LOG_NONE -1
 #define LOG_ERRORS 0
@@ -49,47 +50,47 @@ std::ostream& get_named_stream(char const* name, char const* path);
 #define LOG_WARNINGS 2
 #define LOG_TRACE 3
 
-#define LOG(x_) (std::cout << x_ << std::endl)
+#define LOG(x_) (gvl::cout() << x_ << gvl::endl)
 
 #define FLOG(f_, x_) (gvl::get_named_stream(#f_, #f_ ".log") << x_ << std::endl)
 
 #define WLOG_ONCE(x_) do { static bool warned = false; if(!warned) { WLOG(x_); warned = true; } } while(0)
 
 #ifdef LOG_RUNTIME
-# define DLOG(x_)	if(global_log_options.debug) { (std::cout << __FILE__ ":" << __LINE__ << ": " << x_ << std::endl); } else (void)0
+# define DLOG(x_)	if(global_log_options.debug) { (gvl::cout() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl); } else (void)0
 # define DLOGL(l_, x_) if(global_log_options.debug) { l_.print(x_); } else (void)0
-# define TLOG(x_) if(global_log_options.level >= LOG_TRACE) { (std::cout << __FILE__ ":" << __LINE__ << ": " << x_ << std::endl); } else (void)0
-# define WLOG(x_) if(global_log_options.level >= LOG_WARNINGS) { (std::cerr << __FILE__ ":" << __LINE__ << ": " << x_ << '\n'); } else (void)0
-# define ILOG(x_) if(global_log_options.level >= LOG_INFO) { (std::cerr << x_ << '\n'); } else (void)0
-# define ELOG(x_) if(global_log_options.level >= LOG_ERRORS) { (std::cerr << __FILE__ ":" << __LINE__ << ": " << x_ << '\n'); } else (void)0
+# define TLOG(x_) if(global_log_options.level >= LOG_TRACE) { (gvl::cout() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl); } else (void)0
+# define WLOG(x_) if(global_log_options.level >= LOG_WARNINGS) { (gvl::cerr() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl); } else (void)0
+# define ILOG(x_) if(global_log_options.level >= LOG_INFO) { (gvl::cerr() << x_ << gvl::endl); } else (void)0
+# define ELOG(x_) if(global_log_options.level >= LOG_ERRORS) { (gvl::cerr() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl); } else (void)0
 #else
 # ifndef LOG_LEVEL
 #  define LOG_LEVEL LOG_WARNINGS
 # endif
 # ifdef LOG_DEBUG
-#  define DLOG(x_) (std::cout << __FILE__ ":" << __LINE__ << ": " << x_ << std::endl)
+#  define DLOG(x_) (gvl::cout() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl)
 #  define DLOGL(l_, x_) l_.print(x_)
 # else
 #  define DLOG(x_) (void)0
 #  define DLOGL(l_, x_) (void)0
 # endif
 # if LOG_LEVEL >= LOG_TRACE
-#  define TLOG(x_) (std::cout << __FILE__ ":" << __LINE__ << ": " << x_ << std::endl)
+#  define TLOG(x_) (gvl::cout() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl)
 # else
 #  define TLOG(x_) (void)0
 # endif
 # if LOG_LEVEL >= LOG_INFO
-#  define ILOG(x_) (std::cout << x_ << std::endl)
+#  define ILOG(x_) (gvl::cout() << x_ << gvl::endl)
 # else
 #  define ILOG(x_) (void)0
 # endif
 # if LOG_LEVEL >= LOG_WARNINGS
-#  define WLOG(x_) (std::cerr << __FILE__ ":" << __LINE__ << ": " << x_ << '\n')
+#  define WLOG(x_) (gvl::cerr() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl)
 # else
 #  define WLOG(x_) (void)0
 # endif
 # if LOG_LEVEL >= LOG_ERRORS
-#  define ELOG(x_) (std::cerr << __FILE__ ":" << __LINE__ << ": " << x_ << '\n')
+#  define ELOG(x_) (gvl::cerr() << __FILE__ ":" << __LINE__ << ": " << x_ << gvl::endl)
 # else
 #  define ELOG(x_) (void)0
 # endif

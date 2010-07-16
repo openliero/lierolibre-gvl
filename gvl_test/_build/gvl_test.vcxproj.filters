@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="containers">
+      <UniqueIdentifier>{6fb198f9-01a3-4300-8df4-a6a85547c2b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{1f867cfb-1109-475f-b908-d95d7d5aa694}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{fd22107b-34ff-4a3f-b74a-1e7cd8658c81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="support">
+      <UniqueIdentifier>{5dd7d0ac-cc51-44a9-ba97-7ceac7822e3f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\containers\list.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\pairing_heap.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\treap.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\bitstream.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\io\stream.cpp">
+      <Filter>io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\deterministic_float.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\random.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\support\bits.cpp">
+      <Filter>support</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test.cpp" />
+    <ClCompile Include="deque.cpp">
+      <Filter>containers</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

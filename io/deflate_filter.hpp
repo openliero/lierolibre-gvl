@@ -156,7 +156,7 @@ struct deflate_filter : filter
 	{
 		in_bucket.reset(in_bucket_new);
 		str.next_in = reinterpret_cast<Bytef*>(const_cast<uint8_t*>(in_bucket->get_ptr()));
-		str.avail_in = in_bucket->size();
+		str.avail_in = uInt(in_bucket->size());
 	}
 	
 	void prepare_out_bucket()

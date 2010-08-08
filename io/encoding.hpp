@@ -191,48 +191,12 @@ struct octet_stream_reader : gvl::shared
 	// TODO: A get that returns a special value for EOF
 
 	// TODO: This returned an auto_read_result before
-	stream::read_result get_bucket(size_type amount = 0)
-	{
-		if(first_.get())
-		{
-			correct_first_bucket_();
-			return stream::read_result(stream::read_ok, first_.release());
-		}
-		else
-			return read_bucket_and_return_(amount);
-	}
+	stream::read_result get_bucket(size_type amount = 0);
 	
 	// Non-blocking
-	stream::read_result try_get_bucket(size_type amount = 0)
-	{
-		if(first_.get())
-		{
-			correct_first_bucket_();
-			return stream::read_result(stream::read_ok, first_.release());
-		}
-		else
-			return try_read_bucket_and_return_(amount);
-	}
+	stream::read_result try_get_bucket(size_type amount = 0);
 	
-	shared_ptr<stream> detach()
-	{
-		if(has_source())
-		{
-			correct_first_bucket_();
-
-			shared_ptr<stream> ret = source_.release();
-			
-			if(first_.get())
-				ret->unread(first_.release());
-			cur_ = end_ = 0;
-			sassert(cur_ == end_);
-			sassert(!first_.get());
-
-			return ret;
-		}
-		else
-			return source_.release();
-	}
+	shared_ptr<stream> detach();
 
 	stream& source()
 	{ return *source_; }
@@ -253,61 +217,14 @@ struct octet_stream_reader : gvl::shared
 	
 private:
 	
-	uint8_t underflow_get_()
-	{
-		stream::read_status status = next_bucket_();
-		if(status != stream::read_ok)
-			throw stream_read_error(status, "Read error in get()");
-		
-		return *cur_++;
-	}
-	
-	stream::read_status underflow_get_(uint8_t& ret)
-	{
-		stream::read_status s = next_bucket_();
-		if(s != stream::read_ok)
-			return s;
-		
-		ret = *cur_++;
-		return stream::read_ok;
-	}
+	uint8_t underflow_get_();
+	stream::read_status underflow_get_(uint8_t& ret);
 	
 	/// Discards the current first bucket (if any) and tries to read
 	/// a bucket if necessary.
 	/// May throw.
 	/// Precondition: cur_ == end_
-	stream::read_status next_bucket_()
-	{
-		passert(cur_ == end_, "Still data in the first bucket");
-		check_source();
-		
-		// Need to read a bucket
-		
-		// Reset first
-		// No need to do this: cur_ = end_ = 0;
-		first_.reset();
-		
-		//while(true)
-		{
-			stream::read_result r(source_->read());
-
-			if(r.s == stream::read_ok)
-			{
-				// Callers of next_bucket_ expect the result
-				// in first_
-				set_first_bucket_(r.b);
-				return stream::read_ok;
-			}
-			else if(r.s == stream::read_eos)
-			{
-				return stream::read_eos;
-			}
-			
-			// TODO: derived()->block();
-		}
-		
-		return stream::read_blocking;
-	}
+	stream::read_status next_bucket_();
 	
 	void check_source()
 	{
@@ -318,24 +235,7 @@ private:
 	
 		
 	// May throw
-	stream::read_result read_bucket_and_return_(size_type amount)
-	{
-		check_source();
-		//while(true)
-		{
-			stream::read_result r(source_->read(amount));
-		
-			if(r.s != stream::read_blocking)
-				return r;
-			
-			/* TODO:
-			derived()->flush();
-			derived()->block();
-			*/
-		}
-		
-		return stream::read_result(stream::read_blocking);
-	}
+	stream::read_result read_bucket_and_return_(size_type amount);
 	
 	// May throw
 	stream::read_result try_read_bucket_and_return_(size_type amount)
@@ -549,73 +449,11 @@ private:
 		end_ = buffer_->data + cap_;
 	}
 	
-	stream::write_status overflow_put_(uint8_t b)
-	{
-		check_sink();
-		
-		if(buffer_size_() >= max_bucket_size)
-		{
-			stream::write_status ret = weak_flush();
-			sassert(cur_ != end_);
-			*cur_++ = b;
-			return ret;
-		}
-		else
-		{
-			correct_buffer_();
-			cap_ *= 2;
-			buffer_.reset(buffer_->enlarge(cap_));
-			buffer_->unsafe_push_back(b);
-			
-			read_in_buffer_();
-			return stream::write_ok;
-		}
-	}
+	stream::write_status overflow_put_(uint8_t b);
 	
+	stream::write_status overflow_put_(uint8_t const* p, std::size_t len);
 	
-	stream::write_status overflow_put_(uint8_t const* p, std::size_t len)
-	{
-		check_sink();
-		
-		// As long as fitting in the current buffer would make it
-		// too large, write as much as possible and flush.
-		while((cur_ - buffer_->data) + len >= max_bucket_size)
-		{
-			std::size_t left = end_ - cur_;
-			// Copy as much as we can
-			std::memcpy(cur_, p, left);
-			cur_ += left;
-			p += left;
-			len -= left;
-			
-			// Flush and try to allocate a buffer large enough for the rest of the data
-			stream::write_status ret = weak_flush(len);
-			if(ret != stream::write_ok)
-				return ret;
-		}
-		
-		// Write the rest
-		ensure_cap_((cur_ - buffer_->data) + len);
-		
-		std::memcpy(cur_, p, len);
-		cur_ += len;
-		return stream::write_ok;
-	}
-	
-	void ensure_cap_(std::size_t s)
-	{
-		if(cap_ < s)
-		{
-			correct_buffer_();
-			while(cap_ < s)
-				cap_ *= 2;
-			buffer_.reset(buffer_->enlarge(cap_));
-			//sassert(size_ == buffer_->size_);
-			cur_ = buffer_->data + buffer_->size_;
-			end_ = buffer_->data + cap_;
-			sassert(std::size_t(cur_ - buffer_->data) == buffer_->size_);
-		}
-	}
+	void ensure_cap_(std::size_t s);
 
 	//bucket_size size_;
 	shared_ptr<stream> sink_;
@@ -695,6 +533,13 @@ inline D& operator<<(basic_text_writer<D>& self_, gvl::string const& str)
 	D& self = self_.derived();
 	self.put(reinterpret_cast<uint8_t const*>(str.data()), str.size());
 	return self;
+}
+
+template<typename D>
+inline D& operator<<(basic_text_writer<D>& self_, void const* ptr)
+{
+	// TODO: Very TEMP
+	return (self_ << uint32_t(ptr));
 }
 
 struct endl_tag_ {};

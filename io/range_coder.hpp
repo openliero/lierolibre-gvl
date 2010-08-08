@@ -405,11 +405,19 @@ struct bit_range_decoder_impl
 		
 		if(x <= middle)
 		{
+			if(x + uncertainty > middle)
+				uncertain();
 			high = middle;
 			value = 1;
 		}
+		else if(x + uncertainty <= middle)
+		{
+			uncertain();
+		}
 		else
+		{
 			low = middle + 1;
+		}
 
 		renormalize();
 		

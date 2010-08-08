@@ -36,6 +36,33 @@ struct default_compare
 	}
 };
 
+#if 0
+
+template<typename T>
+void caller(void* p)
+{
+	static_cast<T*>(p)->operator()();
+}
+
+struct functor_wrapper
+{
+	template<typename T>
+	functor_wrapper(T& t)
+	: f(&caller<T>)
+	, p(&t)
+	{
+		
+	}
+
+	void call()
+	{ f(p); }
+
+	void(*f)(void* p);
+	void* p;
+};
+
+#endif
+
 } // namespace gvl
 
 #endif // UUID_64B1EAC4E4F545FA3B131FA346621126

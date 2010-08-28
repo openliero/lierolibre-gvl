@@ -11,6 +11,8 @@
 #include <stdint.h>
 #else /* !GVL_GCC */
 
+#if !GVL_EXCLUDE_STDINT
+
 #if CHAR_BIT == 8 && UCHAR_MAX == 0xff
 typedef unsigned char      uint8_t;
 typedef   signed char      int8_t;
@@ -87,6 +89,9 @@ typedef          long      intmax_t;
 
 typedef uint64_t uint_fast64_t;
 typedef int64_t int_fast64_t;
+typedef ptrdiff_t intptr_t;
+
+#endif
 
 #define GVL_BITS_IN(t) (sizeof(t)*CHAR_BIT)
 

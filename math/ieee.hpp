@@ -452,6 +452,7 @@ inline rdouble atan2(rdouble a, rdouble b)
 inline rdouble floor(rdouble x)
 { return fd_floor(x.value); }
 
+#if !GVL_X87
 
 struct rfloat
 {
@@ -552,13 +553,17 @@ GVL_FORCE_INLINE rfloat atan2(rfloat a, rfloat b)
 GVL_FORCE_INLINE rfloat floor(rfloat x)
 { return gdtof(fd_floor(x.value)); }
 
+#endif
+
 }
 
+#if !GVL_X87
 inline float to_float(gvl::rfloat v)
 { return v.value; }
 
 inline float to_float(float v)
 { return v; }
+#endif
 
 #endif
 

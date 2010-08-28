@@ -147,8 +147,6 @@
 #define GVL_MOVE(x) (x)
 #endif
 
-typedef ptrdiff_t intptr_t;
-
 /* This function checks whether the above inferred
 ** characteristics are correct. It will throw gvl::assert_failure if not. */
 void gvl_test_platform();

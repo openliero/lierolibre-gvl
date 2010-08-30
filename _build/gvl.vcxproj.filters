@@ -839,6 +839,9 @@
     <ClInclude Include="..\hash_set\hash_set.hpp">
       <Filter>hash_set</Filter>
     </ClInclude>
+    <ClInclude Include="..\support\platform.h">
+      <Filter>support</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\containers\buffer.hpp">

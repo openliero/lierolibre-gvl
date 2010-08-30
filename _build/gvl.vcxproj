@@ -324,6 +324,7 @@
     <ClInclude Include="..\io\encoding_compat.hpp" />
     <ClInclude Include="..\math\dtoa.hpp" />
     <ClInclude Include="..\sockets\socket_listener.hpp" />
+    <ClInclude Include="..\support\platform.h" />
     <ClInclude Include="..\system\windows.hpp" />
     <ClInclude Include="..\test\gvl_tests.hpp" />
     <ClInclude Include="..\test\test.hpp" />

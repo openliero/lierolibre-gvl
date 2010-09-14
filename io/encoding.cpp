@@ -57,6 +57,9 @@ uint8_t octet_stream_reader::underflow_get_()
 	
 stream::read_status octet_stream_reader::underflow_get_(uint8_t& ret)
 {
+	if(!source_)
+		return stream::read_error;
+
 	stream::read_status s = next_bucket_();
 	if(s != stream::read_ok)
 		return s;

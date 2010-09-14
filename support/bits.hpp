@@ -187,6 +187,11 @@ GVL_INLINE int gvl_cyclic_between(uint32_t b, uint32_t e, uint32_t x)
 	return (x - b) < (e - b);
 }
 
+GVL_INLINE int gvl_cyclic_between_mask(uint32_t b, uint32_t e, uint32_t x, uint32_t mask)
+{
+	return ((x - b) & mask) < ((e - b) & mask);
+}
+
 GVL_INLINE int32_t gvl_uint32_as_int32(uint32_t x)
 {
 	if(x >= 0x80000000)
@@ -262,6 +267,7 @@ GVL_INLINE int odd_log2(uint64_t v) { return gvl_odd_log2_64(v); }
 GVL_INLINE int32_t saturate0(int32_t v) { return gvl_saturate0(v); }
 GVL_INLINE int32_t udiff(uint32_t x, uint32_t y) { return gvl_udiff(x, y); }
 GVL_INLINE bool cyclic_between(uint32_t b, uint32_t e, uint32_t x) { return gvl_cyclic_between(b, e, x) != 0; }
+GVL_INLINE bool cyclic_between(uint32_t b, uint32_t e, uint32_t x, uint32_t mask) { return gvl_cyclic_between_mask(b, e, x, mask) != 0; }
 GVL_INLINE int32_t uint32_as_int32(uint32_t x) { return gvl_uint32_as_int32(x); }
 GVL_INLINE uint32_t int32_as_uint32(int32_t x) { return gvl_int32_as_uint32(x); }
 GVL_INLINE uint32_t lsb_mask(int x) { return gvl_lsb_mask(x); }

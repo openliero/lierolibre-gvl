@@ -29,6 +29,14 @@ struct basic_matrix_common
 			
 		return static_cast<D&>(*this);
 	}
+
+	D& operator*=(T rhs)
+	{
+		for(std::size_t i = 0; i < N * M; ++i)
+			v[i] *= rhs;
+			
+		return static_cast<D&>(*this);
+	}
 	
 	static D identity()
 	{

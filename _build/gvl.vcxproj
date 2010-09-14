@@ -162,6 +162,12 @@
     <ClCompile Include="..\math\tests\reproducible_floats.cpp" />
     <ClCompile Include="..\sockets\socket_listener.cpp" />
     <ClCompile Include="..\support\tests\bits.cpp" />
+    <ClCompile Include="..\system\mutex.c">
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
+      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
+    </ClCompile>
     <ClCompile Include="..\test\gvl_tests.cpp" />
     <ClCompile Include="..\text\util.cpp" />
     <ClCompile Include="..\uthread\uthread.cpp">
@@ -325,6 +331,8 @@
     <ClInclude Include="..\math\dtoa.hpp" />
     <ClInclude Include="..\sockets\socket_listener.hpp" />
     <ClInclude Include="..\support\platform.h" />
+    <ClInclude Include="..\system\memory.hpp" />
+    <ClInclude Include="..\system\mutex.hpp" />
     <ClInclude Include="..\system\windows.hpp" />
     <ClInclude Include="..\test\gvl_tests.hpp" />
     <ClInclude Include="..\test\test.hpp" />

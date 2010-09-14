@@ -70,6 +70,9 @@
     <Filter Include="support\tests">
       <UniqueIdentifier>{90f4d4d5-7e10-4543-8f28-3bc11f6d66c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thread">
+      <UniqueIdentifier>{5e8d8ef0-8fad-49c4-a527-f315f4a4ccca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\uthread\uthread.cpp">
@@ -459,6 +462,9 @@
     <ClCompile Include="..\containers\tests\hash_set.cpp">
       <Filter>containers\tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\system\mutex.c">
+      <Filter>system</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\uthread\uthread.hpp">
@@ -841,6 +847,12 @@
     </ClInclude>
     <ClInclude Include="..\support\platform.h">
       <Filter>support</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\memory.hpp">
+      <Filter>system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\system\mutex.hpp">
+      <Filter>system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

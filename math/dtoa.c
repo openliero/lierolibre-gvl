@@ -179,13 +179,6 @@
  *	used for input more than STRTOD_DIGLIM digits long (default 40).
  */
 
-#ifndef Long
-#define Long long
-#endif
-#ifndef ULong
-typedef unsigned Long ULong;
-#endif
-
 /*
 #ifdef DEBUG
 #include "stdio.h"
@@ -193,11 +186,21 @@ typedef unsigned Long ULong;
 #endif*/
 
 #define IEEE_8087
+#define NO_IEEE_Scale
+#define NO_ERRNO
 #undef USE_LOCALE
 #undef Honor_FLT_ROUNDS
 
 #include "stdlib.h"
 #include "string.h"
+#include "../support/cstdint.hpp"
+
+#ifndef Long
+typedef int32_t Long;
+#endif
+#ifndef ULong
+typedef uint32_t ULong;
+#endif
 
 #ifdef USE_LOCALE
 #include "locale.h"
@@ -652,7 +655,7 @@ multadd
 			Bfree(b);
 			b = b1;
 			}
-		b->x[wds++] = carry;
+		b->x[wds++] = (ULong)carry;
 		b->wds = wds;
 		}
 	return b;
@@ -846,7 +849,7 @@ mult
 				*xc++ = z & FFFFFFFF;
 				}
 				while(x < xae);
-			*xc = carry;
+			*xc = (ULong)carry;
 			}
 		}
 #else
@@ -1185,7 +1188,7 @@ ulp
 		else {
 			word0(&u) = 0;
 			L -= Exp_shift;
-			word1(&u) = L >= 31 ? 1 : 1 << 31 - L;
+			word1(&u) = L >= 31 ? 1 : (1 << (31 - L));
 			}
 		}
 #endif
@@ -1658,7 +1661,7 @@ rshift(Bigint *b, int k)
 			while(x < xe)
 				*x1++ = *x++;
 		}
-	if ((b->wds = x1 - b->x) == 0)
+	if ((b->wds = (int)(x1 - b->x)) == 0)
 		b->x[0] = 0;
 	}
 
@@ -1907,7 +1910,7 @@ gethex( CONST char **sp, U *rvp, int rounding, int sign)
 		word1(rvp) = Big1;
 		return;
 		}
-	n = s1 - s0 - 1;
+	n = (int)(s1 - s0 - 1);
 	for(k = 0; n > (1 << (kshift-2)) - 1; n >>= 1)
 		k++;
 	b = Balloc(k);
@@ -1936,7 +1939,7 @@ gethex( CONST char **sp, U *rvp, int rounding, int sign)
 		n += 4;
 		}
 	*x++ = L;
-	b->wds = n = x - b->x;
+	b->wds = n = (int)(x - b->x);
 	n = ULbits*n - hi0bits(L);
 	nbits = Nbits;
 	lostbits = 0;
@@ -2473,12 +2476,13 @@ fd_strtod
 	CONST char *s, *s0, *s1;
 	double aadj, aadj1;
 	Long L;
-	U aadj2, adj, rv, rv0;
+	U adj, rv, rv0;
 	ULong y, z;
 	BCinfo bc;
 	Bigint *bb, *bb1, *bd, *bd0, *bs, *delta;
 #ifdef Avoid_Underflow
 	ULong Lsb, Lsb1;
+	U aadj2;
 #endif
 #ifdef SET_INEXACT
 	int oldinexact;
@@ -2548,7 +2552,7 @@ fd_strtod
 		else if (nd < 16)
 			z = 10*z + c - '0';
 	nd0 = nd;
-	bc.dp0 = bc.dp1 = s - s0;
+	bc.dp0 = bc.dp1 = (int)(s - s0);
 	for(s1 = s; s1 > s0 && *--s1 == '0'; )
 		++nz1;
 #ifdef USE_LOCALE
@@ -2572,7 +2576,7 @@ fd_strtod
 #endif
 	if (c == '.') {
 		c = *++s;
-		bc.dp1 = s - s0;
+		bc.dp1 = (int)(s - s0);
 		bc.dplen = bc.dp1 - bc.dp0;
 		if (!nd) {
 			for(; c == '0'; c = *++s)
@@ -3939,7 +3943,7 @@ fd_dtoa
 			 */
 			dval(&eps) = 0.5/tens[ilim-1] - dval(&eps);
 			for(i = 0;;) {
-				L = dval(&u);
+				L = (Long)dval(&u);
 				dval(&u) -= L;
 				*s++ = '0' + (int)L;
 				if (dval(&u) < dval(&eps))

@@ -4,6 +4,7 @@
 #include "../encoding.hpp"
 #include "../deflate_filter.hpp"
 #include "../../math/tt800.hpp"
+#include "../../math/cmwc.hpp"
 #include <functional>
 
 template<typename T, std::size_t N>
@@ -82,5 +83,39 @@ GVLTEST(gvl, stream, deflate_filter)
 		ASSERTEQ(reader.get(), seq[1]);
 		ASSERTEQ(reader.get(), seq[2]);
 		ASSERTEQ(reader.get(), seq[3]);
+	}
+}
+
+GVLTEST(gvl, stream, octet_stream_reader_get)
+{
+	gvl::stream_ptr str(new gvl::memory_stream());
+	gvl::octet_stream_writer writer(str);
+
+	gvl::mwc r;
+
+	int const count = 4096;
+
+	for(int i = 0; i < count; ++i)
+	{
+		writer.put(uint8_t(i & 0xff));
+	}
+
+	writer.flush();
+
+	gvl::octet_stream_reader reader(str);
+
+	for(int i = 0; i < count;)
+	{
+		int size = std::min(int(r(10) + 3), (count - i));
+		uint8_t buf[64];
+
+		reader.get(buf, size);
+
+		int start = i;
+		for(int off = 0; off < size; ++off)
+		{
+			ASSERTEQ((int)buf[off], (i & 0xff));
+			++i;
+		}
 	}
 }

@@ -92,6 +92,15 @@ struct fstream : stream
 		
 		return write_ok;
 	}
+
+	read_status seekg(uint64_t pos)
+	{
+		if(!f)
+			return read_error;
+		in_buffer.buckets.clear(); // Discard buffered input
+		std::fseek(f, (long)pos, SEEK_SET);
+		return read_ok;
+	}
 	
 	FILE* f;
 };

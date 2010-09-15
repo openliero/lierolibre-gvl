@@ -68,7 +68,7 @@ stream::read_status octet_stream_reader::underflow_get_(uint8_t& ret)
 	return stream::read_ok;
 }
 
-stream::read_status octet_stream_reader::next_bucket_()
+stream::read_status octet_stream_reader::next_bucket_(uint32_t amount)
 {
 	passert(cur_ == end_, "Still data in the first bucket");
 	check_source();
@@ -81,7 +81,7 @@ stream::read_status octet_stream_reader::next_bucket_()
 		
 	//while(true)
 	{
-		stream::read_result r(source_->read());
+		stream::read_result r(source_->read(amount));
 
 		if(r.s == stream::read_ok)
 		{

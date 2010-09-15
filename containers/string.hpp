@@ -256,6 +256,11 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		std::memcpy(next_(), b, len);
 		this->size_ += len;
 	}
+
+	void append(char const* b)
+	{
+		append(reinterpret_cast<uint8_t const*>(b), std::strlen(b));
+	}
 	
 	void reserve(std::size_t s)
 	{

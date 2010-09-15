@@ -70,9 +70,21 @@ struct octet_stream_reader : gvl::shared
 	
 	void get(uint8_t* dest, std::size_t len)
 	{
-		// TODO: Can optimize this
-		for(std::size_t i = 0; i < len; ++i)
-			dest[i] = get();
+		while(true)
+		{
+			std::size_t piece = std::min(std::size_t(end_ - cur_), len);
+
+			memcpy(dest, cur_, piece);
+			dest += piece;
+			cur_ += piece;
+			len -= piece;
+			if(len == 0)
+				break;
+
+			stream::read_status status = next_bucket_(uint32_t(len));
+			if(status != stream::read_ok)
+				throw stream_read_error(status, "Read error in get()");
+		}
 	}
 
 	stream::read_status try_skip()
@@ -211,6 +223,13 @@ struct octet_stream_reader : gvl::shared
 		
 		source_ = source_new;
 	}
+
+	void seekg(uint64_t pos)
+	{
+		shared_ptr<stream> str(detach());
+		str->seekg(pos);
+		attach(str);
+	}
 	
 	/// Amount of data left in the first bucket
 	std::size_t first_left() const { return end_ - cur_; }
@@ -224,7 +243,7 @@ private:
 	/// a bucket if necessary.
 	/// May throw.
 	/// Precondition: cur_ == end_
-	stream::read_status next_bucket_();
+	stream::read_status next_bucket_(uint32_t amount = 0);
 	
 	void check_source()
 	{

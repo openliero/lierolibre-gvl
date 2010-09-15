@@ -288,6 +288,12 @@ struct stream : shared
 	{
 		return write_ok;
 	}
+
+	virtual read_status seekg(uint64_t pos)
+	{
+		// Not supported by default
+		return read_error;
+	}
 	
 	brigade in_buffer;
 	brigade out_buffer;
@@ -784,6 +790,22 @@ inline uint32_t read_uint32_le(Reader& reader)
 	ret |= reader.get() << 24;
 	return ret;
 }
+
+template<typename Reader>
+inline uint64_t read_uint64_le(Reader& reader)
+{
+	uint64_t ret = reader.get();
+	ret |= uint64_t(reader.get()) << 8;
+	ret |= uint64_t(reader.get()) << 16;
+	ret |= uint64_t(reader.get()) << 24;
+	ret |= uint64_t(reader.get()) << 32;
+	ret |= uint64_t(reader.get()) << 40;
+	ret |= uint64_t(reader.get()) << 48;
+	ret |= uint64_t(reader.get()) << 56;
+	return ret;
+}
+
+
 
 template<typename Reader>
 inline int read_sint16(Reader& reader)

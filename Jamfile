@@ -8,14 +8,14 @@ LINKLIBS on gvltest$(SUFEXE) = -lrt ;
 
 Library libgvl :
 	containers/list.cpp
-	
+
 	crypt/curve25519.cpp
-	
+
 	io/stream.cpp
 	io/encoding.cpp
 	io/convert.cpp
-	
-	
+
+
 	math/ieee.cpp
 	math/tt800.cpp
 	math/fdlibm/e_acos.c
@@ -98,21 +98,21 @@ Library libgvl :
 	math/fdlibm/w_scalb.c
 	math/fdlibm/w_sinh.c
 	math/fdlibm/w_sqrt.c
-	
+
 	resman/shared.cpp
-	
+
 	sockets/fd_set.cpp
 	sockets/sockets.cpp
 	sockets/socketstream.cpp
-	
+
 	support/bits.c
 	support/debug.cpp
 	support/hash.cpp
 	support/log.cpp
 	support/profile.cpp
-	
+
 	system/system.c
-	
+
 	zlib/adler32.c
 	zlib/compress.c
 	zlib/crc32.c
@@ -125,10 +125,10 @@ Library libgvl :
 	zlib/trees.c
 	zlib/uncompr.c
 	zlib/zutil.c
-	
+
 	tut/quickcheck/context.cpp
 	;
-	
+
 Main gvltest :
 	gvl_test/containers/list.cpp
 	gvl_test/containers/pairing_heap.cpp
@@ -141,6 +141,6 @@ Main gvltest :
 	;
 
 LinkLibraries gvltest : libgvl ;
-	
+
 MakeLocate libgvl$(SUFLIB) : $(TOP)/gvl/_bin ;
 MakeLocate gvltest$(SUFEXE) : $(TOP)/gvl/_bin ;

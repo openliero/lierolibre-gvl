@@ -78,7 +78,7 @@
 #if defined(__cplusplus) // We don't test GVL_CPP here, because we assume we can always use C++ inline in C++
 # define GVL_INLINE inline
 # if defined(GVL_GCC)
-#   define GVL_FORCE_INLINE __attribute__((always_inline))
+#   define GVL_FORCE_INLINE inline
 # elif defined(GVL_MSVCPP)
 #   define GVL_FORCE_INLINE __forceinline
 # else

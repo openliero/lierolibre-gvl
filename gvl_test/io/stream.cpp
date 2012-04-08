@@ -7,7 +7,6 @@
 #include <gvl/io/deflate_filter.hpp>
 #include <gvl/math/tt800.hpp>
 //#include <gvl/support/algorithm.hpp>
-#include <gvl/resman/shared.hpp>
 #include <functional>
 
 namespace tut

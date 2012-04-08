@@ -366,7 +366,7 @@ struct rdouble
 	: value(0.0)
 	{
 	}
-	
+
 	rdouble(double value)
 	: value(value)
 	{
@@ -460,7 +460,7 @@ struct rfloat
 	//: value(0.f)
 	{
 	}
-	
+
 	rfloat(float value)
 	: value(value)
 	{

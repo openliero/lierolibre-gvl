@@ -40,7 +40,7 @@ void basic_obitstream<DerivedT, BufBytes>::put_uint(uint32_t i, uint32_t bits)
 	sassert(bits <= 32);
 	sassert(bits > 0);
 	passert((i & gvl::lsb_mask(bits)) == i, "unwritten bits must be 0");
-	
+
 	uint32_t written = out_bit_count;
 	uint32_t buf = out_bits | (i << written);
 
@@ -127,7 +127,7 @@ void put_golomb(BitWriter& writer, uint32_t v, uint32_t m)
 {
 	uint32_t quot = v / m;
 	uint32_t rem = v % m;
-	
+
 	put_unary(writer, quot);
 	put_trunc(writer, rem, m);
 }
@@ -139,7 +139,7 @@ void put_rice(BitWriter& writer, uint32_t v, uint32_t shift)
 	sassert(shift > 0);
 	uint32_t quot = v >> shift;
 	uint32_t rem = v & gvl::lsb_mask(shift);
-	
+
 	put_unary(writer, quot);
 	writer.put_uint(rem, shift);
 }
@@ -182,15 +182,15 @@ void basic_ibitstream<DerivedT, BufBytes>::ignore(uint32_t bits)
 {
 	uint32_t cursor = in_bit_count;
 	cursor += bits;
-	
+
 	uint32_t bufs_to_read = cursor / in_buf_bits;
-	
+
 	if(bufs_to_read >= 1)
 	{
 		derived().ignore_bufs(bufs_to_read - 1);
 		in_bits = get_buf();
 	}
-	
+
 	in_bit_count = (cursor % in_buf_bits);
 }
 
@@ -202,7 +202,7 @@ uint32_t basic_ibitstream<DerivedT, BufBytes>::get()
 		in_bits = get_buf();
 		in_bit_count = 0;
 	}
-	
+
 	return (in_bits >> in_bit_count++) & 1;
 }
 
@@ -212,7 +212,7 @@ uint32_t basic_ibitstream<DerivedT, BufBytes>::get_uint(uint32_t bits)
 	// Bits must be at most 32
 	sassert(bits <= 32);
 	sassert(bits > 0);
-	
+
 	uint32_t read = in_bit_count;
 	bitbuf_t buf = in_bits;
 
@@ -234,7 +234,7 @@ uint32_t basic_ibitstream<DerivedT, BufBytes>::get_uint(uint32_t bits)
 		uint32_t written = in_buf_bits - read; // Bits written to v
 		v |= buf << written;
 		written += in_buf_bits;
-		
+
 		while(in_buf_bits < 32 && written < bits)
 		{
 			buf = get_buf();
@@ -245,7 +245,7 @@ uint32_t basic_ibitstream<DerivedT, BufBytes>::get_uint(uint32_t bits)
 		in_bit_count = in_buf_bits - (written - bits); // Didn't use any surplus bits
 		in_bits = buf;
 	}
-	
+
 	return v & gvl::lsb_mask(bits);
 }
 
@@ -254,10 +254,10 @@ void basic_ibitstream<DerivedT, BufBytes>::get_block(void* ptr_, size_t len)
 {
 	if(len == 0)
 		return;
-		
-	uint8_t* ptr = static_cast<uint8_t*>(ptr_);	
+
+	uint8_t* ptr = static_cast<uint8_t*>(ptr_);
 	uint8_t* end = ptr + len;
-	
+
 	for(; ptr != end; ++ptr)
 		*ptr = get_uint(8);
 }
@@ -291,7 +291,7 @@ uint32_t get_golomb(BitReader& reader, uint32_t m)
 {
 	uint32_t quot = get_unary(reader);
 	uint32_t rem = get_trunc(reader, m);
-	
+
 	return quot * m + rem;
 }
 
@@ -300,10 +300,10 @@ template<typename BitReader>
 uint32_t get_rice(BitReader& reader, uint32_t shift)
 {
 	sassert(shift > 0);
-	
+
 	uint32_t quot = reader.get_unary();
 	uint32_t rem = reader.get_uint(shift);
-	
+
 	return (quot << shift) + rem;
 }
 
@@ -355,7 +355,7 @@ void basic_obitstream<DerivedT, BufBytes>::finish_aligned()
 			out_bit_count -= bit_alignment;
 			out_bits >>= bit_alignment;
 		}
-		
+
 		out_bits = 0;
 		out_bit_count = 0;
 	}

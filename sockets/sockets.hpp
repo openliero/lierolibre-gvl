@@ -20,35 +20,35 @@ struct socket
 	static int const would_block = -2;
 	static int const conn_reset = -3;
 	static int const disconnected = -4;
-	
-	union 
+
+	union
 	{
 		int   _int;
 		void* _voidp;
 	};
-	
+
 	static socket invalid();
-	
+
 	socket();
-	
+
 	bool is_valid();
 	void close();
-	
+
 	void        set_nonblocking(bool no_blocking = true);
 	int         set_nodelay(bool no_delay = true);
 	int         bind(int port);
 	int         listen();
 	socket      accept(internet_addr& addr);
 	int         connect(internet_addr& addr);
-	
+
 	/* Communication */
 	int send(void const* msg, std::size_t len);
 	int recv(void* msg, std::size_t len);
 	int sendto(void const* msg, std::size_t len, internet_addr const& dest);
 	int recvfrom(void* msg, std::size_t len, internet_addr& src);
-	
+
 	int opt_error();
-	
+
 	void bind_any()
 	{ bind(0); }
 };
@@ -77,28 +77,28 @@ struct internet_addr
 {
 	internet_addr(); // any
 	internet_addr(char const* name, int port = 0);
-	
+
 	// NOTE: This may not get the address unless I/O has occured
 	// on the socket or (if applicable) a connect or accept has
 	// been done.
 	internet_addr(socket s);
 	internet_addr(uint32_t ip, int port);
-	
+
 	bool valid();
-	
+
     int  port() const;
     void port(int port_new);
-    
+
     uint32_t ip() const;
     void     ip(uint32_t ip_new);
-    
+
     void reset();
 
     friend bool operator==(internet_addr const&, internet_addr const&);
-	
+
 	bool operator!=(internet_addr const& other) const
 	{ return !(*this == other); }
-    
+
 	sockaddr_storage storage_;
 };
 
@@ -109,17 +109,17 @@ struct host_entry_impl : gvl::shared
 	virtual ~host_entry_impl()
 	{
 	}
-	
+
 	virtual void* storage() = 0;
 };
 
 struct host_entry
 {
 	host_entry(char const* name);
-	
+
 	void* storage()
 	{ return ptr->storage(); }
-	
+
 	gvl::shared_ptr<host_entry_impl> ptr;
 };*/
 

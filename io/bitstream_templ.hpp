@@ -269,6 +269,7 @@ uint32_t get_trunc(BitReader& reader, uint32_t count)
 	uint32_t p2 = (1 << bits);
 	uint32_t b = count - p2;
 	uint32_t v = reader.get_uint(bits);
+	uint32_t get();
 	if(v < p2 - b)
 		return v;
 	else
@@ -349,7 +350,7 @@ void basic_obitstream<DerivedT, BufBytes>::finish_aligned()
 	{
 		while(true)
 		{
-			put_chunk<C>(out_bits & GVL_BITMASK(bit_alignment));
+			put_chunk<int>(out_bits & GVL_BITMASK(bit_alignment));
 			if(out_bit_count <= bit_alignment)
 				break;
 			out_bit_count -= bit_alignment;

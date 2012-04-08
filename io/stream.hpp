@@ -717,7 +717,7 @@ void write_aint(Writer& writer, unsigned int v)
 template<typename Reader>
 unsigned int read_aint(Reader& reader)
 {
-	v = 0;
+	int v = 0;
 
 	for(int i = 0; i < 5; ++i)
 	{

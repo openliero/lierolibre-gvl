@@ -1,3 +1,6 @@
+#ifndef BITSTREAM_TEMP_HPP
+#define BITSTREAM_TEMP_HPP
+
 #include "bitstream.hpp"
 #include "../support/debug.hpp"
 #include "../support/platform.hpp"
@@ -392,3 +395,5 @@ void basic_obitstream<DerivedT, BufBytes>::put_chunk(bitbuf_t v)
 #if GVL_MSCVPP
 #pragma warning(pop)
 #endif
+
+#endif // BITSTREAM_TEMP_HPP

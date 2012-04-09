@@ -54,7 +54,7 @@ struct socket
 };
 
 int const SS_MAXSIZE = 128;                 // Maximum size
-#ifdef GVL_MSVCPP
+#if GVL_MSVCPP
 int const SS_ALIGNSIZE = (sizeof(__int64)); // Desired alignment
 #elif GVL_GCC
 int const SS_ALIGNSIZE = (sizeof(int64_t)); // Desired alignment

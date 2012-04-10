@@ -166,7 +166,7 @@ struct basic_obitstream
 
 	// Finish with a different byte alignment. This
 	// will call put_chunk<C> at most [32/(8*C)] times.
-	template<int ByteAlignment>
+	template<int ByteAlignment, int C>
 	void finish_aligned();
 	
 	void put_debug_mark();

@@ -341,7 +341,7 @@ void basic_obitstream<DerivedT, BufBytes>::finish()
 }
 
 template<typename DerivedT, int BufBytes>
-template<int ByteAlignment>
+template<int ByteAlignment, int C>
 void basic_obitstream<DerivedT, BufBytes>::finish_aligned()
 {
 	int const bit_alignment = ByteAlignment * 8;
@@ -349,7 +349,7 @@ void basic_obitstream<DerivedT, BufBytes>::finish_aligned()
 	{
 		while(true)
 		{
-			put_chunk<int>(out_bits & GVL_BITMASK(bit_alignment));
+			put_chunk<C>(out_bits & GVL_BITMASK(bit_alignment));
 			if(out_bit_count <= bit_alignment)
 				break;
 			out_bit_count -= bit_alignment;

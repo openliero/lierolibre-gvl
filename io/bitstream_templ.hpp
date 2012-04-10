@@ -269,11 +269,10 @@ uint32_t get_trunc(BitReader& reader, uint32_t count)
 	uint32_t p2 = (1 << bits);
 	uint32_t b = count - p2;
 	uint32_t v = reader.get_uint(bits);
-	uint32_t get();
 	if(v < p2 - b)
 		return v;
 	else
-		return ((v << 1) + get()) - b;
+		return ((v << 1) + reader.get()) - b;
 }
 
 // NOTE: Untested

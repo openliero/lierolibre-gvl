@@ -27,20 +27,20 @@ struct basic_ibitstream
 	, in_bit_count(in_buf_bits)
 	{
 	}
-		
+
 	template<typename T2>
 	basic_ibitstream(basic_ibitstream<T2, BufBytes> const& b)
 	: in_bits(b.in_bits)
 	, in_bit_count(b.in_bit_count)
 	{
-		
+
 	}
-	
+
 	DerivedT& derived()
 	{
 		return *static_cast<DerivedT*>(this);
 	}
-	
+
 	// Number of calls to get_byte that will be done
 	// if 'bits' bits are read from the stream after this
 	// point.
@@ -48,7 +48,7 @@ struct basic_ibitstream
 	{
 		return in_chunks_required(bits) * BufBytes;
 	}
-	 
+
 	std::size_t in_chunks_required(std::size_t bits) const
 	{
 		return ((bits + in_bit_count - 1) / in_buf_bits);
@@ -71,7 +71,7 @@ struct basic_ibitstream
 
 	void ignore_bufs(int c)
 	{ derived().ignore_chunks<BufBytes>(c); }
-	
+
 	void swap(basic_ibitstream& b)
 	{
 		std::swap(in_bit_count, b.in_bit_count);
@@ -84,9 +84,9 @@ struct basic_ibitstream
 	void get_block(void* ptr_, size_t len);
 	uint32_t get_lim(uint32_t low, uint32_t high);
 	void resetg();
-	
+
 	void get_debug_mark();
-	
+
 	bitbuf_t in_bits;
 	uint32_t in_bit_count;
 };
@@ -99,27 +99,27 @@ struct basic_obitstream
 
 	static int const out_buf_bits = BufBytes * 8;
 	static unsigned int const out_buf_mask = GVL_BITMASK(out_buf_bits);
-	
+
 	basic_obitstream()
 	: out_bits(0)
 	, out_bit_count(0)
 	{
 	}
-		
+
 	template<typename T2>
 	basic_obitstream(basic_obitstream<T2, BufBytes> const& b)
 	: out_bits(b.out_bits)
 	, out_bit_count(b.out_bit_count)
 	{
-		
+
 	}
-	
+
 	DerivedT& derived()
 	{
 		return *static_cast<DerivedT*>(this);
 	}
-	
-	
+
+
 	// Bits written if 'bytes' calls to put_byte were made
 	// after an initial state of out_bit_count == 0.
 	uint32_t out_bits_written(uint32_t bytes) const
@@ -157,7 +157,7 @@ struct basic_obitstream
 
 	template<typename T, int BufBytes2>
 	void put(basic_ibitstream<T, BufBytes2>& src, int bits);
-		
+
 	void resetp();
 
 	// Finish and align to the buffer size. This will
@@ -168,9 +168,9 @@ struct basic_obitstream
 	// will call put_chunk<C> at most [32/(8*C)] times.
 	template<int ByteAlignment, int C>
 	void finish_aligned();
-	
+
 	void put_debug_mark();
-	
+
 	bitbuf_t out_bits;
 	uint32_t out_bit_count;
 };
@@ -181,7 +181,7 @@ struct dummy_obitstream
 {
 	void not_supported() const
 	{ throw std::runtime_error("Not supported"); }
-	
+
 	void put(uint32_t) { not_supported(); }
 	void put_uint(uint32_t, uint32_t) { not_supported(); }
 	void put_block(void const*, std::size_t) { not_supported(); }
@@ -192,7 +192,7 @@ struct dummy_obitstream
 
 	template<int C>
 	void finish_aligned() { not_supported(); }
-	
+
 	void put_debug_mark() { not_supported(); }
 };
 
@@ -202,15 +202,15 @@ struct dummy_ibitstream
 {
 	void not_supported() const
 	{ throw std::runtime_error("Not supported"); }
-	
+
 	std::size_t in_bytes_required(std::size_t bits) const { not_supported(); return 0; }
-	
+
 	void     ignore(uint32_t bits) { not_supported(); }
 	uint32_t get() { not_supported(); return 0; }
 	uint32_t get_uint(uint32_t bits) { not_supported(); return 0; }
 	void     get_block(void* ptr_, size_t len) { not_supported(); }
 	void     resetg() { not_supported(); }
-	
+
 	void get_debug_mark() { not_supported(); }
 };
 

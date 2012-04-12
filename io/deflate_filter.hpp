@@ -19,34 +19,34 @@ struct deflate_filter : filter
 		str.zalloc = 0;
 		str.zfree = 0;
 		str.opaque = 0;
-		
+
 		if(compress)
 			deflateInit(&str, Z_DEFAULT_COMPRESSION);
 		else
 			inflateInit(&str);
-		
+
 		str.avail_in = 0;
-		
+
 		prepare_out_bucket();
 	}
-	
+
 	~deflate_filter()
 	{
 		close();
-		
+
 		if(compress)
 			deflateEnd(&str);
 		else
 			inflateEnd(&str);
 	}
-	
+
 	read_status apply(apply_mode mode, size_type amount = 0)
 	{
 		if(ended)
 			return read_blocking;
-			
+
 		bool written = false;
-		
+
 		int deflate_flags = Z_NO_FLUSH;
 		if(mode == am_flushing)
 			deflate_flags = Z_SYNC_FLUSH;
@@ -58,10 +58,10 @@ struct deflate_filter : filter
 				deflate_flags = Z_SYNC_FLUSH;
 		}
 
-/*		
+/*
 		if((rand() % 110) == 0)
 			throw gvl::stream_error("Random error");
-*/		
+*/
 		while(true)
 		{
 			if(str.avail_in == 0)
@@ -106,7 +106,7 @@ struct deflate_filter : filter
 				if(mode == am_pulling)
 					break;
 			}
-			
+
 			/*
 				am_non_pulling:
 					Just run deflate until there is no more buffered input.
@@ -118,13 +118,13 @@ struct deflate_filter : filter
 				am_closing
 					Run deflate until Z_STREAM_END is returned
 			*/
-				
+
 			int ret;
 			if(compress)
 				ret = deflate(&str, deflate_flags);
 			else
 				ret = inflate(&str, deflate_flags);
-			
+
 			if(ret == Z_STREAM_END)
 			{
 				ended = true;
@@ -139,7 +139,7 @@ struct deflate_filter : filter
 			if((deflate_flags == Z_SYNC_FLUSH) && str.avail_in == 0)
 				break;
 		}
-		
+
 		// Force away any out_bucket when flushing or closing
 		if((mode == am_flushing || mode == am_closing || mode == am_pulling)
 		&&  str.next_out != &buffer->data[0])
@@ -148,17 +148,17 @@ struct deflate_filter : filter
 			written = true;
 			prepare_out_bucket();
 		}
-		
+
 		return written ? read_ok : read_blocking;
 	}
-		
+
 	void prepare_in_bucket(bucket* in_bucket_new)
 	{
 		in_bucket.reset(in_bucket_new);
 		str.next_in = reinterpret_cast<Bytef*>(const_cast<uint8_t*>(in_bucket->get_ptr()));
 		str.avail_in = uInt(in_bucket->size());
 	}
-	
+
 	void prepare_out_bucket()
 	{
 		if(buffer.get())
@@ -166,17 +166,17 @@ struct deflate_filter : filter
 			buffer->size_ = str.next_out - &buffer->data[0];
 			in_buffer.append(new gvl::bucket(buffer.release()));
 		}
-		
+
 		std::size_t const buf_size = 1024;
 		buffer.reset(gvl::bucket_data_mem::create(buf_size, 0));
 		str.avail_out = buf_size;
 		str.next_out = reinterpret_cast<Bytef*>(&buffer->data[0]);
 	}
-	
+
 	z_stream str;
 	std::auto_ptr<bucket_data_mem> buffer;
 	std::auto_ptr<bucket> in_bucket;
-	
+
 	bool compress;
 	bool ended; // TODO: The stream should have some state for closed
 };

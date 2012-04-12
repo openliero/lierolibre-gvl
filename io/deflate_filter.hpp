@@ -2,7 +2,7 @@
 #define UUID_1EB2DB01C1DC4C74569FE0B1E099291B
 
 #include "stream.hpp"
-#include "../zlib/zlib.h"
+#include <zlib.h>
 
 namespace gvl
 {

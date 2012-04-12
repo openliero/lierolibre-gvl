@@ -5,7 +5,7 @@ CFLAGS = -Wall -I$(TOP) -DNDEBUG ;
 OPTIM = -O3 ;
 LINK = "g++" ;
 LINKLIBS on libgvl$(SUFLIB) = -lz ;
-LINKLIBS on gvltest$(SUFEXE) = -lrt ;
+LINKLIBS on gvltest$(SUFEXE) = -lrt -lz ;
 
 Library libgvl :
 	containers/list.cpp

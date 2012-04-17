@@ -4,7 +4,6 @@
 /* NOTE: Keep this usable from C */
 
 #include "../support/platform.hpp"
-#include "fdlibm/fdlibm.h"
 #include <math.h>
 
 #if !defined(GVL_FORCE_SSE_FPU) && GVL_FORCE_SSE2_FPU
@@ -18,6 +17,7 @@
 #endif
 
 #ifdef __cplusplus
+#include <cmath>
 extern "C" {
 #endif
 
@@ -438,19 +438,19 @@ inline rdouble sqrt(rdouble x)
 { return gSqrt(x.value); }
 
 inline rdouble log(rdouble x)
-{ return fd_log(x.value); }
+{ return std::log(x.value); }
 
 inline rdouble cos(rdouble x)
-{ return fd_cos(x.value); }
+{ return std::cos(x.value); }
 
 inline rdouble sin(rdouble x)
-{ return fd_sin(x.value); }
+{ return std::sin(x.value); }
 
 inline rdouble atan2(rdouble a, rdouble b)
-{ return fd_atan2(a.value, b.value); }
+{ return std::atan2(a.value, b.value); }
 
 inline rdouble floor(rdouble x)
-{ return fd_floor(x.value); }
+{ return std::floor(x.value); }
 
 #if !GVL_X87
 
@@ -539,19 +539,19 @@ GVL_FORCE_INLINE rfloat sqrt(rfloat x)
 { return gSqrtf(x.value); }
 
 GVL_FORCE_INLINE rfloat log(rfloat x)
-{ return gdtof(fd_log(x.value)); }
+{ return gdtof(std::log(x.value)); }
 
 GVL_FORCE_INLINE rfloat cos(rfloat x)
-{ return gdtof(fd_cos(x.value)); }
+{ return gdtof(std::cos(x.value)); }
 
 GVL_FORCE_INLINE rfloat sin(rfloat x)
-{ return gdtof(fd_sin(x.value)); }
+{ return gdtof(std::sin(x.value)); }
 
 GVL_FORCE_INLINE rfloat atan2(rfloat a, rfloat b)
-{ return gdtof(fd_atan2(a.value, b.value)); }
+{ return gdtof(std::atan2(a.value, b.value)); }
 
 GVL_FORCE_INLINE rfloat floor(rfloat x)
-{ return gdtof(fd_floor(x.value)); }
+{ return gdtof(std::floor(x.value)); }
 
 #endif
 

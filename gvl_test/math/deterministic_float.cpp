@@ -2,7 +2,6 @@
 
 #include <gvl/math/tt800.hpp>
 #include <gvl/support/algorithm.hpp>
-#include <gvl/math/fdlibm/fdlibm.h>
 #include <gvl/math/ieee.hpp>
 #include <cmath>
 #include <ctime>
@@ -33,7 +32,7 @@ namespace tut
 
 bool equivalent(double x, double y)
 {
-	return (x == y) || (fd_isnan(x) && fd_isnan(y));
+	return (x == y) || (std::isnan(x) && std::isnan(y));
 }
 
 
@@ -155,7 +154,7 @@ void object::test<2>()
 		{
 			++failures;
 			
-			if(!fd_finite(r1) && fd_finite(r2))
+			if(!std::isfinite(r1) && std::isfinite(r2))
 				++incorrect_overflows;
 			
 			if(failures == 1)
@@ -182,15 +181,15 @@ void object::test<3>()
 	double negZero = -10.0 * 0.0;
 	double zero = 0.0;
 
-	ensure(fd_isnan(computedNaN) != 0);
+	ensure(std::isnan(computedNaN) != 0);
 
-	ensure("x-x is not optimized", fd_isnan(gS(computedNaN, computedNaN)) != 0);
-	ensure("x*0.0 is not optimized", fd_isnan(gM(computedNaN, 0.0)) != 0);
-	ensure("x/x is not optimized", fd_isnan(gD(computedNaN, computedNaN)) != 0);
+	ensure("x-x is not optimized", std::isnan(gS(computedNaN, computedNaN)) != 0);
+	ensure("x*0.0 is not optimized", std::isnan(gM(computedNaN, 0.0)) != 0);
+	ensure("x/x is not optimized", std::isnan(gD(computedNaN, computedNaN)) != 0);
 	  
 	ensure("dividing by -0 yields -infinity", gD(1.0, negZero) == -std::numeric_limits<double>::infinity());
 	ensure("dividing by 0 yields infinity", gD(1.0, zero) == std::numeric_limits<double>::infinity());
-	ensure("dividing 0 by 0 yields NaN", fd_isnan(gD(zero, zero)) != 0);
+	ensure("dividing 0 by 0 yields NaN", std::isnan(gD(zero, zero)) != 0);
 
 	// Fails with round-double-53(round-extended-64(x * 2) / 2)
 	ensure("double overflow with multiply", gD(gM(1.7e308, 2.0), 2.0) == std::numeric_limits<double>::infinity());

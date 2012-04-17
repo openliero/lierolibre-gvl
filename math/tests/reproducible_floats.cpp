@@ -2,7 +2,6 @@
 
 #include "../tt800.hpp"
 #include "../../support/algorithm.hpp"
-#include "../fdlibm/fdlibm.h"
 #include "../ieee.hpp"
 #include <cmath>
 #include <ctime>

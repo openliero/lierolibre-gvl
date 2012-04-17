@@ -1,0 +1,126 @@
+ACLOCAL_AMFLAGS = -I m4 --install
+
+lib_LTLIBRARIES = libgvl-0.1.la
+
+check_PROGRAMS = gvltest
+
+libgvl_0_1_la_SOURCES = \
+	containers/list.cpp \
+	\
+	crypt/curve25519.cpp \
+	\
+	io/stream.cpp \
+	io/encoding.cpp \
+	io/convert.cpp \
+	\
+	\
+	math/ieee.cpp \
+	math/tt800.cpp \
+	math/fdlibm/e_acos.c \
+	math/fdlibm/e_acosh.c \
+	math/fdlibm/e_asin.c \
+	math/fdlibm/e_atan2.c \
+	math/fdlibm/e_atanh.c \
+	math/fdlibm/e_cosh.c \
+	math/fdlibm/e_exp.c \
+	math/fdlibm/e_fmod.c \
+	math/fdlibm/e_gamma.c \
+	math/fdlibm/e_gamma_r.c \
+	math/fdlibm/e_hypot.c \
+	math/fdlibm/e_j0.c \
+	math/fdlibm/e_j1.c \
+	math/fdlibm/e_jn.c \
+	math/fdlibm/e_lgamma.c \
+	math/fdlibm/e_lgamma_r.c \
+	math/fdlibm/e_log.c \
+	math/fdlibm/e_log10.c \
+	math/fdlibm/e_pow.c \
+	math/fdlibm/e_remainder.c \
+	math/fdlibm/e_rem_pio2.c \
+	math/fdlibm/e_scalb.c \
+	math/fdlibm/e_sinh.c \
+	math/fdlibm/e_sqrt.c \
+	math/fdlibm/k_cos.c \
+	math/fdlibm/k_rem_pio2.c \
+	math/fdlibm/k_sin.c \
+	math/fdlibm/k_standard.c \
+	math/fdlibm/k_tan.c \
+	math/fdlibm/s_asinh.c \
+	math/fdlibm/s_atan.c \
+	math/fdlibm/s_cbrt.c \
+	math/fdlibm/s_ceil.c \
+	math/fdlibm/s_copysign.c \
+	math/fdlibm/s_cos.c \
+	math/fdlibm/s_erf.c \
+	math/fdlibm/s_expm1.c \
+	math/fdlibm/s_fabs.c \
+	math/fdlibm/s_finite.c \
+	math/fdlibm/s_floor.c \
+	math/fdlibm/s_frexp.c \
+	math/fdlibm/s_ilogb.c \
+	math/fdlibm/s_isnan.c \
+	math/fdlibm/s_ldexp.c \
+	math/fdlibm/s_lib_version.c \
+	math/fdlibm/s_log1p.c \
+	math/fdlibm/s_logb.c \
+	math/fdlibm/s_matherr.c \
+	math/fdlibm/s_modf.c \
+	math/fdlibm/s_nextafter.c \
+	math/fdlibm/s_rint.c \
+	math/fdlibm/s_scalbn.c \
+	math/fdlibm/s_signgam.c \
+	math/fdlibm/s_significand.c \
+	math/fdlibm/s_sin.c \
+	math/fdlibm/s_tan.c \
+	math/fdlibm/s_tanh.c \
+	math/fdlibm/w_acos.c \
+	math/fdlibm/w_acosh.c \
+	math/fdlibm/w_asin.c \
+	math/fdlibm/w_atan2.c \
+	math/fdlibm/w_atanh.c \
+	math/fdlibm/w_cosh.c \
+	math/fdlibm/w_exp.c \
+	math/fdlibm/w_fmod.c \
+	math/fdlibm/w_gamma.c \
+	math/fdlibm/w_gamma_r.c \
+	math/fdlibm/w_hypot.c \
+	math/fdlibm/w_j0.c \
+	math/fdlibm/w_j1.c \
+	math/fdlibm/w_jn.c \
+	math/fdlibm/w_lgamma.c \
+	math/fdlibm/w_lgamma_r.c \
+	math/fdlibm/w_log.c \
+	math/fdlibm/w_log10.c \
+	math/fdlibm/w_pow.c \
+	math/fdlibm/w_remainder.c \
+	math/fdlibm/w_scalb.c \
+	math/fdlibm/w_sinh.c \
+	math/fdlibm/w_sqrt.c \
+	\
+	resman/shared.cpp \
+	\
+	sockets/fd_set.cpp \
+	sockets/sockets.cpp \
+	sockets/socketstream.cpp \
+	\
+	support/bits.c \
+	support/debug.cpp \
+	support/hash.cpp \
+	support/log.cpp \
+	support/profile.cpp \
+	\
+	system/system.c \
+	\
+	tut/quickcheck/context.cpp
+
+include_HEADERS = resman/shared_ptr.hpp
+
+gvltest_SOURCES = \
+	gvl_test/containers/list.cpp \
+	gvl_test/containers/pairing_heap.cpp \
+	gvl_test/containers/treap.cpp \
+	gvl_test/io/bitstream.cpp \
+	gvl_test/io/stream.cpp \
+	gvl_test/support/bits.cpp \
+	gvl_test/math/deterministic_float.cpp \
+	gvl_test/test.cpp

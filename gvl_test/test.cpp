@@ -1,5 +1,5 @@
-#include <gvl/tut/tut.hpp>
-#include <gvl/tut/tut_reporter.hpp>
+#include <tut/tut.hpp>
+#include <tut/tut_reporter.hpp>
 
 #include <gvl/support/profile.hpp>
 #include <iostream>

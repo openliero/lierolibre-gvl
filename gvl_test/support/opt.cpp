@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/support/opt.hpp>
 #include <gvl/support/profile.hpp>

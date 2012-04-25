@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/list.hpp>
 #include <gvl/math/cmwc.hpp>
@@ -8,9 +8,9 @@
 #include <memory>
 #include <algorithm>
 
-#include <gvl/tut/quickcheck/context.hpp>
-#include <gvl/tut/quickcheck/generator.hpp>
-#include <gvl/tut/quickcheck/property.hpp>
+#include <tut/quickcheck/context.hpp>
+#include <tut/quickcheck/generator.hpp>
+#include <tut/quickcheck/property.hpp>
 
 namespace tut
 {

@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/containers/accurate_rectangle_packing.hpp>
 #include <gvl/math/cmwc.hpp>

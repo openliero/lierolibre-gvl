@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/dense_int_set.hpp>
 

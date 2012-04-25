@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/containers/compact_interval_set.hpp>
 #include <gvl/math/cmwc.hpp>

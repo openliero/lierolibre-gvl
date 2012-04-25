@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/math/cmwc.hpp>
 #include <gvl/math/normal_distribution.hpp>

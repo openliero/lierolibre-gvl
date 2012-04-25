@@ -1,8 +1,8 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <set>
 #include <gvl/containers/hash_set.hpp>
-#include <gvl/tut/quickcheck/quickcheck.hpp>
+#include <tut/quickcheck/quickcheck.hpp>
 #include <gvl/containers/range.hpp>
 #include <gvl/support/foreach.hpp>
 

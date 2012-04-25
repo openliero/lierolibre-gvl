@@ -1,7 +1,7 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/containers/string.hpp>
-#include <gvl/tut/quickcheck/quickcheck.hpp>
+#include <tut/quickcheck/quickcheck.hpp>
 #include <gvl/support/algorithm.hpp>
 #include <gvl/support/foreach.hpp>
 

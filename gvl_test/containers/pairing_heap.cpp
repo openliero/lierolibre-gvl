@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/containers/pairing_heap.hpp>
 #include <gvl/math/tt800.hpp>
@@ -11,9 +11,9 @@
 #include <set>
 #include <queue>
 
-#include <gvl/tut/quickcheck/context.hpp>
-#include <gvl/tut/quickcheck/generator.hpp>
-#include <gvl/tut/quickcheck/property.hpp>
+#include <tut/quickcheck/context.hpp>
+#include <tut/quickcheck/generator.hpp>
+#include <tut/quickcheck/property.hpp>
 
 #include <gvl/support/log.hpp>
 #include <gvl/support/profile.hpp>

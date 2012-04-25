@@ -1,4 +1,4 @@
-#include <gvl/tut/tut.hpp>
+#include <tut/tut.hpp>
 
 #include <gvl/containers/treap2.hpp>
 #include <gvl/math/tt800.hpp>

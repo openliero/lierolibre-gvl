@@ -76,14 +76,14 @@ GVLTEST_SUITE(gvl, deque)
 GVLTEST(gvl, deque, push_pop)
 {
 	typedef gvl::deque<track_obj> l_t;
-	
+
 	l_t l;
-	
+
 	gvl::tt800 r(1234);
-	
+
 	int const iter = 1000;
 	int const limit = iter;
-	
+
 	for(int i = 0; i < iter; ++i)
 	{
 		l.push_back(track_obj(i));
@@ -99,7 +99,7 @@ GVLTEST(gvl, deque, push_pop)
 	GVLTEST_ASSERT("empty after pops", l.empty());
 
 	GVLTEST_ASSERT("all track_obj were destroyed", track_obj_live.empty());
-	
+
 #if MOVABLE
 	GVLTEST_ASSERT("no copied were made in C++0x", track_obj_copies == 0);
 #endif

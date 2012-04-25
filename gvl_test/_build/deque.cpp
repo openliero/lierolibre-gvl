@@ -76,7 +76,7 @@ private:
 
 struct deque_data
 {
-	
+
 };
 
 typedef test_group<deque_data> factory;
@@ -98,14 +98,14 @@ template<>
 void object::test<1>()
 {
 	typedef gvl::deque<track_obj> l_t;
-	
+
 	l_t l;
-	
+
 	gvl::tt800 r(1234);
-	
+
 	int const iter = 1000;
 	int const limit = iter;
-	
+
 	for(int i = 0; i < iter; ++i)
 	{
 		l.push_back(track_obj(i));
@@ -121,7 +121,7 @@ void object::test<1>()
 	ensure(l.empty());
 
 	ensure("all track_obj were destroyed", track_obj_live.empty());
-	
+
 #if MOVABLE
 	ensure("no copied were made in C++0x", track_obj_copies == 0);
 #endif

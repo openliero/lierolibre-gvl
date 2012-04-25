@@ -7,7 +7,7 @@
 namespace gvl
 {
 
-template<typename T
+template<typename T>
 struct int_set
 {
 	typedef std::size_t size_type;

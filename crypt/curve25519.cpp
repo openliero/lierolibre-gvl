@@ -315,6 +315,7 @@ uint8_t* egcd32(uint8_t* x, uint8_t* y, uint8_t* a, uint8_t* b)
 	        return y;
         mula32(x, y, temp, qn, -1);
     }
+    delete[] temp;
 }
 
 
@@ -687,6 +688,10 @@ void core(uint8_t* Px, uint8_t* s, uint8_t const* k, uint8_t const* Gx)
 	    cpy32(s, egcd32(temp2, temp3, s, temp1));
 	    if ((s[31] & 0x80)!=0)
 		    mula_small(s, s, 0, ORDER, 32, 1);
+
+            delete[] temp1;
+            delete[] temp2;
+            delete[] temp3;
     }
 }
 

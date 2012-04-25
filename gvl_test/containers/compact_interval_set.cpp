@@ -16,7 +16,7 @@ namespace tut
 
 struct cis_data
 {
-	
+
 };
 
 typedef test_group<cis_data> factory;
@@ -37,7 +37,7 @@ template<>
 void object::test<1>()
 {
 	gvl::compact_interval_set<int> s;
-	
+
 	s.insert_no_overlap(0, 100);   // [0, 100)
 	s.insert_no_overlap(150, 200); // [0, 100) [150, 200)
 	s.insert_no_overlap(100, 150); // [0, 200)

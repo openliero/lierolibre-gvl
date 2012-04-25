@@ -10,7 +10,7 @@ struct gvl_shared
 	{
 
 	}
-	
+
 	void add_ref()
 	{
 #if GVL_THREADSAFE
@@ -21,7 +21,7 @@ struct gvl_shared
 		++_ref_count;
 #endif
 	}
-	
+
 	void release()
 	{
 #if GVL_THREADSAFE
@@ -41,14 +41,14 @@ struct gvl_shared
 		}
 #endif
 	}
-	
+
 	int ref_count() const
 	{ return _ref_count; }
 
 	virtual ~shared()
 	{
 	}
-	
+
 	int _ref_count;
 	gvl_weak_ptr* first;
 };

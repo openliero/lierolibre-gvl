@@ -7,7 +7,7 @@ namespace tut
 
 struct X_data
 {
-	
+
 };
 
 typedef test_group<X_data> factory;
@@ -28,7 +28,7 @@ template<>
 template<>
 void object::test<1>()
 {
-	
+
 }
 
 

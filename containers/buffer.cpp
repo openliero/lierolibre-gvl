@@ -29,7 +29,7 @@ buffer::buffer(void* p, std::size_t s, buffer::redirect_tag)
 , mem(base)
 , redirected(true)
 {
-	
+
 }
 
 buffer::~buffer()
@@ -50,12 +50,12 @@ retry:
 			base = mem;
 			goto retry;
 		}
-		
+
 		std::size_t min_cap = new_size;
 		std::size_t new_cap = size() * 2;
 		if(new_cap < min_cap)
 			new_cap = min_cap;
-			
+
 		if(redirected)
 		{
 			uint8_t* old_base = base;

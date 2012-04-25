@@ -58,9 +58,9 @@ struct alignment_of<T&>
 // Use: union foo { max_align bar; ... }
 union max_align
 {
-	char dummy0; short dummy1; int dummy2; long dummy3; 
-	float dummy4; double dummy5; long double dummy6; 
-	void* dummy7; 
+	char dummy0; short dummy1; int dummy2; long dummy3;
+	float dummy4; double dummy5; long double dummy6;
+	void* dummy7;
 	detail::function_ptr dummy8;
 	detail::member_ptr dummy9;
 	detail::member_function_ptr dummy10;

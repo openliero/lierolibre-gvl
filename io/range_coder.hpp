@@ -18,7 +18,7 @@ namespace gvl
 struct range_coder_defs
 {
 	typedef uint32_t range_value;
-		
+
 	static range_value const ValueBits = 32;
 	static range_value const TopValue = (1u << (ValueBits - 1));
 	static range_value const MaxFreq = (1u << (ValueBits - 13));
@@ -44,9 +44,9 @@ struct range_coder : range_coder_defs
 	, entropy(0.0), buffer(header), first(true)
 	, debug(false)
 	{
-		
+
 	}
-	
+
 	DerivedT& derived()
 	{ return *static_cast<DerivedT*>(this); }
 
@@ -94,7 +94,7 @@ struct range_coder : range_coder_defs
 		uint32_t r = range / max;
 		uint32_t tmp = r * sym_low;
 		low += tmp;
-	
+
 		if (sym_low + sym_range < max)
 			range = r * sym_range;
 		else
@@ -118,7 +118,7 @@ struct range_coder : range_coder_defs
 		uint32_t r = range >> shift;
 		uint32_t tmp = r * sym_low;
 		low += tmp;
-	
+
 		if ((sym_low + sym_range) >> shift)
 			range -= tmp;
 		else
@@ -137,7 +137,7 @@ struct range_coder : range_coder_defs
 		assert(value == 0 || value == 1);
 
 		uint32_t r = range >> 1;
-		
+
 		if(value > 0)
 		{
 			range -= r;
@@ -156,7 +156,7 @@ struct range_coder : range_coder_defs
 
 		range_value r = range >> shift;
 		range_value tmp = r * range0;
-		
+
 		if(value > 0)
 		{
 			range -= tmp;
@@ -167,7 +167,7 @@ struct range_coder : range_coder_defs
 
 		renormalize();
 	}
-	
+
 	void encode_uint(unsigned int range_value)
 	{
 		unsigned int l = range_value & 0xFFFF;
@@ -179,7 +179,7 @@ struct range_coder : range_coder_defs
 	void encode_uint(unsigned int range_value, unsigned int max)
 	{
 		assert(range_value < max);
-		
+
 		if(max >= (1 << 16))
 		{
 			// TODO: Fix decoding of uint as well
@@ -241,10 +241,10 @@ template<typename DerivedT>
 struct bit_range_coder_impl
 {
 	typedef uint32_t range_value;
-		
+
 	static range_value const ValueBits = 32;
 	static range_value const TopValue = (1u << (ValueBits - 1));
-	
+
 	bit_range_coder_impl()
 	: low(0), range(TopValue)
 	, byte_count(0)
@@ -252,7 +252,7 @@ struct bit_range_coder_impl
 	, entropy(0.0)
 #endif
 	{
-		
+
 	}
 
 	void renormalize()
@@ -270,9 +270,9 @@ struct bit_range_coder_impl
 		sassert(value == 0 || value == 1);
 
 		range_value middle = low + ((high - low) >> 2);
-		
+
 		sassert(middle >= low && middle < high);
-		
+
 		if(value)
 			high = middle;
 		else
@@ -290,9 +290,9 @@ struct bit_range_coder_impl
 		sassert(value == 0 || value == 1);
 
 		range_value middle = low + muldiv32(high - low, prob1);
-		
+
 		sassert(middle >= low && middle < high);
-		
+
 		if(value)
 			high = middle;
 		else
@@ -300,7 +300,7 @@ struct bit_range_coder_impl
 
 		renormalize();
 	}
-	
+
 	double get_entropy()
 	{
 		return entropy / log(256);
@@ -309,7 +309,7 @@ struct bit_range_coder_impl
 	void finish()
 	{
 		renormalize();
-		
+
 		put_byte(high >> 24);
 	}
 
@@ -330,10 +330,10 @@ template<typename DerivedT>
 struct bit_range_decoder_impl
 {
 	typedef uint32_t range_value;
-		
+
 	static range_value const ValueBits = 32;
 	static range_value const TopValue = (1u << (ValueBits - 1));
-	
+
 	bit_range_decoder_impl()
 	: low(0), range(TopValue)
 	, byte_count(0)
@@ -341,7 +341,7 @@ struct bit_range_decoder_impl
 	, entropy(0.0)
 #endif
 	{
-		
+
 	}
 
 	void renormalize()
@@ -354,11 +354,11 @@ struct bit_range_decoder_impl
 			x = (x << 8) + derived().get_byte();
 		}
 	}
-	
+
 	void start()
 	{
 		x = 0;
-		
+
 		for(int i = 0; i < 4; ++i)
 		{
 			x = (x << 8) + derived().get_byte();
@@ -370,11 +370,11 @@ struct bit_range_decoder_impl
 		sassert(value == 0 || value == 1);
 
 		range_value middle = low + ((high - low) >> 2);
-		
+
 		sassert(middle >= low && middle < high);
-		
+
 		int value = 0;
-		
+
 		if(x <= middle)
 		{
 			high = middle;
@@ -384,7 +384,7 @@ struct bit_range_decoder_impl
 			low = middle + 1;
 
 		renormalize();
-		
+
 		return value;
 	}
 
@@ -398,11 +398,11 @@ struct bit_range_decoder_impl
 		sassert(value == 0 || value == 1);
 
 		range_value middle = low + scale(high - low, prob1);
-		
+
 		sassert(middle >= low && middle < high);
-		
+
 		int value = 0;
-		
+
 		if(x <= middle)
 		{
 			if(x + uncertainty > middle)
@@ -420,10 +420,10 @@ struct bit_range_decoder_impl
 		}
 
 		renormalize();
-		
+
 		return value;
 	}
-	
+
 	double get_entropy()
 	{
 		return entropy / log(256);
@@ -431,7 +431,7 @@ struct bit_range_decoder_impl
 
 	void finish()
 	{
-		
+
 	}
 
 	uint8_t derived().get_byte()
@@ -462,7 +462,7 @@ struct range_decoder : range_coder_defs
 		low = buffer >> (8 - ExtraBits);
 		range = 1 << ExtraBits;
 	}
-	
+
 	DerivedT& derived()
 	{ return *static_cast<DerivedT*>(this); }
 
@@ -500,7 +500,7 @@ struct range_decoder : range_coder_defs
 	int decode_raw_bit()
 	{
 		renormalize();
-		
+
 		range_value r = range >> 1;
 
 		range_value sublow = low - r;
@@ -515,7 +515,7 @@ struct range_decoder : range_coder_defs
 			range = subrange;
 			low = sublow;
 		}
-		
+
 		return v;
 /*
 		if(low < r)
@@ -530,7 +530,7 @@ struct range_decoder : range_coder_defs
 			return 1;
 		}*/
 	}
-	
+
 	// TODO: NOT WORKING, even though every time I derive this I get the same result.
 	int decode_bit(int range0, int shift)
 	{
@@ -552,7 +552,7 @@ struct range_decoder : range_coder_defs
 			return 1;
 		}
 	}
-	
+
 	unsigned int decode_marker()
 	{
 		unsigned int t = decode_shift(8, true);
@@ -588,15 +588,15 @@ struct range_decoder : range_coder_defs
 
 	void finish()
 	{
-		
+
 	}
 
 	// Model tools
-	
+
 	std::size_t find_sym_by_cfreq(unsigned int c, unsigned int* cfreq, std::size_t len)
 	{
 		assert(c >= 0);
-		
+
 		std::size_t i = 1;
 		for(; cfreq[i] > c; ++i)
 			;
@@ -629,15 +629,15 @@ struct range_decoder : range_coder_defs
 
 		return last - 1;*/
 	}
-	
+
 	std::size_t decode_by_cfreq(unsigned int* freq, unsigned int* cfreq, std::size_t len)
 	{
 		if(cfreq[0] == 0)
 			return '?';
-			
+
 		unsigned int v = decode(cfreq[0]);
 		std::size_t sym = find_sym_by_cfreq(v, cfreq, len);
-		
+
 		sassert(freq[sym] > 0);
 		range_decoded(cfreq[sym + 1], freq[sym], cfreq[0]);
 		return sym;

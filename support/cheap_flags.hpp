@@ -15,7 +15,7 @@ struct cheap_flags_item
 	: last_iter_set(-1)
 	{
 	}
-	
+
 	int last_iter_set;
 };
 
@@ -26,22 +26,22 @@ struct cheap_flags
 	: iter_count(0)
 	{
 	}
-	
+
 	bool operator[](cheap_flags_item<Tag> const& item)
 	{
 		return item.last_iter_set >= iter_count;
 	}
-	
+
 	void set(cheap_flags_item<Tag>& item)
 	{
 		item.last_iter_set = iter_count;
 	}
-	
+
 	void reset(cheap_flags_item<Tag>& item)
 	{
 		item.last_iter_set = -1;
 	}
-	
+
 	void clear()
 	{
 		passert((iter_count + 1) > iter_count, "Clear limit reached");

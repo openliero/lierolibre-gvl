@@ -24,13 +24,13 @@ struct gvl_list_node : gvl_list_node
 		next = this;
 		prev = this;
 	}
-	
-	
+
+
 	void unlink()
 	{
 		gvl_list_unlink(this);
 	}
-	
+
 	// NOTE: The behaviour of relink is only defined if the
 	// nodes that were immediately left and right of this node when
 	// it was unlinked are now consecutive (and in the same order).
@@ -43,7 +43,7 @@ struct gvl_list_node : gvl_list_node
 		prev->next = this;
 		next->prev = this;
 	}
-	
+
 	template<typename ListT>
 	void move_to(ListT& dest);
 };
@@ -93,28 +93,28 @@ struct list_node : gvl_list_node
 	{
 		return static_cast<list_node<T, Tag>*>(p);
 	}
-	
+
 	void relink(T* p)
 	{
 		gvl_list_link_before(this, upcast(p));
 	}
-	
+
 	void relink_before(T* p)
 	{
 		gvl_list_link_before(this, upcast(p));
 	}
-	
+
 	void relink_after(T* p)
 	{
 		gvl_list_link_after(this, upcast(p));
 	}
-	
+
 	template<typename ListT>
 	void move_to(ListT& dest)
 	{
 		gvl::move_to(this, dest);
 	}
-	
+
 	/*
 	T* next()
 	{
@@ -150,7 +150,7 @@ struct list_common
 	gvl_list_node* unlink(gvl_list_node* i)
 	{
 		gvl_list_node* n = i->next;
-		
+
 		gvl::unlink(i);
 
 		return n;
@@ -174,14 +174,14 @@ struct list_common
 		gvl_list_node* a_last = sentinel_.prev;
 		gvl_list_node* b_first = b.sentinel_.next;
 		gvl_list_node* b_last = b.sentinel_.prev;
-		
+
 		// Order is important
 		std::swap(a_first->prev, b_first->prev);
 		std::swap(a_last->next, b_last->next);
 		std::swap(sentinel_.next, b.sentinel_.next);
 		std::swap(sentinel_.prev, b.sentinel_.prev);
 	}
-	
+
 	bool empty() const
 	{
 		return sentinel_.next == &sentinel_;
@@ -194,7 +194,7 @@ struct list_common
 		sentinel_.next = &sentinel_;
 		sentinel_.prev = &sentinel_;
 	}
-	
+
 	void integrity_check();
 
 /*
@@ -204,10 +204,10 @@ struct list_common
 	gvl_list_node* sentinel() { return &sentinel_; }
 
 	//void sort(void* comparer, do_list_compare_func do_compare);
-	
+
 	gvl_list_node* first() const { return static_cast<gvl_list_node*>(sentinel_.next); }
 	gvl_list_node* last() const { return static_cast<gvl_list_node*>(sentinel_.prev); }
-	
+
 	gvl_list_node sentinel_;
 };
 
@@ -258,7 +258,7 @@ struct list : list_common, protected Deleter, protected Ownership
 		typedef T* pointer;
 		typedef T& reference;
 		typedef T value_type;
-    
+
 		iterator()
 		: ptr_(0)
 		{
@@ -268,7 +268,7 @@ struct list : list_common, protected Deleter, protected Ownership
 		: ptr_(ptr)
 		{
 		}
-		
+
 		iterator(T* ptr)
 		: ptr_(upcast(ptr))
 		{
@@ -295,12 +295,12 @@ struct list : list_common, protected Deleter, protected Ownership
 			ptr_ = ptr_->prev;
 			return *this;
 		}
-		
+
 		iterator next() const
 		{
 			return iterator(ptr_->next);
 		}
-		
+
 		iterator prev() const
 		{
 			return iterator(ptr_->prev);
@@ -315,7 +315,7 @@ struct list : list_common, protected Deleter, protected Ownership
 		{
 			return b.ptr_ != ptr_;
 		}
-		
+
 		operator T*()
 		{
 			return downcast(ptr_);
@@ -323,7 +323,7 @@ struct list : list_common, protected Deleter, protected Ownership
 
 		gvl_list_node* ptr_;
 	};
-	
+
 	struct reverse_iterator
 	{
 		typedef ptrdiff_t difference_type;
@@ -331,7 +331,7 @@ struct list : list_common, protected Deleter, protected Ownership
 		typedef T* pointer;
 		typedef T& reference;
 		typedef T value_type;
-    
+
 		reverse_iterator()
 		: ptr_(0)
 		{
@@ -341,7 +341,7 @@ struct list : list_common, protected Deleter, protected Ownership
 		: ptr_(ptr)
 		{
 		}
-		
+
 		reverse_iterator(T* ptr)
 		: ptr_(upcast(ptr))
 		{
@@ -368,12 +368,12 @@ struct list : list_common, protected Deleter, protected Ownership
 			ptr_ = ptr_->next;
 			return *this;
 		}
-		
+
 		reverse_iterator next() const
 		{
 			return reverse_iterator(ptr_->prev);
 		}
-		
+
 		reverse_iterator prev() const
 		{
 			return reverse_iterator(ptr_->next);
@@ -388,7 +388,7 @@ struct list : list_common, protected Deleter, protected Ownership
 		{
 			return b.ptr_ != ptr_;
 		}
-		
+
 		operator T*()
 		{
 			return downcast(ptr_);
@@ -396,13 +396,13 @@ struct list : list_common, protected Deleter, protected Ownership
 
 		gvl_list_node* ptr_;
 	};
-	
+
 	list(/*Deleter const& deleter = Deleter(), */Ownership const& ownership = Ownership())
 	: /*Deleter(deleter)
 	, */Ownership(ownership)
 	{
 	}
-	
+
 	/*
 	list(list const& b)
 	{
@@ -412,7 +412,7 @@ struct list : list_common, protected Deleter, protected Ownership
 			push_back(new T(*downcast(f)));
 		}
 	}*/
-	
+
 	~list()
 	{
 		clear();
@@ -423,25 +423,25 @@ struct list : list_common, protected Deleter, protected Ownership
 		sassert(!empty());
 		return downcast(sentinel_.next);
 	}
-	
+
 	T* last() const
 	{
 		sassert(!empty());
 		return downcast(sentinel_.prev);
 	}
-	
+
 	iterator push_back(T* el)
 	{
 		el = static_cast<T*>(Ownership::take(el));
 		return iterator(list_common::relink_back(upcast(el)));
 	}
-	
+
 	iterator push_front(T* el)
 	{
 		el = static_cast<T*>(Ownership::take(el));
 		return iterator(list_common::relink_front(upcast(el)));
 	}
-	
+
 	iterator relink_back(T* el)
 	{
 		return iterator(list_common::relink_back(upcast(el)));
@@ -456,12 +456,12 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		erase(iterator(list_common::first()));
 	}
-	
+
 	void unlink_back()
 	{
 		list_common::unlink(list_common::last());
 	}
-	
+
 	void unlink_front()
 	{
 		list_common::unlink(list_common::first());
@@ -474,7 +474,7 @@ struct list : list_common, protected Deleter, protected Ownership
 
 		return n;
 	}
-	
+
 	iterator erase(iterator b, iterator e)
 	{
 		iterator n;
@@ -497,7 +497,7 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		return iterator(&sentinel_);
 	}
-	
+
 	reverse_iterator rbegin()
 	{
 		return reverse_iterator(list_common::last());
@@ -517,12 +517,12 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		return *last();
 	}
-	
+
 	bool is_end(T* p)
 	{
 		return upcast(p) == &sentinel_;
 	}
-	
+
 	/*
 	size_t size()
 	{
@@ -533,7 +533,7 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		return iterator(list_common::unlink(upcast(i)));
 	}
-	
+
 	iterator relink(iterator b, T* el)
 	{
 		return iterator(
@@ -541,7 +541,7 @@ struct list : list_common, protected Deleter, protected Ownership
 				b.ptr_,
 				upcast(el)));
 	}
-	
+
 	reverse_iterator relink(reverse_iterator b, T* el)
 	{
 		return reverse_iterator(
@@ -549,24 +549,24 @@ struct list : list_common, protected Deleter, protected Ownership
 				b.ptr_,
 				upcast(el)));
 	}
-	
+
 	iterator insert(iterator b, T* el)
 	{
 		el = static_cast<T*>(Ownership::take(el));
 		return relink(b, el);
 	}
-	
+
 	reverse_iterator insert(reverse_iterator b, T* el)
 	{
 		el = static_cast<T*>(Ownership::take(el));
 		return relink(b, el);
 	}
-	
+
 	template<typename Compare>
 	iterator insert_sorted(T* el, Compare compare)
 	{
 		el = static_cast<T*>(Ownership::take(el));
-		
+
 		gvl_list_node* before = &sentinel_;
 		gvl_list_node* after = before->next;
 		while(after != &sentinel_ && compare(*downcast(after), *el))
@@ -574,10 +574,10 @@ struct list : list_common, protected Deleter, protected Ownership
 			before = after;
 			after = after->next;
 		}
-		
+
 		return iterator(list_common::relink(after, upcast(el)));
 	}
-	
+
 	void move_to(iterator i, list& dest)
 	{
 		list_common::unlink(i.ptr_);
@@ -595,33 +595,33 @@ struct list : list_common, protected Deleter, protected Ownership
 
 		list_common::unlink_all();
 	}
-		
+
 	void splice(list& b)
 	{
 		if(!b.empty())
 		{
 			b.sentinel_.next->prev = sentinel_.prev;
 			b.sentinel_.prev->next = &sentinel_;
-			
+
 			sentinel_.prev->next = b.sentinel_.next;
 			sentinel_.prev = b.sentinel_.prev;
-			
+
 			b.list_common::unlink_all();
 		}
 	}
-	
+
 	void split(iterator i, list& b)
 	{
 		if(i.ptr_ == &sentinel_)
 			return; // Nothing to do
-			
+
 		sassert(sentinel_.prev != &sentinel_);
 
 		gvl_list_node* new_last = i.ptr_->prev;
 		i.ptr_->prev = b.sentinel_.prev;
 		b.sentinel_.prev->next = i.ptr_;
 		b.sentinel_.prev = sentinel_.prev;
-		
+
 		sentinel_.prev = new_last;
 		new_last->next = &sentinel_;
 	}
@@ -632,7 +632,7 @@ struct list : list_common, protected Deleter, protected Ownership
 	{
 		list_common::sort(&op, do_list_compare<T, Op>);
 	}*/
-	
+
 	template<typename Op>
 	void merge(list& b, Op op)
 	{
@@ -642,35 +642,35 @@ struct list : list_common, protected Deleter, protected Ownership
 		stitch_up_();
 		b.unlink_all();
 	}
-	
+
 	template<typename Op>
 	void sort(Op op)
 	{
 		if(empty())
 			return;
-			
+
 		std::size_t const MaxBins = 25;
 		gvl_list_node* binlist[MaxBins] = {};
-		
+
 		forward_decycle_();
 		gvl_list_node* el = list_common::first();
-				
+
 		std::size_t max_bin = 0;
-		
+
 		while(el)
 		{
 			// Splice into temp and move el to the next element
 			gvl_list_node* temp = el;
 			el = el->next;
 			temp->next = 0;
-			
+
 			std::size_t bin = 0;
 			for(; bin < max_bin && binlist[bin]; ++bin)
 			{
 				temp = _merge(binlist[bin], temp, op);
 				binlist[bin] = 0;
 			}
-			
+
 			if(bin == MaxBins)
 			{
 				binlist[bin - 1] = _merge(binlist[bin - 1], temp, op);
@@ -682,18 +682,18 @@ struct list : list_common, protected Deleter, protected Ownership
 					++max_bin;
 			}
 		}
-		
+
 		for(std::size_t bin = 1; bin < max_bin; ++bin)
 		{
 			binlist[bin] = _merge(binlist[bin], binlist[bin - 1], op);
 		}
-		
+
 		sentinel_.next = binlist[max_bin - 1];
-		
+
 		stitch_up_();
 	}
-	
-	
+
+
 	/* Cross events are a too specific functionality
 	struct dummy_cross_event
 	{
@@ -702,14 +702,14 @@ struct list : list_common, protected Deleter, protected Ownership
 			// Do nothing
 		}
 	};*/
-	
+
 	template<typename Op/*, typename CrossEvent*/>
 	void insertion_sort(Op op/*, CrossEvent cross_event = dummy_cross_event()*/)
 	{
 		gvl_list_node* sent = &sentinel_;
 		gvl_list_node* lprev = sent;
 		gvl_list_node* cur = prev->next;
-		
+
 		while(cur != sent)
 		{
 			gvl_list_node* lnext = cur->next;
@@ -718,14 +718,14 @@ struct list : list_common, protected Deleter, protected Ownership
 			&& op(*curt, *downcast(prev)))
 			{
 				//cross_event(*downcast(prev), *downcast(cur));
-				
+
 				// Unlink
 				lprev->next = lnext;
 				lnext->prev = lprev;
-				
+
 				gvl_list_node* before = lprev->prev;
 				gvl_list_node* after = lprev;
-				
+
 				while(before != sent
 				&& op(*curt, *downcast(before)))
 				{
@@ -736,21 +736,21 @@ struct list : list_common, protected Deleter, protected Ownership
 
 				cur->next = after;
 				cur->prev = before;
-				
+
 				before->next = cur;
 				after->prev = cur;
-				
+
 				// prev stays the same here
 			}
 			else
 				lprev = cur; // No move, prev will be cur
-			
+
 			cur = next;
 		}
 	}
-	
+
 protected:
-	
+
 	template<typename Op>
 	gvl_list_node* _merge(gvl_list_node* first, gvl_list_node* second, Op& op)
 	{
@@ -758,12 +758,12 @@ protected:
 			return second;
 		else if(!second)
 			return first;
-			
+
 		gvl_list_node* a = first;
 		gvl_list_node* b = second;
 		gvl_list_node* ret;
 		gvl_list_node* prev;
-		
+
 		if(op(*downcast(b), *downcast(a)))
 		{
 			ret = b;
@@ -776,7 +776,7 @@ protected:
 			prev = a;
 			a = a->next;
 		}
-			
+
 		while(a && b)
 		{
 			if(op(*downcast(b), *downcast(a)))
@@ -792,21 +792,21 @@ protected:
 				a = a->next;
 			}
 		}
-		
+
 		// Check if there's left-overs in any of the lists
 		if(a)
 			prev->next = a;
 		else if(b)
 			prev->next = b;
-		
+
 		return ret;
 	}
-	
+
 	void forward_decycle_()
 	{
 		list_common::last()->next = 0; // Decycle chain
 	}
-	
+
 	void stitch_up_()
 	{
 		// Fix back pointers and stitch up
@@ -817,11 +817,11 @@ protected:
 			cur->prev = prev;
 			prev = cur;
 		}
-		
+
 		prev->next = &sentinel_;
 		sentinel_.prev = prev;
 	}
-	
+
 private:
 	// Non-copyable
 	list(list const& b);

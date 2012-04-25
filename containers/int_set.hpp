@@ -11,18 +11,18 @@ template<typename T>
 struct int_set
 {
 	typedef std::size_t size_type;
-	
+
 	typedef T* iterator;
-	
+
 	int_set(size_type max)
 	: n(0)
 	, dense(new T[max])
 	, sparse(new size_type[max])
 	, max(max)
 	{
-		
+
 	}
-	
+
 	bool contains(T v)
 	{
 		if(v >= sparse.size())
@@ -31,7 +31,7 @@ struct int_set
 			return true;
 		return false;
 	}
-	
+
 	void insert(T v)
 	{
 		if(contains(v))
@@ -42,24 +42,24 @@ struct int_set
 		sparse[v] = n;
 		++n;
 	}
-	
+
 	void remove(T v)
 	{
 		if(!contains(v))
 			return;
 		size_type dense_pos = sparse[v];
-		--n;		
+		--n;
 		T last = dense[n];
 		dense[dense_pos] = last;
 		sparse[last] = dense_pos;
 	}
-	
+
 	iterator begin()
 	{ return dense; }
-	
+
 	iterator end()
 	{ return dense + n; }
-	
+
 private:
 	size_t n;
 	T* dense;

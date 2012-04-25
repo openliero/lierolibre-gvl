@@ -24,7 +24,7 @@ struct malloc_allocator
 
 	pointer address(reference x) const
 	{ return &x; }
-	
+
 	const_pointer address(const_reference x) const
 	{ return &x; }
 
@@ -42,7 +42,7 @@ struct malloc_allocator
 	}
 
 	size_type max_size() const
-	{ 
+	{
 		return static_cast<size_type>(-1) / sizeof(value_type);
 	}
 
@@ -50,7 +50,7 @@ struct malloc_allocator
 	{
 		new(p) value_type(x);
 	}
-	
+
 	void destroy(pointer p) { p->~value_type(); }
 private:
 	void operator=(malloc_allocator const&);

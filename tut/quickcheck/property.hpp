@@ -28,14 +28,14 @@ struct property
 	{
 		return ctx.generate_any<T>();
 	}
-	
+
 	virtual chk_result do_check(context&) = 0;
-		
+
 	bool run(context& ctx, int max_generated, int max_tested)
 	{
 		int tests_ran = 0;
         int generated = 0;
-        
+
         context::current = &ctx;
 
 		for(generated = 0; generated < max_generated; )
@@ -43,9 +43,9 @@ struct property
             ++generated;
 
 			ctx.reset_assert_fails();
-			
+
             chk_result res = do_check(ctx);
-            
+
             if(res != chk_not_applicable)
             {
 				++tests_ran;
@@ -54,18 +54,18 @@ struct property
 					gvl::cout() << "Property failed on test " << tests_ran << gvl::endl;
 					return false;
 				}
-				
+
 				if(res == chk_ok_reuse)
 				{
 				}
-				
+
 				if(tests_ran >= max_tested)
 					break;
 			}
         }
-        
+
         context::current = 0;
-        
+
         return true;
 	}
 };
@@ -111,7 +111,7 @@ struct name : gvl::qc::property<T_> { \
 	typedef gvl::shared_ptr_any<T_> ptr_t; \
 	virtual gvl::qc::chk_result do_check(gvl::qc::context& ctx) \
 	{ return check(ctx); }
-	
+
 #define QC_CUR_CTX (*gvl::qc::context::current)
 
 #if 0

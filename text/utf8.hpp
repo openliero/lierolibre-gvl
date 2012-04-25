@@ -24,7 +24,7 @@ inline int unsafe_char_length(uint8_t start)
 	// nibble 0xc-0xd -> 2
 	// nibble 0xe -> 3
 	// nibble 0xf -> 4
-	
+
 	return ((0xe5550000 >> high_nibble_2x) & 3) + 1;
 }
 
@@ -38,7 +38,7 @@ inline uint32_t unsafe_decode(Range& range)
 {
 	uint32_t A = range.front();
 	range.pop_front();
-	
+
 	if(A < 0x80)
 	{
 		return A; // ASCII
@@ -79,7 +79,7 @@ inline uint32_t unsafe_decode(Range& range)
 	}
 	else
 		passert(false, "Invalid sequence");
-		
+
 	return '?';
 }
 
@@ -96,9 +96,9 @@ uint32_t decode(Range& range, uint32_t illegal_replacement = invalid_codepoint)
 {
 	uint32_t A = range.front();
 	range.pop_front();
-	
+
 	Range invalid_range = range; // Invalid characters consume one byte
-	
+
 	if(A < 0x80)
 	{
 		return A;
@@ -155,7 +155,7 @@ uint32_t decode(Range& range, uint32_t illegal_replacement = invalid_codepoint)
 			goto invalid; // Overlong form or illegal
 		return v;
 	}
-	
+
 invalid:
 	range = invalid_range;
 	return invalid_codepoint;
@@ -188,7 +188,7 @@ void encode(Range& range, uint32_t cp)
 
 void normalize(std::string& str)
 {
-	
+
 }
 
 } // namespace utf8

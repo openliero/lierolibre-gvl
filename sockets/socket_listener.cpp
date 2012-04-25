@@ -27,17 +27,17 @@ socket_listener::~socket_listener()
 bool socket_listener::listen(int port)
 {
 	sock.close();
-		
+
 	socket s;
 	s = tcp_socket();
 	if(!s.is_valid())
 		return false;
 	s.set_nonblocking();
-	
+
 	s.bind(port);
-	
+
 	s.listen();
-		
+
 	sock = s;
 	return true;
 }
@@ -46,15 +46,15 @@ gvl::shared_ptr<gvl::socketstream> socket_listener::accept()
 {
 	if(!sock.is_valid())
 		return gvl::shared_ptr<gvl::socketstream>();
-		
+
 	while(true)
 	{
 		internet_addr addr;
 		socket news = sock.accept(addr);
-		
+
 		if(news.is_valid())
 			return gvl::shared_ptr<gvl::socketstream>(new socketstream(news));
-			
+
 		/*
 		if(sock_error() != sockerr_would_block) // Error
 		{
@@ -62,7 +62,7 @@ gvl::shared_ptr<gvl::socketstream> socket_listener::accept()
 			sock.close();
 			return 0;
 		}*/
-				
+
 		return gvl::shared_ptr<gvl::socketstream>();
 	}
 }

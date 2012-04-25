@@ -18,7 +18,7 @@ generic_hash_set<T, KeyT, Hash, Compare>
 
 Let t : generic_hash_set<T, KeyT, Hash, Compare>
     a, b : T
-    
+
 Requirements:
 
 Hash is a function of type (KeyT -> integer in 0..MaxInt).
@@ -41,11 +41,11 @@ a.is_filled() => !a.is_empty()
 a.assign_value(b) assigns the value part of 'b' to 'a' (if any). A precondition
 	is that Compare(a.key(), b.key()) == true, so the function can assign
 	the key part as well without breaking the semantics.
-	
+
 a.make_empty():
 	Precond:   a.is_filled() && !a.is_empty()
 	Postcond: !a.is_filled() &&  a.is_empty()
-	
+
 a.make_deleted():
 	Precond:   a.is_filled() && !a.is_empty()
 	Postcond: !a.is_filled() && !a.is_empty()
@@ -87,9 +87,9 @@ template<typename T, typename KeyT, typename ValueT, typename Hash = hash_functo
 struct generic_hash_set : Hash, Compare
 {
 	typedef Compare compare_type;
-	
+
 	// NOTE: Compare can't be the same type as Hash. This is a (minor) semantics issue.
-	
+
 	//typedef T index_type;
 
 	struct iterator
@@ -99,53 +99,53 @@ struct generic_hash_set : Hash, Compare
 		typedef ValueT* pointer;
 		typedef ValueT& reference;
 		typedef ValueT value_type;
-		
+
 		struct found_tag {};
-		
+
 		iterator(T* p, T* end)
 		: p(p), end(end)
 		{
 			find();
 		}
-		
+
 		iterator(T* p, T* end, found_tag)
 		: p(p), end(end)
 		{
 			sassert(p == end || p->is_filled());
 		}
-		
+
 		ValueT& operator*() const
 		{
 			return p->value();
 		}
-		
+
 		ValueT* operator->()
 		{
 			return &p->value();
 		}
-		
+
 		KeyT& key() const
 		{
 			return p->key();
 		}
-		
+
 		iterator& operator++()
 		{
 			++p;
 			find();
 			return *this;
 		}
-		
+
 		bool operator==(iterator b) const
 		{
 			return p == b.p && end == b.end;
 		}
-		
+
 		bool operator!=(iterator b) const
 		{
 			return !operator==(b);
 		}
-		
+
 	private:
 		void find()
 		{
@@ -154,7 +154,7 @@ struct generic_hash_set : Hash, Compare
 				++p;
 			}
 		}
-		
+
 		T* p;
 		T* end;
 	};
@@ -171,12 +171,12 @@ struct generic_hash_set : Hash, Compare
 	, shload(0.45) // 2*lload < shload < uload
 	{
 	}
-	
+
 	~generic_hash_set()
 	{
 		clear();
 	}
-	
+
 	void clear()
 	{
 		for(std::size_t i = 0; i < tsize; ++i)
@@ -188,29 +188,29 @@ struct generic_hash_set : Hash, Compare
 		}
 		elems = 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	T* lookup(SpecKeyT const& k)
 	{
 		std::size_t h = Hash::operator()(k);
-		
+
 		int step = 1;
 		do
 		{
 			T& slot = t[h % tsize];
-			
+
 			if(slot.is_empty())
 				return 0;
 			if(slot.is_filled() && Compare::operator()(slot.key(), k))
 				return &slot;
-			
+
 			h += step; step += 2;
 		}
 		while(step < 1024);
-		
+
 		return 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	iterator find(SpecKeyT const& k)
 	{
@@ -221,16 +221,16 @@ struct generic_hash_set : Hash, Compare
 		else
 			return iterator(end, end, iterator::found_tag());
 	}
-	
+
 	bool try_insert(T const& v)
 	{
 		std::size_t h = Hash::operator()(v.key());
-		
+
 		std::size_t step = 1;
 		do
 		{
 			T& slot = t[h % tsize];
-			
+
 			if(!slot.is_filled())
 			{
 				if(!slot.is_empty())
@@ -244,14 +244,14 @@ struct generic_hash_set : Hash, Compare
 			h += step; step += 2;
 		}
 		while(step < 1024);
-		
+
 		return false;
 	}
-	
+
 	void insert(T const& v)
 	{
 		maybe_enlarge();
-		
+
 		T* idx = lookup(v.key());
 		if(idx)
 			idx->assign_value(v);
@@ -261,12 +261,12 @@ struct generic_hash_set : Hash, Compare
 				enlarge();
 		}
 	}
-		
+
 	template<typename SpecKeyT>
 	void remove(SpecKeyT const& k)
 	{
 		T* idx = lookup(k);
-		
+
 		if(idx)
 		{
 			sassert(idx->is_filled());
@@ -277,19 +277,19 @@ struct generic_hash_set : Hash, Compare
 			maybe_shrink();
 		}
 	}
-	
+
 	void erase(iterator i)
 	{
 		passert(
 			i.p >= &t[0]
 			&& i.p < &t[0] + tsize
 			&& i.p->is_filled(), "Invalid iterator");
-			
+
 		i.p->make_deleted();
 		--elems;
 		++deleted;
 	}
-	
+
 	template<typename Pred>
 	void erase_if(Pred pred = Pred())
 	{
@@ -303,27 +303,27 @@ struct generic_hash_set : Hash, Compare
 				++deleted;
 			}
 		}
-		
+
 		maybe_shrink();
 	}
-	
+
 	std::size_t size() const
 	{
 		return elems;
 	}
-	
+
 	iterator begin()
 	{
 		T* p = &t[0];
 		return iterator(p, p + tsize);
 	}
-	
+
 	iterator end()
 	{
 		T* p = &t[0];
 		return iterator(p + tsize, p + tsize);
 	}
-	
+
 protected:
 	void rehash(std::vector<T>& e)
 	{
@@ -338,14 +338,14 @@ try_insert:
 				// We need to make the table larger
 
 				tsize = next_prime(tsize + 1);
-				
+
 				t.assign(tsize, T());
 
 				goto try_insert;
 			}
 		}
 	}
-	
+
 	void maybe_enlarge()
 	{
 		if(elems >= std::size_t(tsize * uload))
@@ -353,7 +353,7 @@ try_insert:
 			enlarge();
 		}
 	}
-	
+
 	void maybe_shrink()
 	{
 		if(elems <= std::size_t(tsize * lload)
@@ -362,38 +362,38 @@ try_insert:
 			shrink();
 		}
 	}
-	
+
 	void enlarge()
 	{
 		tsize = next_prime(tsize + 1);
-		
+
 		std::vector<T> temp(tsize);
-		
+
 		t.swap(temp);
 
 		// temp is now the old vector, reinsert all the old elements
-		
+
 		rehash(temp);
 	}
-	
+
 	void shrink()
 	{
 		tsize = next_prime(std::size_t(elems / shload));
-		
+
 		std::vector<T> temp(tsize);
-		
+
 		t.swap(temp);
 
 		// temp is now the old vector, reinsert all the old elements
-		
+
 		rehash(temp);
 	}
-	
+
 	std::size_t tsize;
 	std::vector<T> t;
 	std::size_t elems;
 	std::size_t deleted; // NOTE: Do we need to keep track of this?
-	
+
 	double uload; // Load limit where size is increased
 	double lload; // Load limit where size is decreased
 	double shload; // Approximate load after shrinking

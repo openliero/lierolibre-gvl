@@ -17,21 +17,21 @@ public:
 	, next_sibling(0)
 	{
 	}
-	
+
 	this_t* prev;
 	this_t* first_child;
 	this_t* next_sibling;
-	
+
 	bool is_first_child()
 	{
 		return prev->first_child == this;
 	}
-	
+
 	bool is_root()
 	{
 		return !prev;
 	}
-	
+
 	void unlink()
 	{
 		if(prev)
@@ -39,7 +39,7 @@ public:
 		if(next_sibling)
 			next_sibling->prev = prev;
 	}
-	
+
 	void unlink_nonroot()
 	{
 		sassert(prev);
@@ -47,7 +47,7 @@ public:
 		if(next_sibling)
 			next_sibling->prev = prev;
 	}
-	
+
 	void insert_before(this_t* n)
 	{
 		next_sibling = n;
@@ -56,7 +56,7 @@ public:
 			n->update_prev(this);
 		n->prev = this;
 	}
-	
+
 	void insert_before_nonroot(this_t* n)
 	{
 		next_sibling = n;
@@ -65,7 +65,7 @@ public:
 		n->update_prev(this);
 		n->prev = this;
 	}
-	
+
 	void insert_after(this_t* n)
 	{
 		next_sibling = n->next_sibling;
@@ -73,18 +73,18 @@ public:
 		n->next_sibling->prev = this;
 		n->next_sibling = this;
 	}
-	
+
 	void insert_as_child(this_t* n)
 	{
 		prev = n;
-		
+
 		this_t* ch = n->first_child;
 		next_sibling = ch;
 		if(ch)
 			ch->prev = this;
 		n->first_child = this;
 	}
-	
+
 private:
 	void update_prev(this_t* n)
 	{
@@ -103,12 +103,12 @@ private:
 	typedef tree_node_multiway_common base_t;
 	typedef DerivedT this_t;
 public:
-	
+
 	void insert_before(this_t* n)
 	{
 		base_t::insert_before(n);
 	}
-	
+
 	void insert_before_nonroot(this_t* n)
 	{
 		base_t::insert_before(n);
@@ -118,12 +118,12 @@ public:
 	{
 		base_t::insert_after(n);
 	}
-	
+
 	void insert_as_child(this_t* n)
 	{
 		base_t::insert_as_child(n);
 	}
-	
+
 	DerivedT* child() { return static_cast<DerivedT*>(first_child); }
 	DerivedT* next() { return static_cast<DerivedT*>(next_sibling); }
 };
@@ -139,12 +139,12 @@ public:
 	this_t** prev_next;
 	this_t* first_child;
 	this_t* next_sibling;
-	
+
 	bool is_root()
 	{
 		return !prev_next;
 	}
-	
+
 	void unlink()
 	{
 		if(next_sibling)
@@ -152,7 +152,7 @@ public:
 		if(prev_next)
 			*prev_next = next_sibling;
 	}
-	
+
 	void unlink_nonroot()
 	{
 		sassert(prev_next);
@@ -160,7 +160,7 @@ public:
 			next_sibling->prev_next = prev_next;
 		*prev_next = next_sibling;
 	}
-	
+
 	void insert_before(this_t* n)
 	{
 		next_sibling = n;
@@ -169,7 +169,7 @@ public:
 			*prev_next = this;
 		n->prev_next = &next_sibling;
 	}
-	
+
 	void insert_before_nonroot(this_t* n)
 	{
 		next_sibling = n;
@@ -178,7 +178,7 @@ public:
 		*prev_next = this;
 		n->prev_next = &next_sibling;
 	}
-	
+
 	void insert_after(this_t* n)
 	{
 		next_sibling = n->next_sibling;
@@ -187,11 +187,11 @@ public:
 			n->next_sibling->prev_next = &next_sibling;
 		n->next_sibling = this;
 	}
-	
+
 	void insert_as_child(this_t* n)
 	{
 		prev_next = &n->first_child;
-		
+
 		this_t* ch = n->first_child;
 		next_sibling = ch;
 		if(ch)
@@ -207,22 +207,22 @@ private:
 	typedef tree_node_multiway_forward_common base_t;
 	typedef DerivedT this_t;
 public:
-	
+
 	void insert_before(this_t* n)
 	{
 		base_t::insert_before(n);
 	}
-	
+
 	void insert_before_nonroot(this_t* n)
 	{
 		base_t::insert_before_nonroot(n);
 	}
-	
+
 	void insert_after(this_t* n)
 	{
 		base_t::insert_after(n);
 	}
-	
+
 	void insert_as_child(this_t* n)
 	{
 		base_t::insert_as_child(n);

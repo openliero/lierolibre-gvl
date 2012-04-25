@@ -34,10 +34,10 @@ inline hash_t hash(std::pair<T1, T2> const& v)
 inline hash_t hash(std::string const& v, unsigned p = 0x3C618459)
 {
 	std::size_t amount = 512;
-	
+
 	if(amount > v.size())
 		amount = v.size();
-		
+
 	hash_t h = p;
 	for(std::size_t i = 0; i < amount; ++i)
 	{

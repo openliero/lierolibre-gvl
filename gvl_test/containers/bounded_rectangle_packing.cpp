@@ -20,7 +20,7 @@ namespace tut
 
 struct brp_data
 {
-	
+
 };
 
 typedef test_group<brp_data> factory;
@@ -42,7 +42,7 @@ struct packing_trial
 {
 	typedef Packer packer_t;
 	typedef typename packer_t::rect_handle rect_handle;
-	
+
 	packing_trial(std::string const& name, int width, int height)
 	: name(name)
 	, width(width), height(height)
@@ -52,7 +52,7 @@ struct packing_trial
 	, area(0)
 	{
 	}
-	
+
 	void try_fit(std::vector<gvl::ivec2> const& boxes, bool abort_on_first_fail = false)
 	{
 		for(std::size_t i = 0; i < boxes.size(); ++i)
@@ -74,14 +74,14 @@ struct packing_trial
 			}
 		}
 	}
-	
+
 	std::string get_stats()
 	{
 		std::stringstream ss;
 		ss << name << ": " << (100.0 * area / (width*height)) << "%, " << packed_count << " boxes out of " << trials << " trials";
 		return ss.str();
 	}
-	
+
 	void render(double x, double y, double scale = 4.0)
 	{
 		using namespace qv;
@@ -91,14 +91,14 @@ struct packing_trial
 			drawBox(x + r.x1 * scale, y + r.y1 * scale, r.width() * scale, r.height() * scale, colorize(&r));
 		}
 	}
-	
+
 	std::string name;
 	int width, height;
 	packer_t packing;
 	int trials;
 	int packed_count;
 	int area;
-	
+
 	std::vector<rect_handle> packed_rects;
 };
 
@@ -113,16 +113,16 @@ struct by_area
 template<>
 template<>
 void object::test<1>()
-{	
+{
 	gvl::mwc rand(1);
-	
+
 	std::cout << "Packing rectangles..." << std::endl;
-	
+
 	packing_trial<gvl::recursive_bounded_rectangle_packing> rtrial("recursive", 256, 256);
 	packing_trial<gvl::accurate_rectangle_packing> gtrial("maximal space", 256, 256);
-	
+
 	std::vector<gvl::ivec2> rects;
-	
+
 	for(int i = 0; i < 1500; ++i)
 	{
 #if 0
@@ -136,9 +136,9 @@ void object::test<1>()
 #endif
 		rects.push_back(gvl::ivec2(w, h));
 	}
-	
+
 	//std::sort(rects.begin(), rects.end(), by_area());
-	
+
 	{
 		GVL_PROF_TIMER("recursive");
 		rtrial.try_fit(rects, false);
@@ -147,19 +147,19 @@ void object::test<1>()
 		GVL_PROF_TIMER("maximal space");
 		gtrial.try_fit(rects, false);
 	}
-	
+
 	std::cout << "Done." << std::endl;
-	
+
 	std::stringstream ss;
 	gvl::present_profile(ss);
-	
+
 	std::vector<std::string> lines;
 	std::string line;
 	while(std::getline(ss, line))
 	{
 		lines.push_back(line);
 	}
-	
+
 	int cur_free = gtrial.packing.free_rects.size();
 	std::cout << cur_free << " free rectangles\n";
 
@@ -168,17 +168,17 @@ void object::test<1>()
 		double scale = 1.5;
 		rtrial.render(0, 0, scale);
 		gtrial.render(800.0 - 256.0 * scale, 0, scale);
-		
+
 		qv::drawText(rtrial.get_stats(), 20.0, 256.0 * scale + 40.0);
 		qv::drawText(gtrial.get_stats(), 20.0, 256.0 * scale + 60.0);
-		
+
 		for(std::size_t i = 0; i < lines.size(); ++i)
 		{
 			qv::drawText(lines[i], 20.0, 256.0 * scale + 90.0 + i*20.0, qv::Color(255, 255, 128, 255));
 		}
 	}
 	while(qv::show());
-	
+
 #if GVL_PROFILE
 	gvl::present_profile(std::cout);
 #endif

@@ -11,7 +11,7 @@ struct int10
 {
 	int32_t& operator[](std::size_t i)
 	{ return limb[i]; }
-	
+
 	int32_t operator[](std::size_t i) const
 	{ return limb[i]; }
 

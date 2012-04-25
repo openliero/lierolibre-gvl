@@ -154,7 +154,7 @@ inline void test_suite::run_all(test_suite_instance& suite_instance)
 			++suite_instance.successes;
 	}
 
-	
+
 }
 
 inline test_suite& test_context::get_test_suite(std::string const& name)

@@ -12,7 +12,7 @@ template<typename T = double>
 struct normal_distribution
 {
 	typedef T value_type;
-	
+
 	template<typename Random>
 	value_type normal_variate(Random rand, value_type mean = value_type(0), value_type sigma = value_type(1))
 	{
@@ -33,17 +33,17 @@ struct normal_distribution
 		}
 
 		value_type const pi = value_type(3.14159265358979323846);
-    
+
 		return cached_rho * (valid ?
                           cos(value_type(2) * pi * r1) :
                           sin(value_type(2) * pi * r1)) * sigma + mean;
 	}
-		
+
 	normal_distribution()
 	: valid(false)
 	{
 	}
-	
+
 	value_type r1, cached_rho;
 	bool valid;
 };

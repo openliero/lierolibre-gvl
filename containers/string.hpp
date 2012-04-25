@@ -28,12 +28,12 @@ template<std::size_t InlineSize = 7, bool Cow = false>
 struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-terminator
 {
 	typedef basic_string_pod<InlineSize + 1> base;
-	
+
 	struct take_data_tag {};
-	
+
 	template<std::size_t InlineSize2, bool Cow2>
 	friend struct basic_string;
-	
+
 	// All ranges are invalidated when the string is changed except via
 	// range functions, in which case all but the manipulating range are
 	// invalidated. All ranges are also invalidated when the string is copied.
@@ -41,34 +41,34 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 	{
 		template<std::size_t InlineSize2, bool Cow2>
 		friend struct basic_string;
-		
+
 		uint8_t front() const
 		{
 			sassert(!empty());
 			return *cur;
 		}
-		
+
 		void pop_front()
 		{
 			sassert(!empty());
 			++cur;
 		}
-		
+
 		uint8_t back() const
 		{
 			sassert(!empty());
 			return end[-1];
 		}
-		
+
 		void pop_back()
 		{
 			sassert(!empty());
 			--end;
 		}
-		
+
 		bool empty() const
 		{ return cur >= end; }
-		
+
 		void put(uint8_t c)
 		{
 			sassert(!empty());
@@ -78,7 +78,7 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 				if(self.cow_())
 					cur = self.begin_() + (cur - prev_begin);
 			}
-			
+
 			*cur++ = c;
 		}
 	private:
@@ -86,17 +86,17 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		: self(self), cur(cur_init), end(end_init)
 		{
 		}
-		
+
 		basic_string& self;
 		uint8_t* cur;
 		uint8_t* end;
 	};
-	
+
 	basic_string()
 	{
 		reset_next_limit_();
 	}
-	
+
 	basic_string(basic_string const& b)
 	{
 		base::operator=(b);
@@ -111,18 +111,18 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 			}
 		}
 	}
-	
+
 	basic_string(char const* b_)
 	{
 		uint8_t const* b = reinterpret_cast<uint8_t const*>(b_);
 		init_from_(b, std::strlen(b_));
 	}
-	
+
 	basic_string(uint8_t const* b, std::size_t len)
 	{
 		init_from_(b, len);
 	}
-	
+
 	basic_string(
 		shared_ptr<bucket_data_mem> data_init,
 		std::size_t size_init,
@@ -148,13 +148,13 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		else
 			init_from_(data_init.get(), data_init->size(), data_init->size(), take_data_tag());
 	}
-	
+
 	template<std::size_t InlineSize2, bool Cow2>
 	basic_string(basic_string<InlineSize2, Cow2> const& b)
 	{
 		init_from_(b);
 	}
-	
+
 	template<std::size_t InlineSize2, bool Cow2>
 	basic_string(basic_string<InlineSize2, Cow2> const& b, take_data_tag)
 	{
@@ -169,13 +169,13 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 			b.reset_next_limit_();
 		}
 	}
-	
+
 	~basic_string()
 	{
 		release_();
 	}
-	
-	
+
+
 	void clear()
 	{
 		if(Cow && !is_inline_() && this->d.data->ref_count() > 1)
@@ -188,28 +188,28 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		else
 		{
 			this->size_ = 0;
-		}			
+		}
 	}
-	
+
 	basic_string& operator=(basic_string b)
 	{
 		b.swap(*this);
 		return *this;
 	}
-	
+
 	template<std::size_t InlineSize2, bool Cow2>
 	basic_string& operator=(basic_string<InlineSize2, Cow2> b)
 	{
 		b.swap(*this);
 		return *this;
 	}
-	
+
 	template<std::size_t InlineSize2, bool Cow2>
 	void assign(basic_string<InlineSize2, Cow2> b)
 	{
 		b.swap(*this);
 	}
-	
+
 	void assign(shared_ptr<bucket_data_mem> data_new, std::size_t size_new, std::size_t cap_new)
 	{
 		basic_string b(data_new, size_new, cap_new, take_data_tag());
@@ -221,35 +221,35 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 		basic_string b(data_new, data_new->size(), data_new->size(), take_data_tag());
 		b.swap(*this);
 	}
-	
+
 	void assign(uint8_t const* begin, std::size_t len)
 	{
 		basic_string b(begin, len);
 		b.swap(*this);
 	}
-	
+
 	void push_back(uint8_t x)
 	{
 		cow_();
-		
+
 		if(this->size_ == this->cap_)
 			reserve(size() * 2);
 
 		begin_()[this->size_++] = x;
 	}
-	
+
 	template<std::size_t InlineSize2, bool Cow2>
 	void append(basic_string<InlineSize2, Cow2> const& b)
 	{
 		// cow_ called by append below
 		append(b.begin_(), b.size_);
 	}
-	
+
 	// NOTE: [b, e) cannot be inside *this
 	void append(uint8_t const* b, std::size_t len)
 	{
 		sassert(!(b >= begin_() && b + len < end_()));
-		
+
 		cow_();
 		if(capacity_left_() < len)
 			reserve(size() + len);
@@ -261,12 +261,12 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 	{
 		append(reinterpret_cast<uint8_t const*>(b), std::strlen(b));
 	}
-	
+
 	void reserve(std::size_t s)
 	{
 		if(InlineSize > 1 && s <= InlineSize)
 			return;
-			
+
 		if(is_inline_())
 		{
 			std::size_t cur_size = this->size_;
@@ -274,7 +274,7 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 			// bucket_data_mem allocates 1 byte extra for the zero-terminator
 			bucket_data_mem* data_init = bucket_data_mem::create(cap_new, cap_new);
 			std::memcpy(data_init->data, this->d.inline_data, cur_size);
-			
+
 			this->d.data = data_init;
 			this->size_ = cur_size;
 			this->cap_ = cap_new;
@@ -291,7 +291,7 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 			this->cap_ = cap_new;
 		}
 	}
-	
+
 	basic_string<InlineSize, true> release_as_cow()
 	{
 		if(Cow)
@@ -306,7 +306,7 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 			return ret;
 		}
 	}
-	
+
 	char const* c_str() const
 	{
 		// One additional byte is always allocated for the 0-terminator
@@ -318,50 +318,50 @@ struct basic_string : basic_string_pod<InlineSize + 1> // Includes the 0-termina
 	{
 		return reinterpret_cast<char const*>(begin_());
 	}
-	
+
 	std::size_t capacity() const
 	{
 		return this->cap_;
 	}
-	
+
 	std::size_t size() const
 	{
 		return this->size_;
 	}
-	
+
 	bool empty() const
 	{ return this->size_ == 0; }
-	
+
 	range all()
 	{
 		return range(*this, begin_(), end_());
 	}
-	
+
 	void swap(basic_string& rhs)
 	{
 		std::swap(static_cast<base&>(*this), static_cast<base&>(rhs));
 	}
-	
+
 	uint8_t operator[](std::size_t i)
 	{
 		sassert(i < size());
 		return begin_()[i];
 	}
-	
+
 	void set(std::size_t i, uint8_t c)
 	{
 		sassert(i < size());
 		cow_();
 		begin_()[i] = c;
 	}
-	
+
 private:
-	
+
 	std::size_t capacity_left_() const
 	{
 		return std::size_t(this->cap_ - this->size_);
 	}
-	
+
 	void release_()
 	{
 		if(!is_inline_())
@@ -372,7 +372,7 @@ private:
 				delete this->d.data;
 		}
 	}
-	
+
 	void reset_next_limit_()
 	{
 		this->size_ = 0;
@@ -388,27 +388,27 @@ private:
 			this->d.data = 0;
 		}
 	}
-		
+
 	uint8_t* begin_() const
 	{
 		return (is_inline_() ? this->d.inline_data : this->d.data->data);
 	}
-	
+
 	uint8_t* end_() const
 	{
 		return begin_() + this->size_;
 	}
-	
+
 	uint8_t* next_() const
 	{
 		return begin_() + this->size_;
 	}
-	
+
 	bool is_inline_() const
 	{
 		return InlineSize > 1 && (this->cap_ <= InlineSize);
 	}
-	
+
 	bool cow_()
 	{
 		if(Cow && !is_inline_() && this->d.data->ref_count() > 1)
@@ -419,8 +419,8 @@ private:
 		}
 		return false;
 	}
-	
-	
+
+
 	template<std::size_t InlineSize2, bool Cow2>
 	void init_from_(basic_string<InlineSize2, Cow2> const& b)
 	{
@@ -431,7 +431,7 @@ private:
 		else
 			init_from_(b.d.data->data, b.size_);
 	}
-	
+
 	void init_from_(uint8_t const* b, std::size_t size_init)
 	{
 		this->size_ = size_init;
@@ -447,11 +447,11 @@ private:
 			this->cap_ = size_init;
 		}
 	}
-	
+
 	void init_from_(bucket_data_mem* data_init, std::size_t size_init, std::size_t cap_init)
 	{
 		sassert(Cow);
-		
+
 		this->size_ = size_init;
 		if(InlineSize > 1 && size_init <= InlineSize)
 		{
@@ -465,7 +465,7 @@ private:
 			this->cap_ = cap_init;
 		}
 	}
-	
+
 	void init_from_(bucket_data_mem* data_init, std::size_t size_init, std::size_t cap_init, take_data_tag)
 	{
 		this->size_ = size_init;

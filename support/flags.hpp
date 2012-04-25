@@ -16,12 +16,12 @@ struct basic_flags
 	{
 		flags_ ^= ((flags_ ^ f) & mask);
 	}
-	
+
 	void set(T f)
 	{
 		flags_ |= f;
 	}
-	
+
 	void reset(T f)
 	{
 		flags_ &= ~f;
@@ -31,32 +31,32 @@ struct basic_flags
 	{
 		flags_ = f;
 	}
-	
+
 	bool any(T f) const
 	{
 		return (flags_ & f) != 0;
 	}
-	
+
 	bool all(T f) const
 	{
 		return (flags_ & f) == f;
 	}
-	
+
 	bool no(T f) const
 	{
 		return (flags_ & f) == 0;
 	}
-	
+
 	void toggle(T f)
 	{
 		flags_ ^= f;
 	}
-	
+
 	T as_integer()
 	{
 		return flags_;
 	}
-	
+
 private:
 	T flags_;
 };

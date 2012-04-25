@@ -18,7 +18,7 @@ typedef struct gvl_bucket_data_ gvl_bucket_data;
 /*
 typedef struct gvl_object_type_
 {
-	
+
 } gvl_object_type;*/
 
 typedef struct gvl_bucket_source_type_
@@ -30,7 +30,7 @@ typedef struct gvl_bucket_type_
 {
 	gvl_bucket_source_type base;
 	void (*destroy)(gvl_bucket_data*);
-	
+
 } gvl_bucket_type;
 
 /* Bucket data base */
@@ -52,9 +52,9 @@ struct gvl_bucket_source_
 struct gvl_bucket_
 {
 	gvl_bucket_source base;
-	
+
 	gvl_list_node list_node;
-	
+
 	gvl_bucket_data* data;
 	long begin;
 	long end;
@@ -89,7 +89,7 @@ INLINE void gvl_bucket_init_copy(
 	self->type = from->type;
 	self->data = data;
 	++data->ref_count;
-	
+
 	self->begin = begin;
 	self->end = end;
 }
@@ -122,13 +122,13 @@ struct gvl_bucket_data_mem_
 	byte* end;
 	byte* limit;
 	byte  data[1]; // Actually arbitrary size
-	
+
 } gvl_bucket_data_mem;
 
 gvl_bucket_data_mem* gvl_bucket_data_mem_new(size_t capacity)
 {
 	gvl_bucket_data_mem* self = malloc(sizeof(gvl_bucket_data_mem) - sizeof(byte) + capacity);
-	
+
 	gvl_bucket_data_init(&self->base);
 	self->limit = &self->data[capacity];
 	self->end = &self->data[0];
@@ -147,13 +147,13 @@ INLINE gvl_bucket_data_mem_push_back_unsafe_unique(gvl_bucket_data_mem* self, by
 void gvl_bucket_split(gvl_bucket* self, size_t point)
 {
 	size_t self_size = gvl_bucket_size(self);
-	
+
 	if (point == 0 || point == self_size)
 		return;
-		
+
 	gvl_list_link_after(&self->list_node,
 		gvl_bucket_new_copy(self, self->begin + point, self->end));
-		
+
 	gvl_bucket_cut_back(self, self_size - point);
 }
 
@@ -175,7 +175,7 @@ INLINE byte gvl_bucket_reader_underflow_get_(gvl_bucket_reader* self)
 		self->on_error();
 		return 0;
 	}
-	
+
 	return *self->cur++;
 }
 
@@ -202,7 +202,7 @@ template<typename DerivedT>
 struct bucket_reader
 {
 	typedef bucket::size_type size_type;
-	
+
 	bucket_reader(bucket_source* source)
 	: bucket_list_size_(0)
 	, cur_(0)
@@ -210,34 +210,34 @@ struct bucket_reader
 	, source_(source)
 	{
 	}
-	
+
 	DerivedT* derived()
 	{ return static_cast<DerivedT*>(this); }
-	
+
 /*
 	// Different naming to avoid infinite recursion if
 	// not defined in DerivedT.
 	bucket_source* get_source()
 	{ return derived()->source(); }
 	*/
-	
+
 	bucket_source* get_source()
 	{ return source_; }
-	
+
 	size_type read_size()
 	{
 		return bucket_list_size_ + (end_ - cur_);
 	}
-	
+
 	uint8_t get()
 	{
 		// We keep this function small to encourage
 		// inlining
 		return (cur_ != end_) ? (*cur_++) : underflow_get_();
 	}
-	
+
 	// TODO: A get that returns a special value for EOF
-		
+
 	bucket::status buffer(size_type amount)
 	{
 		size_type cur_read = read_size();
@@ -248,22 +248,22 @@ struct bucket_reader
 				return s;
 			cur_read = read_size();
 		}
-		
+
 		return bucket::ok;
 	}
-	
-	
+
+
 	bucket::status buffer_sequenced(size_type amount, linked_vector<uint8_t>& res)
 	{
 		bucket::status s = buffer(amount);
 		if(s != bucket::ok)
 			return s;
 		reinsert_first_bucket();
-		
+
 		sequence(mem_buckets_, amount, res);
 		return bucket::ok;
 	}
-	
+
 	bucket::auto_read_result get_bucket(size_type amount = 0)
 	{
 		if(first_.get())
@@ -278,7 +278,7 @@ struct bucket_reader
 		else
 			return read_bucket_and_return_(amount);
 	}
-	
+
 	// Non-blocking
 	bucket::auto_read_result try_get_bucket(size_type amount = 0)
 	{
@@ -294,40 +294,40 @@ struct bucket_reader
 		else
 			return try_read_bucket_and_return_(amount);
 	}
-	
+
 	/// Amount of data left in the first bucket
 	std::size_t first_left() const { return end_ - cur_; }
-	
+
 private:
-	
+
 	uint8_t underflow_get_()
 	{
 		if(next_bucket_() != bucket::ok)
 			throw "ffs! unexpected error in underflow_get_";
-		
+
 		return *cur_++;
 	}
-	
+
 	/// Discards the current first bucket (if any) and tries to read
 	/// a bucket if necessary.
 	/// Precondition: cur_ == end_
 	bucket::status next_bucket_()
 	{
 		passert(cur_ == end_, "Still data in the first bucket");
-		
+
 		if(!mem_buckets_.empty())
 		{
 			//first_.reset(pop_bucket_());
 			set_first_bucket_(pop_bucket_());
 			return bucket::ok;
 		}
-		
+
 		// Need to read a bucket
-		
+
 		// Reset first
 		// No need to do this: cur_ = end_ = 0;
 		first_.reset();
-		
+
 		while(true)
 		{
 			bucket::read_result r(get_source()->read());
@@ -343,17 +343,17 @@ private:
 			{
 				return bucket::eos;
 			}
-			
+
 			derived()->block();
 		}
 	}
-	
+
 	bucket::status read_bucket_(size_type amount)
 	{
 		while(true)
 		{
 			bucket::read_result r(get_source()->read(amount));
-		
+
 			if(r.s == bucket::ok)
 			{
 				add_bucket_(r.b);
@@ -363,49 +363,49 @@ private:
 			{
 				return bucket::eos;
 			}
-			
+
 			derived()->flush();
 			derived()->block();
 		}
 	}
-	
+
 	bucket::status try_read_bucket_(size_type amount)
 	{
 		bucket::read_result r(get_source()->read(amount));
-	
+
 		if(r.s == bucket::ok)
 		{
 			add_bucket_(r.b);
 			return bucket::ok;
 		}
-		
+
 		return r.s;
 	}
-	
+
 	bucket::read_result read_bucket_and_return_(size_type amount)
 	{
 		while(true)
 		{
 			bucket::read_result r(get_source()->read(amount));
-		
+
 			if(r.s != bucket::blocking)
 				return r;
-			
+
 			derived()->flush();
 			derived()->block();
 		}
 	}
-	
+
 	bucket::read_result try_read_bucket_and_return_(size_type amount)
 	{
 		return get_source()->read(amount);
 	}
-	
+
 	bucket* pop_bucket_()
 	{
 		// Let caller take care of this: passert(!first_.get(), "Still a bucket in first_");
 		passert(!mem_buckets_.empty(), "mem_buckets_ is empty");
-		
+
 		bucket* b = mem_buckets_.first();
 		mem_buckets_.unlink_front();
 
@@ -413,7 +413,7 @@ private:
 		bucket_list_size_ -= s;
 		return b;
 	}
-	
+
 	/// Apply changes to first bucket
 	void correct_first_bucket_()
 	{
@@ -425,7 +425,7 @@ private:
 			//mem_buckets_.relink_front(b);
 		}
 	}
-	
+
 	/// Apply changes to first bucket and put it back into mem_buckets_
 	void reinsert_first_bucket()
 	{
@@ -438,28 +438,28 @@ private:
 			mem_buckets_.relink_front(b);
 		}
 	}
-	
+
 	void set_first_bucket_(bucket* b)
 	{
 		//passert(!first_.get(), "Still a bucket in first_");
 		passert(mem_buckets_.empty(), "Still buckets in mem_buckets_");
 		size_type s = b->size();
-		
+
 		first_.reset(b);
 		// New first bucket, update cur_ and end_
 		cur_ = b->get_ptr();
 		end_ = cur_ + s;
 		passert(bucket_list_size_ == 0, "Incorrect bucket_list_size_");
 	}
-	
+
 	void add_bucket_(bucket* b)
 	{
 		size_type s = b->size();
-		
+
 		mem_buckets_.relink_back(b);
 		bucket_list_size_ += s;
 	}
-	
+
 #if 0 // Not needed (yet)
 	/// To be used when there are no buckets left
 	void add_bucket_empty_(bucket* b)
@@ -467,7 +467,7 @@ private:
 		passert(!first_.get(), "Still a bucket in first_");
 		passert(mem_buckets_.empty(), "Still buckets in mem_buckets_");
 		size_type s = b->size();
-		
+
 		// TODO: Which to prefer here? Insertion into first or the beginning
 		// of mem_buckets_?
 #if 0
@@ -482,10 +482,10 @@ private:
 #endif
 	}
 #endif
-	
+
 	// Total size of buckets in mem_buckets_
 	size_type bucket_list_size_;
-	
+
 	uint8_t const* cur_; // Pointer into first_
 	uint8_t const* end_; // End of data in first_
 	std::auto_ptr<bucket> first_;
@@ -506,7 +506,7 @@ struct bucket_writer
 	{ return static_cast<DerivedT*>(this)->sink_brigade(); }
 */
 	void flush();
-	
+
 	void put(uint8_t b)
 	{
 		if(buffer_.full())
@@ -514,9 +514,9 @@ struct bucket_writer
 		else
 			buffer_.unsafe_unique_push_back(b);
 	}
-	
+
 	void put(bucket* buf);
-	
+
 private:
 	void overflow_put_(uint8_t b)
 	{
@@ -535,7 +535,7 @@ struct basic_brigade_sink : bucket_sink
 {
 	brigade& get()
 	{ return (static_cast<DerivedT*>(this)->*Get)(); }
-	
+
 	bucket_sink::status write(bucket* b)
 	{
 		b->unlink();
@@ -547,18 +547,18 @@ struct basic_brigade_sink : bucket_sink
 struct brigade : bucket_source
 {
 	typedef bucket_size size_type;
-	
+
 	read_result read(size_type amount = 0, bucket* dest = 0)
 	{
 		list<bucket>::iterator i = buckets.begin();
-		
+
 		if(i == buckets.end())
 			return read_result(eos);
-			
+
 		read_result r(i->read(amount, 0));
 		if(r.s == bucket_source::ok)
 			buckets.unlink(r.b); // Success, we may unlink the bucket
-			
+
 		return r;
 	}
 
@@ -566,12 +566,12 @@ struct brigade : bucket_source
 	{
 		buckets.relink_front(b);
 	}
-	
+
 	void append(bucket* b)
 	{
 		buckets.relink_back(b);
 	}
-	
+
 	list<bucket> buckets;
 };
 

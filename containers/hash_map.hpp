@@ -14,40 +14,40 @@ struct hash_map_index
 	: ptr(ptr)
 	{
 	}
-	
+
 	KeyT const& key() const
 	{
 		return ptr->first;
 	}
-	
+
 	ValueT const& value() const
 	{
 		return ptr->second;
 	}
-	
+
 	bool is_empty() const
 	{
 		return !ptr;
 	}
-	
+
 	bool is_filled() const
 	{
 		return !is_null_or_dummy_ptr(ptr);
 	}
-	
+
 	void make_empty()
 	{
 		if(is_filled())
 			delete ptr;
 		ptr = 0;
 	}
-	
+
 	void make_deleted()
 	{
 		delete ptr;
 		ptr = dummy_ptr<std::pair<KeyT, ValueT> >();
 	}
-	
+
 	void assign_value(hash_map_index v)
 	{
 		// TODO: Either copy v.ptr->second and delete v.ptr,
@@ -56,7 +56,7 @@ struct hash_map_index
 		delete ptr;
 		ptr = v.ptr;
 	}
-	
+
 	std::pair<KeyT, ValueT>* ptr;
 };
 
@@ -64,24 +64,24 @@ template<typename KeyT, typename ValueT, typename Hash = hash_functor, typename 
 struct hash_map : generic_hash_set<hash_map_index<KeyT, ValueT>, KeyT, ValueT, Hash, Compare>
 {
 	typedef generic_hash_set<hash_map_index<KeyT, ValueT>, KeyT, ValueT, Hash, Compare> base;
-	
+
 	typedef std::pair<KeyT, ValueT> index_type;
-	
+
 	hash_map(Hash const& hash = Hash(), Compare const& compare = Compare())
 	: base(hash, compare)
 	{
 	}
-	
+
 	void insert(index_type* v)
 	{
 		base::insert(hash_map_index<KeyT, ValueT>(v));
 	}
-		
+
 	template<typename SpecKeyT>
 	ValueT* get(SpecKeyT const& v)
 	{
 		hash_map_index<KeyT, ValueT>* index = base::lookup(v);
-		
+
 		return index ? &index->ptr->second : 0;
 	}
 };

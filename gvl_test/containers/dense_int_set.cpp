@@ -7,7 +7,7 @@ namespace tut
 
 struct dense_int_set_data
 {
-	
+
 };
 
 typedef test_group<dense_int_set_data> factory;

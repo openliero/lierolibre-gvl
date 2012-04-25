@@ -13,17 +13,17 @@ struct scoped_array
 	: arr(init_arr)
 	{
 	}
-	
+
 	~scoped_array()
 	{
 		delete[] arr;
 	}
-	
+
 	T& operator[](std::size_t idx)
 	{
 		return arr[idx];
 	}
-	
+
 	T const& operator[](std::size_t idx) const
 	{
 		return arr[idx];
@@ -35,12 +35,12 @@ struct scoped_array
 		arr = 0;
 		return ret;
 	}
-	
+
 private:
 	// Non-copyable
 	scoped_array(scoped_array const&);
 	scoped_array& operator=(scoped_array const&);
-	
+
 	T* arr;
 };
 

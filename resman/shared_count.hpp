@@ -15,24 +15,24 @@ struct shared_count
 	: p(0)
 	{
 	}
-	
+
 	shared_count(shared_count const& b)
 	: p(b.inc())
 	{
 	}
-	
+
 	shared_count& operator=(shared_count const& b)
 	{
 		shared_count n(b);
 		swap(n);
 		return *this;
 	}
-	
+
 	~shared_count()
 	{
 		dec();
 	}
-	
+
 	void dec()
 	{
 		if(!p)
@@ -44,25 +44,25 @@ struct shared_count
 			delete p;
 		}
 	}
-	
+
 	void swap(shared_count& b)
 	{
 		std::swap(p, b.p);
 	}
-	
+
 	// release the current count and make a new one set to 1
 	void reset()
 	{
 		dec();
 		p = 0;
 	}
-		
+
 	int ref_count() const
 	{ return !p ? 1 : *p; }
-	
+
 	bool unique() const
 	{ return !p || *p == 1; }
-	
+
 private:
 	int* inc() const
 	{
@@ -77,7 +77,7 @@ private:
 			return p;
 		}
 	}
-	
+
 	mutable int* p; // 0 means ref count of 1
 };
 

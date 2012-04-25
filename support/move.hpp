@@ -15,16 +15,16 @@ struct move_holder
 	: v(v)
 	{
 	}
-	
+
 	operator T&()
 	{ return v; }
-	
+
 	T& operator*()
 	{ return v; }
-	
+
 	T* operator->()
 	{ return &v; }
-	
+
 private:
 	T& v;
 };

@@ -15,17 +15,17 @@ struct lendable
 	: borrow_count(0)
 	{
 	}
-	
+
 	lendable(lendable const& b, borrow_tag)
 	: borrow_count(-1) // Not lendable
 	{
 	}
-	
+
 	~lendable()
 	{
 		passert(borrow_count == 0, "Object still borrowed");
 	}
-	
+
 	mutable int borrow_count; // Need to be able to modify via pointers to const
 #endif
 };
@@ -44,10 +44,10 @@ struct borrowed : T
 		passert(b.lendable::borrow_count != -1, "Object is a borrowed instance and cannot be borrowed");
 		passert(b.lendable::borrow_count == 0, "Object borrowed already");
 		++b.lendable::borrow_count;
-		
+
 #endif
 	}
-	
+
 	borrowed(borrowed const& b)
 	: T(b, borrow_tag())
 #ifndef NDEBUG
@@ -59,7 +59,7 @@ struct borrowed : T
 		++b.lendable::borrow_count;
 #endif
 	}
-	
+
 	~borrowed()
 	{
 #ifndef NDEBUG
@@ -70,7 +70,7 @@ struct borrowed : T
 			passert(false, "Borrowed object returned too late"); // This should never be reached
 #endif
 	}
-	
+
 #ifndef NDEBUG
 	T const* source;
 	int old_borrow_count;

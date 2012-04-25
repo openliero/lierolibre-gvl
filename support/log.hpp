@@ -17,16 +17,16 @@ struct location
 	: file(0)
 	{
 	}
-	
+
 	location(std::string const& file_, int line_)
 	: file(&file_), line(line_)
 	{
 	}
-	
+
 	// Compiler generated op= and copy ctor
-		
+
 	void print(std::string const& msg) const;
-	
+
 private:
 	std::string const* file;
 	int line;
@@ -35,7 +35,7 @@ private:
 struct log_options
 {
 	log_options();
-	
+
 	bool debug;
 	int  level;
 };

@@ -10,7 +10,7 @@ namespace gvl
 struct critbit
 {
 	void* root;
-	
+
 	bool contains(uint8_t const* u, std::size_t ulen);
 	int insert(uint8_t const* u, std::size_t ulen);
 };

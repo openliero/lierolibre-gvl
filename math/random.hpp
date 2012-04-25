@@ -13,10 +13,10 @@ template<typename DerivedT, typename ValueT>
 struct prng_common
 {
 	typedef ValueT value_type;
-	
+
 	DerivedT& derived()
 	{ return *static_cast<DerivedT*>(this); }
-	
+
 	// Number in [0.0, 1.0)
 	double get_double()
 	{
@@ -27,7 +27,7 @@ struct prng_common
 		sassert(ret == gD(v, 4294967296.0));
 		return ret;
 	}
-	
+
 	// NOTE! Not reproducible right now. We don't want
 	// to take the (potential) hit if it's not necessary.
 	// Number in [0.0, max)
@@ -35,7 +35,7 @@ struct prng_common
 	{
 		return get_double() * max;
 	}
-	
+
 	// Number in [0, max)
 	uint32_t operator()(uint32_t max)
 	{
@@ -43,7 +43,7 @@ struct prng_common
 		v *= max;
 		return uint32_t(v >> 32);
 	}
-	
+
 	// Number in [min, max)
 	uint32_t operator()(uint32_t min, uint32_t max)
 	{

@@ -36,7 +36,7 @@ void device_buf::out(byte const* p, std::size_t size)
 			throw;
 		}
 	}
-	
+
 	// Insert into stream
 	out_buf.insert(p, size);
 	if(out_buf.size() > out_buffer_size)
@@ -48,14 +48,14 @@ bool device_buf::flush()
 {
 	if(out_buf.empty())
 		return true;
-	
+
 	try
 	{
 		std::size_t written = write(&out_buf[0], out_buf.size());
 
 		sassert(written <= out_buf.size());
 		out_buf.consume(written);
-		
+
 		out_buffer_size = std::max(std::size_t(1024ul), out_buf.size() * std::size_t(2ul)); // TODO: What factor should be used here?
 	}
 	catch(stream_error&)
@@ -63,14 +63,14 @@ bool device_buf::flush()
 		state.set(error_bit);
 		throw;
 	}
-	
+
 	return out_buf.empty();
-	
+
 }
 
 void device_buf::do_close()
 {
-	
+
 }
 
 void device_buf::close()
@@ -144,16 +144,16 @@ bool device_buf::eof() const
 {
 	return state.any(eof_bit);
 }
-	
+
 // Tries to buffer //size// bytes. Returns true if any bytes were buffered.
 bool device_buf::try_read_amount_(std::size_t size)
 {
 	passert(size >= in_buf.size(), "Request met already");
 
 	std::size_t old_size = in_buf.size();
-		
+
 	std::size_t add = size - old_size;
-	
+
 	if(add < in_buffer_size)
 	{
 		add = in_buffer_size; // We try to read at least buffer_size bytes
@@ -161,11 +161,11 @@ bool device_buf::try_read_amount_(std::size_t size)
 	}
 
 	in_buf.resize(size);
-	
+
 	sassert(size == in_buf.size());
 	sassert(size == old_size + add);
-	
-	
+
+
 	try
 	{
 		std::size_t amount_read = read(&in_buf[old_size], add);
@@ -178,7 +178,7 @@ bool device_buf::try_read_amount_(std::size_t size)
 		state.set(eof_bit);
 		throw;
 	}
-	
+
 	return false;
 }
 

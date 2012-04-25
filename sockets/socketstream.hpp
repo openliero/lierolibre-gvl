@@ -14,7 +14,7 @@ namespace gvl
 /*
 struct socket_state : bucket_sink, flags
 {
-	
+
 };*/
 
 /*
@@ -26,19 +26,19 @@ struct socket_bucket : bucket
 	: state(state)
 	{
 	}
-		
+
 	socketstream* state;
 };*/
 
 struct socketstream : stream, flags
 {
 	friend struct socket_bucket;
-	
+
 	socketstream(char const* addr, int port)
 	: flags(0)
 	{
 		//open(new socket_bucket(this));
-		
+
 		connect(addr, port);
 	}
 
@@ -47,9 +47,9 @@ struct socketstream : stream, flags
 	: flags(connected)
 	, sock(sock_init)
 	{
-		
+
 	}
-	
+
 	/*
 	socketstream(socket sck)
 	: stream(new socket_bucket(sck), new socket_sink(sck))
@@ -57,25 +57,25 @@ struct socketstream : stream, flags
 	{
 	}
 	*/
-		
+
 	enum socket_flags
 	{
 		connected = (1 << 0),
 		connecting = (1 << 1),
 		error_occured = (1 << 2)
 	};
-	
-	
+
+
 	void process()
 	{
 		if(flags::all(connecting) && flags::no(error_occured))
 		{
 			std::auto_ptr<select_fd_set> fdset(new_select_fd_set());
-			
+
 			fdset->set(sock);
-			
+
 			select(0, fdset.get(), 0);
-			
+
 			if(fdset->is_set(sock))
 			{
 				int status = sock.opt_error();
@@ -88,56 +88,56 @@ struct socketstream : stream, flags
 			}
 		}
 	}
-	
+
 	void connect(char const* addr, int port)
 	{
 		init_sockets();
 
 /*
 		std::auto_ptr<host_entry> hp(resolve_host( addr ));
-		
+
 		if(!hp.get())
 			return;
 		*/
-		
+
 		internet_addr server(addr, port);
 		if(!server.valid())
 			return;
-		
+
 		socket s = tcp_socket();
 		if(!s.is_valid())
 			return;
 		s.set_nonblocking();
-		
+
 		if(!s.connect(server))
 			return;
 
 		sock = s;
 		flags::replace(connecting);
 	}
-	
+
 	socket underlying_socket()
 	{
 		return sock;
 	}
-		
+
 protected:
 	/*override*/ read_result read_bucket(size_type amount = 0, bucket* dest = 0);
-	
+
 	/*override*/ write_result write_bucket(bucket* b)
 	{
 		process();
-		
+
 		if(flags::no(connected))
 			return write_result(write_would_block, false);
-			
+
 		size_type size = b->size();
 		int r = sock.send(b->get_ptr(), size);
-		
+
 		if(r == (int)size)
 		{
 			//std::cout << "Full write: " << size << "b" << std::endl;
-			
+
 			gvl::unlink(b);
 			delete b;
 			return write_result(write_ok, true);
@@ -165,7 +165,7 @@ protected:
 		}
 		return write_ok;
 	}
-	
+
 	socket sock;
 };
 

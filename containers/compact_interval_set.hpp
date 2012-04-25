@@ -17,25 +17,25 @@ struct compact_interval_set
 		: begin(begin), end(end)
 		{
 		}
-		
+
 		bool operator==(range const& b) const
 		{ return begin == b.begin && end == b.end; }
-		
+
 		bool operator!=(range const& b) const
 		{ return !operator==(b); }
-		
+
 		T begin, end;
 	};
-	
+
 	typedef typename std::vector<range>::iterator range_iterator;
-	
+
 	// Amortized O(N), N = number of ranges
 	void insert_no_overlap(T begin, T end)
 	{
 		for(range_iterator i = ranges.begin(); i != ranges.end(); ++i)
 		{
 			sassert(i->begin != i->end);
-			
+
 			if(i->end == begin)
 			{
 				i->end = end;
@@ -49,11 +49,11 @@ struct compact_interval_set
 				return;
 			}
 		}
-		
+
 		// Isolated range
 		ranges.push_back(range(begin, end));
 	}
-	
+
 	// O(N), N = number of ranges
 	void erase_no_overlap(T hole_begin, T hole_end)
 	{
@@ -61,14 +61,14 @@ struct compact_interval_set
 		{
 			T begin = i->begin;
 			T end = i->end;
-			
+
 			T length = end - begin;
-			
+
 			sassert(begin != end);
-			
+
 			T offset_hole_begin = hole_begin - begin;
 			T offset_hole_end = hole_end - begin;
-			
+
 			if(offset_hole_begin >= 0 && offset_hole_begin <= length
 			&& offset_hole_end >= 0 && offset_hole_end <= length)
 			{
@@ -76,21 +76,21 @@ struct compact_interval_set
 				return;
 			}
 		}
-		
+
 		sassert(false);
 		throw std::runtime_error("Erase is not within any range");
 	}
-	
+
 	static bool combine_(T b1, T e1, T b2, T e2, T& retb, T& rete)
 	{
 		T len1 = e1 - b1;
 		T len2 = e2 - b2;
-		
+
 		T offs1 = b1 - b2;
 		T offs2 = b2 - b1;
-		
+
 		T retb, rete;
-		
+
 		if(offs1 >= 0 && offs1 < len2)
 		{
 			rete = std::max(e1 - b1, e2 - b1);
@@ -98,7 +98,7 @@ struct compact_interval_set
 				retb = std::max(offs2, rete);
 			else
 				retb = 0;
-				
+
 			retb += b1;
 			rete += b1;
 		}
@@ -109,26 +109,26 @@ struct compact_interval_set
 				retb = std::max(offs1, rete);
 			else
 				retb = 0;
-				
+
 			retb += b2;
 			rete += b2;
 		}
 	}
-	
+
 	void insert(T begin, T end)
 	{
-		
+
 	}
-	
+
 	// Amortized O(1)
 	// Assumes [hole_begin, hole_end) is a subset of [r->begin, r->end)
 	void erase_no_overlap(range_iterator r, T hole_begin, T hole_end)
 	{
 		T begin = r->begin;
 		T end = r->end;
-		
+
 		sassert(begin <= hole_begin && end >= hole_end);
-			
+
 		if(begin == hole_begin)
 		{
 			if(end == hole_end)
@@ -154,16 +154,16 @@ struct compact_interval_set
 			r->end = hole_begin;
 			ranges.push_back(range(hole_end, end));
 		}
-		
+
 		return;
 	}
-	
+
 	range_iterator begin()
 	{ return ranges.begin(); }
-	
+
 	range_iterator end()
 	{ return ranges.end(); }
-	
+
 private:
 	void extend_forwards_(range_iterator r, T end)
 	{
@@ -178,7 +178,7 @@ private:
 			}
 		}
 	}
-	
+
 	void extend_backwards_(range_iterator r, T begin)
 	{
 		range_iterator i = r;
@@ -192,13 +192,13 @@ private:
 			}
 		}
 	}
-	
+
 	void erase_(range_iterator r)
 	{
 		*r = ranges.back();
 		ranges.pop_back();
 	}
-	
+
 	std::vector<range> ranges;
 };
 

@@ -16,43 +16,43 @@ namespace gvl
 
 // NOTE: Not quite in working condition right now
 
-struct treap_node_common 
+struct treap_node_common
 {
 	static int const left_bit = 1;
 	static int const right_bit = 2;
 
 	treap_node_common* parent;
 	treap_node_common* ch[2];
-	int thread_flags; // 
+	int thread_flags; //
 	std::size_t priority;
-	
+
 	template<int Ch>
 	treap_node_common*& child()
 	{
 		return ch[Ch];
 	}
-	
+
 	template<int Ch>
 	treap_node_common*& mchild()
 	{
 		return ch[Ch^1];
 	}
-	
+
 	template<int Ch>
 	bool has_()
 	{
 		return ((thread_flags >> Ch) & 1) != 0;
 	}
-	
+
 	template<int Ch> // Ch == 0 => left, Ch == 1 => right
 	treap_node_common* move()
 	{
 		if(!has_<Ch>())
 			return ch[Ch]; // It's a thread
-			
+
 		return ch[Ch]->extreme_in_subtree<Ch^1>();
 	}
-	
+
 	template<int Ch> // Ch == 0 => left, Ch == 1 => right
 	treap_node_common* extreme_in_subtree()
 	{
@@ -61,12 +61,12 @@ struct treap_node_common
 			n = n->ch[Ch];
 		return n;
 	}
-		
+
 	bool is_leaf() const
 	{
 		return thread_flags == 0;
 	}
-	
+
 };
 
 struct default_treap_tag
@@ -85,12 +85,12 @@ struct default_random
 	: r(1) // TEMP r(get_ticks())
 	{
 	}
-	
+
 	std::size_t operator()()
 	{
 		return r();
 	}
-	
+
 	tt800 r; // TODO: A smaller PRNG?
 };
 
@@ -102,7 +102,7 @@ template<typename T
 struct treap : Compare, Random, Deleter
 {
 	typedef T value_type;
-	
+
 	static T* downcast(treap_node_common* p)
 	{
 		return static_cast<T*>(static_cast<treap_node<Tag>*>(p));
@@ -112,37 +112,37 @@ struct treap : Compare, Random, Deleter
 	{
 		return static_cast<treap_node<Tag>*>(p);
 	}
-	
+
 	struct range
 	{
 		friend struct treap;
-		
+
 		bool empty() const
 		{
 			return front_ == back_prev_;
 		}
-		
+
 		T& front()
 		{
 			return *downcast(front_);
 		}
-		
+
 		T& back()
 		{
 			return *downcast(back_);
 		}
-		
+
 		void pop_front()
 		{
 			front_ = front_->move<1>();
 		}
-		
+
 		void pop_back()
 		{
 			back_prev_ = back_;
 			back_ = back_->move<0>();
 		}
-		
+
 	private:
 		range(treap_node_common* front_init, treap_node_common* back_init)
 		: front_(front_init)
@@ -150,30 +150,30 @@ struct treap : Compare, Random, Deleter
 		, back_prev_(back_->move<1>())
 		{
 		}
-		
+
 		range(treap_node_common* front_init, treap_node_common* back_init, treap_node_common* back_prev_init)
 		: front_(front_init)
 		, back_(back_init)
 		, back_prev_(back_prev_init)
 		{
 		}
-		
+
 		treap_node_common* front_;
 		treap_node_common* back_;
 		treap_node_common* back_prev_;
 	};
-	
+
 #if 0
 	struct iterator
 	{
 		friend struct treap;
-		
+
 		typedef ptrdiff_t difference_type;
 		typedef std::bidirectional_iterator_tag iterator_category;
 		typedef T* pointer;
 		typedef T& reference;
 		typedef T value_type;
-    
+
 		iterator()
 		: ptr_(0)
 		{}
@@ -204,12 +204,12 @@ struct treap : Compare, Random, Deleter
 			ptr_ = ptr_->move<0>();
 			return *this;
 		}
-		
+
 		iterator next() const
 		{
 			return iterator(ptr_->move<1>());
 		}
-		
+
 		iterator prev() const
 		{
 			return iterator(ptr_->move<0>());
@@ -224,7 +224,7 @@ struct treap : Compare, Random, Deleter
 		{
 			return b.ptr_ != ptr_;
 		}
-		
+
 	private:
 		treap_node_common* ptr_;
 	};
@@ -238,51 +238,51 @@ struct treap : Compare, Random, Deleter
 		head.ch[0] = &head;
 		head.ch[1] = &head;
 	}
-	
+
 	~treap()
 	{
 		clear();
 	}
-	
+
 	bool empty() const
 	{
 		return n == 0;
 	}
-	
+
 	std::size_t size() const
 	{
 		return n;
 	}
-	
+
 	void clear()
 	{
 		if(root)
 			delete_node_(root);
 		clean_();
 	}
-	
+
 	/*
 	iterator begin()
 	{
 		sassert(root);
 		return root->extreme_in_subtree<0>();
 	}
-	
+
 	iterator end()
 	{
 		return iterator(0);
 	}*/
-	
+
 	range all()
 	{
 		return range(head.child<1>(), head.child<0>(), &head);
 	}
-	
+
 	void swap(treap& b)
 	{
 		std::swap(n, b.n);
 		std::swap(root, b.root);
-		
+
 		std::swap(head.ch[0], b.head.ch[0]);
 		std::swap(head.ch[1], b.head.ch[1]);
 		// All head nodes have thread_flags == 0, no need to swap
@@ -291,7 +291,7 @@ struct treap : Compare, Random, Deleter
 	void insert(T* el_)
 	{
 		treap_node_common* el = upcast(el_);
-		
+
 		el->priority = Random::operator()();
 		el->thread_flags = 0; // Newly inserted nodes are always leaves
 
@@ -309,13 +309,13 @@ struct treap : Compare, Random, Deleter
 			n = 1;
 		}
 	}
-	
+
 	void unlink(T* el_)
 	{
 		treap_node_common* el = upcast(el_);
-		
+
 		treap_node_common* parent = el->parent;
-		
+
 		if(parent)
 		{
 			if(parent->child<0>() == el)
@@ -337,28 +337,28 @@ struct treap : Compare, Random, Deleter
 					head.ch[0] = el->move<1>();
 				if(el == head.ch[1])
 					head.ch[1] = el->move<0>();
-					
+
 				root_unlink_(el, 0, root);
 			}
 		}
-		
+
 		--n;
 	}
-	
+
 	T* unlink_front(range& r)
 	{
 		sassert(!r.empty());
-		
+
 		T* front = &r.front();
 		r.pop_front();
 		unlink(front);
 		return front;
 	}
-	
+
 	T* unlink_back(range& r)
 	{
 		sassert(!r.empty());
-		
+
 		T* back = &r.front();
 		// We don't want to call pop_back() as it would set back_prev_ to the unlinked element.
 		// back_prev_ remains correct.
@@ -366,8 +366,8 @@ struct treap : Compare, Random, Deleter
 		unlink(back);
 		return back;
 	}
-	
-	
+
+
 	/*
 	void erase(iterator i)
 	{
@@ -375,39 +375,39 @@ struct treap : Compare, Random, Deleter
 		unlink(el_);
 		Deleter::operator()(el_);
 	}*/
-	
+
 	void erase_front(range& r)
 	{
 		Deleter::operator()(unlink_front(r));
 	}
-	
+
 	void erase_back(range& r)
 	{
 		Deleter::operator()(unlink_back(r));
 	}
-	
+
 	template<typename SpecKeyT>
 	range find(SpecKeyT const& k)
 	{
 		return range(downcast(find_(k, root)), 0);
 	}
-	
+
 	template<typename SpecKeyT>
 	bool test(SpecKeyT const& k)
 	{
 		return find(k) != end();
 	}
-	
+
 	// Assumes the predicate is true for elements [0, x) and false for [x, count) where x is in [0, count]
 	template<typename SpecKeyT, typename Relation>
 	treap_node_common* last_where(SpecKeyT const& k, Relation rel)
 	{
 		treap_node_common* prev = 0;
-		
+
 		if(!root)
 			return &head;
 		treap_node_common* el = root;
-		
+
 		while(true)
 		{
 			if(pred(*downcast(el), k))
@@ -428,17 +428,17 @@ struct treap : Compare, Random, Deleter
 			}
 		}
 	}
-	
+
 	// Assumes the predicate is true for elements [x, count) and false for [0, x) where x is in [0, count]
 	template<typename SpecKeyT, typename Relation>
 	treap_node_common* first_where(SpecKeyT const& k, Relation rel)
 	{
 		treap_node_common* prev = 0;
-		
+
 		if(!root)
 			return &head;
 		treap_node_common* el = root;
-		
+
 		while(true)
 		{
 			if(pred(*downcast(el), k))
@@ -459,37 +459,37 @@ struct treap : Compare, Random, Deleter
 			}
 		}
 	}
-	
+
 	void integrity_check()
 	{
 		range r = all();
-		
+
 		std::size_t count = 0;
-		
+
 		if(!r.empty())
 		{
 			++count;
-			
+
 			passert(root->extreme_in_subtree<0>() == head.ch[1], "Right of head should be the smallest element");
 			passert(root->extreme_in_subtree<1>() == head.ch[0], "Left of head should be the largest element");
-				
+
 			T* prev = &r.front();
 			r.pop_front();
 			check_node(prev);
-			
+
 			for(; !r.empty(); r.pop_front())
 			{
 				++count;
-				
+
 				passert(Compare::operator()(*prev, r.front()), "Each element must be larger than the previous");
 				prev = &r.front();
 				check_node(prev);
 			}
 		}
-		
+
 		passert(size() == count, "Manual count does not correspond to cached count");
 	}
-	
+
 	std::size_t depth() const
 	{
 		if(!root)
@@ -512,7 +512,7 @@ private:
 	void check_node(T* n_)
 	{
 		treap_node_common* n = upcast(n_);
-		
+
 		if(n->parent)
 		{
 			passert(n->parent->priority <= n->priority, "Parent priority must be less or equal to it's children's");
@@ -522,16 +522,16 @@ private:
 			passert(n == root, "Only the root node can lack a parent");
 		}
 	}
-	
+
 	template<int Ch>
 	void unlink_nonroot_(treap_node_common* el, treap_node_common* parent)
 	{
 		treap_node_common** child_slot = &parent->child<Ch>();
-		
+
 		// Correct head children if necessary
 		if(el == head.mchild<Ch>()) // If we descended left, right of head could be an extreme and vice versa
 			head.mchild<Ch>() = el->move<Ch^1>();
-			
+
 		if(el->is_leaf())
 		{
 			// If it's a leaf, the node on the side is the next one
@@ -551,7 +551,7 @@ private:
 	{
 		if(!el)
 			return 0;
-			
+
 		if(Compare::operator()(k, *downcast(el)))
 			return find_(k, el->child<0>());
 		else if(Compare::operator()(*downcast(el), k))
@@ -559,7 +559,7 @@ private:
 		else
 			return el;
 	}
-	
+
 	void delete_node_(treap_node_common* el)
 	{
 		if(el->has_<0>())
@@ -568,7 +568,7 @@ private:
 			delete_node_(el->child<1>());
 		Deleter::operator()(downcast(el));
 	}
-	
+
 	template<int Ch>
 	static void rotate_with_(
 		treap_node_common* n,
@@ -576,10 +576,10 @@ private:
 		treap_node_common*& child_slot)
 	{
 		treap_node_common* k1 = n->child<Ch>();
-		
+
 		n->parent = k1;
-		
-		
+
+
 		// Copy the threading flag for k1->mchild<Ch>() to n->child<Ch>()
 		/*
 		int kmch = (k1->thread_flags & (2 >> Ch));
@@ -597,13 +597,13 @@ private:
 			n->thread_flags ^= (1 << Ch); // Clear n->child<Ch>() flag
 			n->child<Ch>() = k1; // k1 is the new thread
 		}
-		
+
 		k1->parent = parent;
 		k1->mchild<Ch>() = n;
 		k1->thread_flags |= (2 >> Ch); // Set threading flag for k1->mchild<Ch>()
 		child_slot = k1;
 	}
-		
+
 	template<int Ch>
 	void insert_side_(
 		treap_node_common* n,
@@ -614,17 +614,17 @@ private:
 		treap_node_common* next_element) // The closest element smaller than all elements under the child
 	{
 		treap_node_common*& chr = n->child<Ch>();
-		
+
 		if(!n->has_<Ch>())
 		{
 			// If the previous or next element (depending on side) is the head,
 			// the new element is a new extreme.
 			if((Ch == 0 && prev_element == &head) || (Ch == 1 && next_element == &head))
 				head.mchild<Ch>() = el; // New extreme node
-				
+
 			n->child<Ch>() = el;
 			n->thread_flags |= 1<<Ch;
-			
+
 			el->parent = n;
 			el->ch[0] = prev_element;
 			el->ch[1] = next_element;
@@ -634,14 +634,14 @@ private:
 		{
 			insert_under_(chr, el, n, chr, prev_element, next_element);
 		}
-		
+
 #if 1
 		// NOTE: insert_under_ may change n->child<Ch>(), we must reread it here.
 		if(chr->priority < n->priority)
 			return rotate_with_<Ch>(n, parent, child_slot);
 #endif
 	}
-	
+
 	void insert_under_(
 		treap_node_common* n,
 		treap_node_common* el,
@@ -651,7 +651,7 @@ private:
 		treap_node_common* next_element) // The closest element larger than all elements under n
 	{
 		sassert(n);
-		
+
 		if(Compare::operator()(*downcast(el), *downcast(n)))
 		{
 			insert_side_<0>(n, el, parent, child_slot, prev_element, n);
@@ -666,7 +666,7 @@ private:
 			Deleter::operator()(downcast(el));
 		}
 	}
-	
+
 	/*
 	void insert_under2_(
 		treap_node_common* n,
@@ -677,7 +677,7 @@ private:
 		treap_node_common* next_element) // The closest element larger than all elements under n
 	{
 		sassert(n);
-		
+
 		if(Compare::operator()(*downcast(el), *downcast(n)))
 		{
 			insert_side_<0>(n, el, parent, child_slot, prev_element, n);
@@ -692,7 +692,7 @@ private:
 			Deleter::operator()(downcast(el));
 		}
 	}*/
-	
+
 	template<int Ch>
 	void root_unlink_child_(
 		treap_node_common* n,
@@ -700,16 +700,16 @@ private:
 		treap_node_common*& child_slot)
 	{
 		passert(!n->is_leaf(), "Assumed to be a non-leaf");
-		
+
 		treap_node_common* new_parent = n->child<Ch>();
-		
+
 		rotate_with_<Ch>(n, parent, child_slot);
-		
+
 		passert(!n->is_leaf(), "Rotation cannot turn a non-leaf into a leaf");
 
 		root_unlink_(n, new_parent, new_parent->mchild<Ch>());
 	}
-	
+
 	void root_unlink_(
 		treap_node_common* n,
 		treap_node_common* parent,
@@ -717,7 +717,7 @@ private:
 		int child_slot_mask)
 	{
 		assert(!n->is_leaf()); // Leafs should be handled before calling this function
-		
+
 		if(!n->has_<0>())
 		{
 			// TODO: Need to correct the threading flags of child_slot
@@ -725,7 +725,7 @@ private:
 			{
 				passert((parent->thread_flags & child_slot_mask) != 0, "Thread flag for child_slot must be set");
 				int right_mask = -(n->thread_flags >> 1); // All 1 if right is a child, 0 otherwise
-				
+
 				// Mask child_slot thread flag if there is no child
 				parent->thread_flags = parent->thread_flags & (right_mask & child_slot_mask);
 			}
@@ -746,7 +746,7 @@ private:
 			root_unlink_child_<1>(n, parent, child_slot);
 		}
 	}
-	
+
 #if 0 // Only useful without parent pointers
 	void unlink_(
 		treap_node_common* n,
@@ -770,8 +770,8 @@ private:
 		}
 	}
 #endif
-	
-	
+
+
 	void clean_()
 	{
 		n = 0;
@@ -779,9 +779,9 @@ private:
 		head.ch[0] = &head;
 		head.ch[1] = &head;
 	}
-	
-	
-	
+
+
+
 	std::size_t n;
 	treap_node_common* root;
 	treap_node_common  head;
@@ -794,7 +794,7 @@ struct treap_map_node : treap_node<treap_map_node<KeyT, ValueT> >
 	: first(first)
 	{
 	}
-	
+
 	KeyT first;
 	ValueT second;
 };
@@ -809,14 +809,14 @@ struct treap_map_compare : Compare
 	{
 		return Compare::operator()(a.first, b.first);
 	}
-	
+
 	bool operator()(
 		KeyT const& a,
 		treap_map_node<KeyT, ValueT> const& b) const
 	{
 		return Compare::operator()(a, b.first);
 	}
-	
+
 	bool operator()(
 		treap_map_node<KeyT, ValueT> const& a,
 		KeyT const& b) const
@@ -843,16 +843,16 @@ struct treap_map
 		Random> base;
 	typedef treap_map_node<KeyT, ValueT> value_type;
 	typedef typename base::iterator iterator;
-	
+
 	ValueT& operator[](KeyT const& k)
 	{
 		iterator el_ = this->find(k);
 		if(el_ != this->end())
 			return el_->second;
-		
+
 		value_type* p = new value_type(k);
 		this->insert(p);
-		return p->second;		
+		return p->second;
 	}
 };
 
@@ -863,7 +863,7 @@ struct treap_set_node : treap_node<treap_set_node<KeyT> >
 	: value(value)
 	{
 	}
-	
+
 	KeyT value;
 };
 
@@ -877,14 +877,14 @@ struct treap_set_compare : Compare
 	{
 		return Compare::operator()(a.value, b.value);
 	}
-	
+
 	bool operator()(
 		KeyT const& a,
 		treap_set_node<KeyT> const& b) const
 	{
 		return Compare::operator()(a, b.value);
 	}
-	
+
 	bool operator()(
 		treap_set_node<KeyT> const& a,
 		KeyT const& b) const

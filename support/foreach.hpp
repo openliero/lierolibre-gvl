@@ -20,7 +20,7 @@ struct auto_any : auto_any_base
 	: value(v)
 	{
 	}
-	
+
 	mutable T value;
 };
 

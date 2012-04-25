@@ -15,35 +15,35 @@ struct hash_set_index_new
 	: ptr(ptr)
 	{
 	}
-	
+
 	KeyT& key() const
 	{
 		return *ptr;
 	}
-	
+
 	KeyT& value() const
 	{
 		return *ptr;
 	}
-	
+
 	bool is_empty() const
 	{
 		return !ptr;
 	}
-	
+
 	void make_empty()
 	{
 		if(!is_empty())
 			delete ptr;
 		ptr = 0;
 	}
-	
+
 	void assign_value(hash_set_index_new v)
 	{
 		delete ptr;
 		ptr = v.ptr;
 	}
-	
+
 	// hash_set specific
 	KeyT* release()
 	{
@@ -51,7 +51,7 @@ struct hash_set_index_new
 		ptr = dummy_ptr<KeyT>();
 		return ptr;
 	}
-	
+
 	KeyT* ptr;
 };
 
@@ -61,36 +61,36 @@ template<typename KeyT,
 struct hash_set_new : generic_hash_set_new<hash_set_index_new<KeyT>, KeyT, KeyT, Hash, Compare>
 {
 	typedef generic_hash_set_new<hash_set_index_new<KeyT>, KeyT, KeyT, Hash, Compare> base;
-	
+
 	hash_set_new(Hash const& hash = Hash(), Compare const& compare = Compare())
 	: base(hash, compare)
 	{
 	}
-	
+
 	void insert(KeyT const& v)
 	{
 		base::insert(hash_set_index_new<KeyT>(new KeyT(v)));
 	}
-	
+
 	void insert(KeyT* v)
 	{
 		base::insert(hash_set_index_new<KeyT>(v));
 	}
-	
+
 	template<typename SpecKeyT>
 	bool has(SpecKeyT const& v)
 	{
 		return base::lookup(v) != 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	KeyT* get(SpecKeyT const& v)
 	{
 		hash_set_index_new<KeyT>* index = base::lookup(v);
-		
+
 		return index ? index->ptr : 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	KeyT& operator[](SpecKeyT const& v)
 	{
@@ -106,10 +106,10 @@ struct hash_set_new : generic_hash_set_new<hash_set_index_new<KeyT>, KeyT, KeyT,
 	KeyT* release(SpecKeyT const& v)
 	{
 		hash_set_index_new<KeyT>* index = base::lookup(v);
-		
+
 		return index ? index->release() : 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	void erase(SpecKeyT const& v)
 	{
@@ -137,27 +137,27 @@ struct hash_set_index_unboxed
 	{
 	}
 #endif
-	
+
 	KeyT const& key() const
 	{
 		return k;
 	}
-	
+
 	KeyT const& value() const
 	{
 		return k;
 	}
-	
+
 	bool is_empty() const
 	{
 		return !k;
 	}
-	
+
 	void make_empty()
 	{
 		k = KeyT();
 	}
-	
+
 	void assign_value(hash_set_index_unboxed const& v)
 	{
 		k = v.k;
@@ -169,7 +169,7 @@ struct hash_set_index_unboxed
 		k = GVL_MOVE(v.k);
 	}
 #endif
-	
+
 	KeyT k;
 };
 
@@ -179,7 +179,7 @@ template<typename KeyT,
 struct hash_set_unboxed : generic_hash_set_new<hash_set_index_unboxed<KeyT>, KeyT, KeyT, Hash, Compare>
 {
 	typedef generic_hash_set_new<hash_set_index_unboxed<KeyT>, KeyT, KeyT, Hash, Compare> base;
-	
+
 	hash_set_unboxed(Hash const& hash = Hash(), Compare const& compare = Compare())
 	: base(hash, compare)
 	{
@@ -196,21 +196,21 @@ struct hash_set_unboxed : generic_hash_set_new<hash_set_index_unboxed<KeyT>, Key
 	{
 		base::insert(hash_set_index_unboxed<KeyT>(v));
 	}
-	
+
 	template<typename SpecKeyT>
 	bool has(SpecKeyT const& v)
 	{
 		return base::lookup(v) != 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	KeyT* get(SpecKeyT const& v)
 	{
 		hash_set_index_unboxed<KeyT>* index = base::lookup(v);
-		
+
 		return index ? &index->k : 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	KeyT& operator[](SpecKeyT const& v)
 	{
@@ -225,7 +225,7 @@ struct hash_set_unboxed : generic_hash_set_new<hash_set_index_unboxed<KeyT>, Key
 	KeyT release(SpecKeyT const& v)
 	{
 		hash_set_index_unboxed<KeyT>* index = base::lookup(v);
-		
+
 		if(index)
 		{
 			KeyT k(GVL_MOVE(index->k));
@@ -234,7 +234,7 @@ struct hash_set_unboxed : generic_hash_set_new<hash_set_index_unboxed<KeyT>, Key
 		}
 		return index ? index->release() : 0;
 	}
-	
+
 	template<typename SpecKeyT>
 	void erase(SpecKeyT const& v)
 	{

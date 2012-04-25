@@ -42,7 +42,7 @@ inline auto_any<T> to_auto_any(T const& t)
 #define GVL_EVAL_AUTO_ANY(expr) to_auto_any(expr)
 
 if(auto_any_t _iter = GVL_EVAL_AUTO_ANY(iter)) {} else
-for(; 
+for(;
 
 #endif
 
@@ -59,30 +59,30 @@ struct iterator_range
 	typedef typename std::iterator_traits<ForwardIterator>::pointer pointer;
 	typedef typename std::iterator_traits<ForwardIterator>::reference reference;
 	typedef std::size_t size_type;
-	
+
 	typedef ForwardIterator iterator;
-	
+
 	iterator_range(ForwardIterator begin_init, ForwardIterator end_init)
 	: begin_(begin_init)
 	, end_(end_init)
 	{
 	}
-	
+
 	ForwardIterator begin()
 	{
 		return begin_;
 	}
-	
+
 	ForwardIterator end()
 	{
 		return end_;
 	}
-	
+
 	std::size_t size() const
 	{
 		return end_ - begin_;
 	}
-	
+
 private:
 	ForwardIterator begin_;
 	ForwardIterator end_;

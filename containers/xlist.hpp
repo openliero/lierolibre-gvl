@@ -28,7 +28,7 @@ struct xlist_node : xlist_node_common
 	{
 		return static_cast<T*>(static_cast<xlist_node<Tag>*>(p));
 	}
-	
+
 	xlist_node()
 	{
 		prevnext = 0;
@@ -58,7 +58,7 @@ struct xlist : xlist_common, protected Deleter
 	{
 		return static_cast<T*>(static_cast<xlist_node<Tag>*>(p));
 	}
-	
+
 	template<typename T>
 	static xlist_node<Tag>* upcast(T* p)
 	{
@@ -67,7 +67,7 @@ struct xlist : xlist_common, protected Deleter
 
 	struct range
 	{
-		
+
 	};
 
 	void push_back(T* x_)
@@ -107,7 +107,7 @@ struct xlist : xlist_common, protected Deleter
 		// sentinel.prevnext ^= last ^ n // last is no longer prev, but n is
 		// n.prevnext = last ^ &sentinel
 		// last = n
-		
+
 		// Result:
 		// sentinel.prevnext = sentinel.prevnext ^ &sentinel ^ n = (&sentinel ^ &sentinel) ^ &sentinel ^ n = &sentinel ^ n
 		// sentinel.prevnext = (&sentinel ^ n) ^ (last ^ n) = (&sentinel ^ n) ^ (&sentinel ^ n) = 0

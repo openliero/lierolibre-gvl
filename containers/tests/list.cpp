@@ -24,12 +24,12 @@ struct integer
 	: v(v)
 	{
 	}
-	
+
 	bool operator<(integer const& b) const
 	{
 		return v < b.v;
 	}
-	
+
 	int v;
 };
 
@@ -82,7 +82,7 @@ QC_BEGIN_GENERIC_PROP(list_pop_front_property)
 	{
 		if(obj->empty())
 			return gvl::qc::chk_not_applicable;
-			
+
 		std::size_t before_count = obj->size();
 		obj->pop_front();
 		std::size_t after_count = obj->size();
@@ -108,16 +108,16 @@ GVLTEST(gvl, list, insert_delete_sort)
 	typedef gvl::list<integer, tag2, gvl::dummy_delete> l2_t;
 	l1_t l1;
 	l2_t l2;
-	
+
 	gvl::mwc r(1234);
-	
+
 	for(int repeat = 0; repeat < 100; ++repeat)
 	{
 		std::size_t l1_count = 0;
 		std::size_t l2_count = 0;
-		
+
 		int count = r(0, 200);
-		
+
 		for(int i = 0; i < count; ++i)
 		{
 			integer* o = new integer(r(0, 10000));
@@ -126,13 +126,13 @@ GVLTEST(gvl, list, insert_delete_sort)
 			++l1_count;
 			++l2_count;
 		}
-		
+
 		ASSERT("l1 size after inserting", l1.size() == l1_count);
 		ASSERT("l2 size after inserting", l2.size() == l2_count);
-		
+
 		l1.integrity_check();
 		l2.integrity_check();
-		
+
 		FOREACH_DELETE(l2_t, i, l2)
 		{
 			if((r() & 1) == 0)
@@ -141,22 +141,22 @@ GVLTEST(gvl, list, insert_delete_sort)
 				--l2_count;
 			}
 		}
-		
+
 		ASSERT("l2 size after erasing", l2.size() == l2_count);
-		
+
 		l1.sort(std::less<integer>());
 		l2.sort(greater<integer>());
-		
+
 		ASSERT("l1 size after sorting", l1.size() == l1_count);
 		ASSERT("l2 size after sorting", l2.size() == l2_count);
 		ASSERT("l1 sorted", gvl::is_sorted(l1.begin(), l1.end()));
 		ASSERT("l2 sorted", gvl::is_sorted(l2.begin(), l2.end(), greater<integer>()));
-		
+
 		l1.integrity_check();
 		l2.integrity_check();
-		
+
 		l2.unlink_all();
-		
+
 		if(r() & 1)
 		{
 			FOREACH_DELETE(l1_t, i, l1)
@@ -168,7 +168,7 @@ GVLTEST(gvl, list, insert_delete_sort)
 		{
 			l1.clear();
 		}
-		
+
 		ASSERT("l1 empty", l1.empty());
 		ASSERT("l2 empty", l2.empty());
 	}
@@ -182,7 +182,7 @@ GVLTEST(gvl, list, quickcheck)
 	ctx.add("sorted", new sorted_list_gen);
 	ctx.add("empty", new empty_list_gen);
 	ctx.add("erase", new erase_list_gen);
-	
+
 	gvl::qc::test_property<list_integrity_property>(ctx);
 	gvl::qc::test_property<list_pop_front_property<integer_list> >(ctx);
 }

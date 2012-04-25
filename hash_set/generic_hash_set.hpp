@@ -55,7 +55,7 @@ struct generic_hash_set_new : Hash, Compare
 
 		ValueT& front()
 		{ return cur->value(); }
-		
+
 		T* cur;
 		T* end;
 	};
@@ -85,7 +85,7 @@ struct generic_hash_set_new : Hash, Compare
 
 		delete[] table_;
 	}
-	
+
 	// NOTE: This does not touch the elements currently in the table.
 	// They are assumed to not be owned by this instance anymore.
 	void reallocate_table_(int h1log2_new)
@@ -129,7 +129,7 @@ struct generic_hash_set_new : Hash, Compare
 			existing_slot->assign_value(v);
 			return;
 		}
-		
+
 		hash_t h1v = h1(k) & h1mask;
 		T& slot = table_[h1v];
 		if(slot.is_empty())
@@ -141,7 +141,7 @@ struct generic_hash_set_new : Hash, Compare
 	bool try_insert(T& v)
 	{
 		KeyT const& k = v.key();
-		
+
 		hash_t h1v = h1(k) & h1mask;
 		T& slot = table_[h1v];
 		if(slot.is_empty())

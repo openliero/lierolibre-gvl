@@ -5,7 +5,7 @@
 
 namespace
 {
-	
+
 struct cstr_comp
 {
 	bool operator()(char const* a, char const* b) const
@@ -22,7 +22,7 @@ struct log_streams
 	log_streams()
 	{
 	}
-	
+
 	~log_streams()
 	{
 		FOREACH(stream_map, i, streams)
@@ -30,7 +30,7 @@ struct log_streams
 			delete i->second;
 		}
 	}
-	
+
 	gvl::octet_stream_writer& get(char const* name, char const* path)
 	{
 		stream_map::iterator i = streams.find(name);
@@ -50,7 +50,7 @@ struct log_streams
 		static log_streams inst;
 		return inst;
 	}
-	
+
 	stream_map streams;
 };
 

@@ -64,7 +64,7 @@ struct deque : Deleter
 	}
 
 #endif
-	
+
 #if 0 // TODO
 	T extract(std::size_t i)
 	{
@@ -74,9 +74,9 @@ struct deque : Deleter
 		return v;
 	}
 #endif
-	
+
 	T& operator[](std::size_t i) { return buf[(begin + i) & len_mask]; }
-	
+
 	/*
 	void set(std::size_t i, T const& c)
 	{ buf[(begin + i) & len_mask] = c; }
@@ -104,7 +104,7 @@ struct deque : Deleter
 			expand();
 	}
 #endif
-	
+
 	void push_back(T const& c)
 	{
 		// Nothing is updated before the construction is done
@@ -115,7 +115,7 @@ struct deque : Deleter
 		if(end == begin)
 			expand();
 	}
-	
+
 	void push_front(T const& c)
 	{
 		// Nothing is updated before the construction is done
@@ -127,7 +127,7 @@ struct deque : Deleter
 		if(end == begin)
 			expand();
 	}
-	
+
 	void pop_front()
 	{
 		passert(begin != end, "Empty deque");
@@ -135,14 +135,14 @@ struct deque : Deleter
 		begin = (begin + 1) & len_mask;
 		dest_(buf + oldbegin);
 	}
-	
+
 	void pop_back()
 	{
 		passert(begin != end, "Empty deque");
 		end = (end - 1) & len_mask;
 		dest_(buf + end);
 	}
-	
+
 #if 0 // TODO
 	T extract_front()
 	{
@@ -151,7 +151,7 @@ struct deque : Deleter
 		begin = (begin + 1) & len_mask;
 		return GVL_MOVE(*p);
 	}
-	
+
 	T extract_back()
 	{
 		passert(begin != end, "Empty deque");
@@ -169,7 +169,7 @@ struct deque : Deleter
 			pop_front();
 		}
 	}
-	
+
 	void pop_back_n(size_t n)
 	{
 		//passert(size() <= n, "Not enough items to pop");
@@ -186,13 +186,13 @@ struct deque : Deleter
 	}
 
 	bool empty() const { return begin == end; }
-	
+
 	T& back()
 	{
 		passert(!empty(), "Empty deque");
 		return buf[(end - 1) & len_mask];
 	}
-	
+
 	T& front()
 	{
 		passert(!empty(), "Empty deque");
@@ -203,7 +203,7 @@ struct deque : Deleter
 	{
 		return (end - begin) & len_mask;
 	}
-	
+
 	void swap(deque& b)
 	{
 		std::swap(len, b.len);
@@ -212,7 +212,7 @@ struct deque : Deleter
 		std::swap(end, b.end);
 		std::swap(len_mask, b.len_mask);
 	}
-	
+
 private:
 	std::size_t len;
 	T* buf;
@@ -225,7 +225,7 @@ private:
 		// TODO: This isn't exception safe at all
 
 		passert(begin == end, "expand can only be called when begin == end");
-		
+
 		std::size_t count = len;
 		std::size_t new_len = len * 2;
 		T* new_buf = talloc<T>(new_len);
@@ -259,12 +259,12 @@ private:
 		new (p) T(std::move(v));
 	}
 #endif
-	
+
 	void cons_(T* p, T const& v = T())
 	{
 		new (p) T(v);
 	}
-	
+
 	void dest_(T* p)
 	{
 		Deleter::operator()(*p);

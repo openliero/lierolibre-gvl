@@ -39,16 +39,16 @@ bool is_sorted(InputIterator b, InputIterator e, StrictWeakOrdering comp)
 	typedef std::iterator_traits<InputIterator> traits;
 	typedef typename traits::value_type value_type;
 	typedef typename traits::pointer pointer;
-	
+
 	pointer prev = &*b;
-	
+
 	for(++b; b != e; ++b)
 	{
 		pointer cur = &*b;
 		if(comp(*cur, *prev))
 			return false;
 	}
-	
+
 	return true;
 }
 

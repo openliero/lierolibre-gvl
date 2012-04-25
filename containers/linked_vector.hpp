@@ -18,26 +18,26 @@ struct linked_vector : linked_object<linked_vector<T> >
 	typedef T const* const_pointer;
 	typedef pointer iterator;
 	typedef const_pointer const_iterator;
-	
+
 	typedef std::reverse_iterator<iterator> reverse_iterator;
 	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-	
+
 	typedef linked_object<linked_vector<T> > base;
-	
+
 	struct take_ownership_tag {};
 	struct borrow_tag {};
-	
+
 	linked_vector()
 	: data_(0), begin_(0), end_(0), limit_(0)
 	{
 	}
-	
+
 	explicit linked_vector(size_type s)
 	: data_(0), begin_(0), end_(0), limit_(0)
 	{
 		alloc_(s);
 	}
-	
+
 	linked_vector(T const* p, size_type s)
 	: data_(0), begin_(0), end_(0), limit_(0)
 	{
@@ -45,24 +45,24 @@ struct linked_vector : linked_object<linked_vector<T> >
 		limit_ = end_ = data_ + s;
 		std::memcpy(data_, p, s * sizeof(T));
 	}
-	
+
 	linked_vector(T* p, size_type s, take_ownership_tag)
 	: data_(p), begin_(p), end_(p + s), limit_(p + s)
 	{
 	}
-	
+
 	linked_vector(T* p, size_type s, borrow_tag)
 	: data_(0), begin_(p), end_(p + s), limit_(p + s)
 	{
 	}
-	
+
 	linked_vector(move_holder<linked_vector> m)
 	: base(move<base>(m))
 	, data_(m->data_), begin_(m->begin_), end_(m->end_), limit_(m->limit_)
 	{
 		m->data_ = m->begin_ = m->end_ = m->limit_ = 0;
 	}
-	
+
 	// Default copy-ctor is fine, op= is not
 	linked_vector& operator=(linked_vector const& b)
 	{
@@ -74,17 +74,17 @@ struct linked_vector : linked_object<linked_vector<T> >
 		limit_ = b.limit_;
 		return *this;
 	}
-	
+
 	~linked_vector()
 	{
 		if(this->unique())
 			delete[] this->data_;
 	}
-	
+
 /* TODO: COW
 	T*       data()       { return begin_; }*/
 	T const* data() const { return begin_; }
-	
+
 	/// Returned pointer is only valid until any other non-const member function
 	/// is called. NOTE: Returned pointer can also be invalidated if this
 	/// vector refers to some transient storage that is destroyed.
@@ -94,10 +94,10 @@ struct linked_vector : linked_object<linked_vector<T> >
 			realloc_(size());
 		return begin_;
 	}
-	
+
 	bool full() const
 	{ return end_ == limit_; }
-	
+
 	bool empty() const
 	{ return begin_ == end_; }
 
@@ -110,19 +110,19 @@ struct linked_vector : linked_object<linked_vector<T> >
 		*end_ = v;
 		++end_;
 	}
-	
+
 	/// Precondition: this->unique()
 	/// WARNING: Use with extreme care.
 	void unique_push_back(T const& v)
 	{
 		passert(this->unique(), "Vector is not unique");
-		
+
 		if (full())
 			realloc_((size() + 1) * 3 / 2);
 		*end_ = v;
 		++end_;
 	}
-	
+
 	void push_back(T const& v)
 	{
 		*space1_() = v;
@@ -136,7 +136,7 @@ struct linked_vector : linked_object<linked_vector<T> >
 		// Repeated to possibly help compiler with aliasing information
 		unsafe_push_back(v);*/
 	}
-	
+
 	/// Resizes the vector to n elements.
 	/// The contents is undefined.
 	/// The pointer returned is the same as
@@ -152,16 +152,16 @@ struct linked_vector : linked_object<linked_vector<T> >
 		{
 			end_ = begin_ + n;
 		}
-		
+
 		return begin_;
 	}
-	
+
 	void reserve(size_type n)
 	{
 		if(capacity() < n)
 			realloc_(n);
 	}
-	
+
 #if 0 // Incorrect
 	void swap(linked_vector& b)
 	{
@@ -171,36 +171,36 @@ struct linked_vector : linked_object<linked_vector<T> >
 		std::swap(_limit, b._limit);
 	}
 #endif
-	
+
 	size_type size() const
 	{ return end_ - begin_; }
-	
+
 	size_type capacity() const
 	{ return limit_ - begin_; }
-	
+
 	bool valid(size_type n) const
 	{ return n < size(); }
-	
+
 	void cut_front(size_type n)
 	{
 		sassert(n <= size());
 		begin_ += n;
 	}
-	
+
 /* // TODO: COW
 	iterator begin() { return data_; }
 	iterator end() { return end_; }*/
-	
+
 	const_iterator begin() const { return begin_; }
 	const_iterator end() const { return end_; }
-	
+
 // TODO: COW for mutable version
 	const_reference operator[](size_type n) const
 	{
 		passert(valid(n), "Out of bounds");
 		return data_[n];
 	}
-	
+
 	/// NOTE: Invalidates iterators to this object
 	/// Precondition: not heap allocated
 	void heap_allocate()
@@ -208,9 +208,9 @@ struct linked_vector : linked_object<linked_vector<T> >
 		passert(!data_, "Already heap allocated");
 		realloc_(size());
 	}
-	
+
 protected:
-	
+
 	T* space_(size_type amount)
 	{
 		if(!this->unique()
@@ -219,12 +219,12 @@ protected:
 			// Make unique
 			realloc_((size() + amount) * 3 / 2);
 		}
-		
+
 		T* ret = end_;
 		end_ += amount;
 		return ret;
 	}
-	
+
 	T* space1_()
 	{
 		if(!this->unique()
@@ -233,7 +233,7 @@ protected:
 			// Make unique
 			realloc_((size() + 1) * 3 / 2);
 		}
-		
+
 		T* ret = end_;
 		++end_;
 		return ret;
@@ -244,11 +244,11 @@ protected:
 		begin_ = data_ = new T[s];
 		limit_ = end_ = data_ + s;
 	}
-	
+
 	void realloc_(size_type new_capacity)
 	{
 		size_type new_size = std::min(new_capacity, size());
-		
+
 		T* new_data = new T[new_capacity];
 
 		std::memcpy(new_data, begin_, new_size * sizeof(T));
@@ -265,7 +265,7 @@ protected:
 		else
 			this->make_unique();
 	}
-	
+
 	T* data_; // If non-zero, data_ is allocated with new[]
 	T* begin_;
 	T* end_;
@@ -280,14 +280,14 @@ struct linked_vector_heap : linked_vector<T>
 	: data_(0), begin_(0), end_(0), limit_(0)
 	{
 	}
-	
+
 	explicit linked_vector(size_type s)
 	: data_(0), begin_(0), end_(0), limit_(0)
 	{
 		begin_ = data_ = new T[s];
 		limit_ = end_ = data_ + s;
 	}
-	
+
 	linked_vector(T const* p, size_type s)
 	: data_(0), begin_(0), end_(0), limit_(0)
 	{
@@ -295,12 +295,12 @@ struct linked_vector_heap : linked_vector<T>
 		limit_ = end_ = data_ + s;
 		std::memcpy(data_, p, s * sizeof(T));
 	}
-	
+
 	linked_vector(T* p, size_type s, ownership_tag)
 	: data_(p), begin_(p), end_(p + s), limit_(p + s)
 	{
 	}
-	
+
 	~linked_vector_heap()
 	{
 		if(this->unique())
@@ -313,12 +313,12 @@ template<typename T, unsigned int N>
 struct linked_vector_temp : linked_vector<T>
 {
 	typedef linked_vector<T> base;
-	
+
 	linked_vector_temp()
 	: base(temp_data_, N, typename base::borrow_tag())
 	{
 	}
-	
+
 	~linked_vector_temp()
 	{
 		if(!this->unique())
@@ -337,7 +337,7 @@ struct linked_vector_temp : linked_vector<T>
 			}
 		}
 	}
-	
+
 /* Not safe, use mut_data()
 	// Only to be used before this is copied
 	T* data() { return temp_data_; }
@@ -347,7 +347,7 @@ private:
 	// only be one owner.
 	linked_vector_temp(linked_vector_temp const&);
 	linked_vector_temp& operator=(linked_vector_temp const&);
-	
+
 	T temp_data_[N];
 };
 

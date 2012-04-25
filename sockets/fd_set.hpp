@@ -11,10 +11,10 @@ struct select_fd_set
 	void zero();
 	bool is_set(socket s);
 	void set(socket s);
-	
+
 	virtual ~select_fd_set()
 	{}
-	
+
 protected:
 	select_fd_set() {}
 	select_fd_set(select_fd_set const&);

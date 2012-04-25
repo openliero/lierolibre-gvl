@@ -12,7 +12,7 @@ struct devnull : stream
 	{
 		return read_result(read_eos);
 	}
-	
+
 	write_result write(bucket* b)
 	{
 		unlink(b);

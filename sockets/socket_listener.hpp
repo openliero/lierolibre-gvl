@@ -10,15 +10,15 @@ struct socketstream;
 
 struct socket_listener
 {
-	socket_listener();	
+	socket_listener();
 	socket_listener(int port);
 	~socket_listener();
-	
+
 	bool listen(int port);
 	gvl::shared_ptr<gvl::socketstream> accept();
-	
+
 	void close();
-	
+
 	socket sock;
 };
 

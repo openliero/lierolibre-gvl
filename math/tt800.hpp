@@ -10,26 +10,26 @@ struct tt800
 {
 	static unsigned int const N = 25;
 	static unsigned int const M = 7;
-	
+
 	typedef uint32_t value_type;
-	
+
 	tt800(uint32_t new_seed)
 	: k(0)
 	{
 		seed(new_seed);
 	}
-	
+
 	void seed(uint32_t new_seed);
-	
+
 	uint32_t operator()()
 	{
 		if(k == N)
 			update();
-		
+
 		uint32_t y = x[k++];
 		y ^= (y << 7) & 0x2b5b2500; /* s and b, magic vectors */
 		y ^= (y << 15) & 0xdb8b0000; /* t and c, magic vectors */
-		
+
 		return y;
 	}
 
@@ -38,18 +38,18 @@ struct tt800
 	{
 		return a + int32_t((b - a) * uint64_t(operator()()) >> 32);
 	}*/
-	
+
 	uint32_t range(uint32_t a, uint32_t b)
 	{
 		return a + uint32_t((b - a) * uint64_t(operator()()) >> 32);
 	}
-	
+
 	template<typename Archive>
 	void serialize(Archive& arch);
-	
+
 private:
 	void update();
-	
+
 	uint32_t x[N];
 	uint32_t k;
 	uint32_t front_;

@@ -17,7 +17,7 @@ inline long lrint(double x)
 		fld x
 		fistp r
 	}
-		
+
 	return r;
 }
 

@@ -33,7 +33,7 @@ void basic_obitstream<DerivedT>::put_uint2(uint32_t i, uint32_t bits)
 {
 	// Bits must be at most 32
 	sassert(bits <= 32);
-	
+
 	if(bits == 0) // Need this special case, as lsb_mask is not defined for 0
 		return;
 
@@ -83,12 +83,12 @@ void basic_obitstream<DerivedT>::put_uint(uint32_t i, uint32_t bits)
 {
 	// Bits must be at most 32
 	sassert(bits <= 32);
-	
+
 	if(bits == 0) // Need this special case, as lsb_mask is not defined for 0
 		return;
-		
+
 	/* TODO: Reserve memory first and use unchecked put byte */
-	
+
 	i &= gvl::lsb_mask(bits); /* Clear bits that won't get written */
 	if(out_bits_left > bits)
 	{
@@ -106,7 +106,7 @@ void basic_obitstream<DerivedT>::put_uint(uint32_t i, uint32_t bits)
 		derived().put_byte(byte(out_bits));
 		if(bits > 0)
 			derived().allocate_out_byte();
-			
+
 		for(; bits >= 8; )
 		{
 			bits -= 8; /* bits is now the amount to right shift (bits left to write afterwards) */
@@ -114,7 +114,7 @@ void basic_obitstream<DerivedT>::put_uint(uint32_t i, uint32_t bits)
 			if(bits > 0)
 				derived().allocate_out_byte();
 		}
-		
+
 		/* We know bits < 8, so we can just write in the rest into out_bits */
 		out_bits = (i << (8 - bits));
 		out_bits_left = 8 - bits;
@@ -127,7 +127,7 @@ void basic_obitstream<DerivedT>::put_uint(uint32_t i, uint32_t bits)
 		out_bits = 0;
 		out_bits_left = 8;
 	}
-	
+
 }
 
 template<typename DerivedT>
@@ -140,7 +140,7 @@ void basic_obitstream<DerivedT>::put_block(void const* ptr_, size_t len)
 	end = ptr + len;
 
 	/* TODO: Reserve memory first and use unchecked put byte */
-	
+
 	if(out_bits_left == 8)
 	{
 		/* Just write
@@ -156,12 +156,12 @@ void basic_obitstream<DerivedT>::put_block(void const* ptr_, size_t len)
 	else
 	{
 		/* We need to shift */
-		
+
 		unsigned int v = out_bits;
-		
+
 		unsigned int left = out_bits_left;
 		unsigned int right = 8 - left;
-		
+
 		do
 		{
 			unsigned int b = *ptr++;
@@ -171,7 +171,7 @@ void basic_obitstream<DerivedT>::put_block(void const* ptr_, size_t len)
 			v = (b << left);
 		}
 		while(ptr != end);
-		
+
 		out_bits = v;
 		/* out_bits_left is correct since we've only written whole bytes */
 	}
@@ -228,7 +228,7 @@ void basic_obitstream<DerivedT>::put_golomb(uint32_t v, uint32_t m)
 {
 	uint32_t quot = v / m;
 	uint32_t rem = v % m;
-	
+
 	put_unary(quot);
 	put_trunc(rem, m);
 }
@@ -240,7 +240,7 @@ void basic_obitstream<DerivedT>::put_rice(uint32_t v, uint32_t shift)
 	sassert(shift > 0);
 	uint32_t quot = v >> shift;
 	uint32_t rem = v & gvl::lsb_mask(shift);
-	
+
 	put_unary(quot);
 	put_uint(rem, shift);
 }
@@ -258,15 +258,15 @@ void basic_ibitstream<DerivedT>::ignore(uint32_t bits)
 {
 	uint32_t cursor = 8 - in_bits_left;
 	cursor += bits;
-	
+
 	uint32_t bytes_to_read = cursor / 8;
-	
+
 	if(bytes_to_read >= 1)
 	{
 		derived().ignore_bytes(bytes_to_read - 1);
 		in_bits = derived().get_byte();
 	}
-	
+
 	in_bits_left = 8 - (cursor % 8);
 }
 
@@ -278,7 +278,7 @@ uint32_t basic_ibitstream<DerivedT>::get()
 		in_bits = derived().get_byte();
 		in_bits_left = 8;
 	}
-	
+
 	return (in_bits >> --in_bits_left) & 1;
 }
 
@@ -288,14 +288,14 @@ uint32_t basic_ibitstream<DerivedT>::get_uint(uint32_t bits)
 {
 	// Bits must be at most 32
 	sassert(bits <= 32);
-	
+
 	if(bits == 0) // Need this special case, as lsb_mask and shl_1_32 are not defined for 0
 		return 0;
 	uint32_t orig_bits = bits;
 	uint32_t v;
-	
+
 	/* NOTE: in_bits_left can be 0 */
-	
+
 	if(bits > in_bits_left)
 	{
 		bits -= in_bits_left; /* bits is now the amount to left shift (bits left to read afterwards) */
@@ -303,13 +303,13 @@ uint32_t basic_ibitstream<DerivedT>::get_uint(uint32_t bits)
 		** will be 32 at this point. The normal << is not guaranteed to work as intended. */
 		//v = gvl::shl_1_32(in_bits, bits);
 		v = in_bits;
-		
+
 		for(; bits >= 8; )
 		{
 			bits -= 8; /* bits is now the amount to left shift (bits left to read afterwards) */
 			v = (v << 8) | derived().get_byte();
 		}
-		
+
 		if(bits > 0)
 		{
 			in_bits_left = 8 - bits;
@@ -327,7 +327,7 @@ uint32_t basic_ibitstream<DerivedT>::get_uint(uint32_t bits)
 		** after the last wanted. */
 		v = (in_bits >> in_bits_left);
 	}
-	
+
 	return v & gvl::lsb_mask(orig_bits);
 }
 
@@ -336,10 +336,10 @@ void basic_ibitstream<DerivedT>::get_block(void* ptr_, size_t len)
 {
 	if(len == 0)
 		return;
-		
-	uint8_t* ptr = static_cast<uint8_t*>(ptr_);	
+
+	uint8_t* ptr = static_cast<uint8_t*>(ptr_);
 	uint8_t* end = ptr + len;
-	
+
 	if(in_bits_left == 0)
 	{
 		/* Just write
@@ -356,7 +356,7 @@ void basic_ibitstream<DerivedT>::get_block(void* ptr_, size_t len)
 		unsigned int right = in_bits_left;
 		unsigned int left = 8 - right;
 		unsigned int v = in_bits << left;
-		
+
 		unsigned int b;
 		do
 		{
@@ -366,7 +366,7 @@ void basic_ibitstream<DerivedT>::get_block(void* ptr_, size_t len)
 			v = (b << left);
 		}
 		while(ptr != end);
-		
+
 		in_bits = byte(b);
 		/* in_bits_left is correct since we've only written whole bytes */
 	}
@@ -418,7 +418,7 @@ uint32_t basic_ibitstream<DerivedT>::get_golomb(uint32_t m)
 {
 	uint32_t quot = get_unary();
 	uint32_t rem = get_trunc(m);
-	
+
 	return quot * m + rem;
 }
 
@@ -427,10 +427,10 @@ template<typename DerivedT>
 uint32_t basic_ibitstream<DerivedT>::get_rice(uint32_t shift)
 {
 	sassert(shift > 0);
-	
+
 	uint32_t quot = get_unary();
 	uint32_t rem = get_uint(shift);
-	
+
 	return (quot << shift) + rem;
 }
 

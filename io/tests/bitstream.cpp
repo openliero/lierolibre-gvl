@@ -20,9 +20,9 @@ GVLTEST(gvl, bitstream, put_get_ignore)
 {
 	typedef std::vector<std::pair<uint32_t, uint32_t> > SampleVec;
 	SampleVec samples;
-	
+
 	gvl::tt800 rand(0);
-	
+
 	for(int i = 0; i < 1000; ++i)
 	{
 		uint32_t bits = rand.range(1, 33);
@@ -31,10 +31,10 @@ GVLTEST(gvl, bitstream, put_get_ignore)
 			v = rand();
 		else
 			v = rand.range(0u, 1u<<bits);
-		
+
 		samples.push_back(std::make_pair(bits, v));
 	}
-	
+
 	gvl::vector_bitstream bs;
 
 	{
@@ -57,22 +57,22 @@ GVLTEST(gvl, bitstream, put_get_ignore)
 
 		bs.clear();
 	}
-	
+
 	FOREACH(SampleVec, i, samples)
 	{
 		bs.put_uint(i->second, i->first);
 	}
-	
+
 	bs.finish();
-			
+
 	FOREACH(SampleVec, i, samples)
 	{
 		uint32_t v = bs.get_uint(i->first);
 		ASSERTEQM("integers encoded right", v, i->second);
 	}
-	
+
 	bs.rewindg();
-	
+
 	// Get with interjected ignores
 	int ignoreLen = 0;
 	FOREACH(SampleVec, i, samples)
@@ -88,23 +88,23 @@ GVLTEST(gvl, bitstream, put_get_ignore)
 			}
 			uint32_t v = bs.get_uint(i->first);
 			ASSERTEQM("integers encoded right", v, i->second);
-			
+
 		}
 	}
-	
+
 	bs.clear();
-	
+
 	FOREACH(SampleVec, i, samples)
 	{
 		bs.put(i->second & 1);
 	}
-	
+
 	bs.finish();
-			
+
 	FOREACH(SampleVec, i, samples)
 	{
 		uint32_t v = bs.get();
 		ASSERTEQM("bits encoded right", v, (i->second & 1));
 	}
-	
+
 }

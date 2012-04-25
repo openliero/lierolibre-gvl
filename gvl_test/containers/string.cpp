@@ -41,7 +41,7 @@ QC_END_GEN()
 
 QC_BEGIN_GEN(assign_swap_gen, gvl::string)
 	ptr_t a(ctx.generate_any<t>());
-	
+
 	gvl::string x;
 	x = *a;
 	x.swap(*a);
@@ -53,17 +53,17 @@ QC_BEGIN_PROP(concat_property, gvl::string)
 	{
 		std::size_t a_size = a->size();
 		std::size_t b_size = b->size();
-		
+
 		ptr_t ret(new t(*a));
 		ret->append(*b);
 		QC_ASSERT("concatentated size is correct", ret->size() == a_size + b_size);
-		
+
 		for(std::size_t i = 0; i < a_size; ++i)
 			QC_ASSERT("char match", (*ret)[i] == (*a)[i]);
-			
+
 		for(std::size_t i = 0; i < b_size; ++i)
 			QC_ASSERT("char match", (*ret)[a_size + i] == (*b)[i]);
-		
+
 		return chk_ok_reuse;
 	}
 QC_END_PROP()
@@ -113,7 +113,7 @@ QC_END_PROP()
 
 struct string_data
 {
-	
+
 };
 
 typedef test_group<string_data> factory;
@@ -135,18 +135,18 @@ template<>
 void object::test<1>()
 {
 	gvl::qc::context ctx;
-	
+
 	ctx.add("char", new char_string_gen, 0.5);
 	ctx.add("concat", new concat_string_gen);
 	ctx.add("empty", new empty_string_gen, 0.5);
 	ctx.add("change char", new change_char_gen);
 	ctx.add("assign_swap_gen", new change_char_gen);
-	
+
 	gvl::qc::test_property<concat_property>(ctx);
 	gvl::qc::test_property<string_cstr_property>(ctx);
 	gvl::qc::test_property<string_set_property>(ctx);
 	gvl::qc::test_property<string_clear_property>(ctx);
-	
+
 }
 
 
@@ -156,16 +156,16 @@ void object::test<2>()
 {
 	gvl::string x("hello, "), y("world");
 	gvl::swap(x, y);
-	
+
 	ensure("swapped", y[6] == ' ');
 	ensure("swapped", x[0] == 'w');
-	
+
 	uint32_t sum = 0;
 	GVL_FOREACH(uint8_t i, x.all())
 	{
 		sum += i;
 	}
-	
+
 	ensure("sum is right", sum == 552);
 }
 

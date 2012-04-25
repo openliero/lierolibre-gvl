@@ -30,7 +30,7 @@ struct range_ibitstream
 	}
 
 	range_ibitstream(vector_bitstream const&);
-	
+
 	// Default copy ctor and op= are fine
 
 	template<int C>
@@ -50,12 +50,12 @@ struct range_ibitstream
 			throw std::runtime_error("Bitstream exhausted");
 		cur += c;
 	}
-	
+
 	std::size_t bits_left() const
 	{
 		return (end - cur) * 8 + (ibase::in_buf_bits - this->in_bit_count);
 	}
-	
+
 	RandomAccessIterator cur;
 	RandomAccessIterator end;
 };
@@ -80,14 +80,14 @@ struct range_obitstream
 	}
 
 	// Default copy ctor and op= are fine
-		
+
 	template<int C>
 	inline void put_chunk(unsigned int chunk)
 	{
 		sassert(C == BufBytes);
 		range.put(chunk);
 	}
-	
+
 	OutputRange range;
 };
 
@@ -124,7 +124,7 @@ struct vector_bitstream
 		return *this;
 	}
 #endif
-	
+
 	// NOTE: Caller is expected to verify that the number of bits
 	// left in (bs) is at least (size_init).
 	vector_bitstream(array_ibitstream& bs, std::size_t size_init)
@@ -133,7 +133,7 @@ struct vector_bitstream
 	, data(bs.cur, bs.cur + bs.in_chunks_required(size_init))
 	{
 	}
-	
+
 	template<int C>
 	inline unsigned int get_chunk();
 
@@ -142,24 +142,24 @@ struct vector_bitstream
 
 	template<int C>
 	inline void ignore_chunks(int c);
-	
+
 	uint32_t size() const
 	{
 		return out_bits_written(uint32_t(data.size()));
 	}
-	
+
 	void swap(vector_bitstream& b)
 	{
 		gvl::basic_ibitstream<vector_bitstream>::swap(b);
 		gvl::basic_obitstream<vector_bitstream>::swap(b);
-		
+
 		std::swap(in_pos, b.in_pos);
 		data.swap(b.data);
 	}
-	
+
 	// To be able to overload put
 	using gvl::basic_obitstream<vector_bitstream>::put;
-	
+
 	// NOTE: Does not consume anything from bs
 	void put(vector_bitstream& bs)
 	{
@@ -168,7 +168,7 @@ struct vector_bitstream
 			put_uint(bs.data[i], 32);
 		put_uint(bs.out_bits_as_uint(), bs.out_bits_in_buffer());
 	}
-	
+
 	void rewindg()
 	{
 		resetg();
@@ -182,10 +182,10 @@ struct vector_bitstream
 		data.clear();
 		rewindg();
 	}
-	
+
 	std::size_t in_pos;
 	std::vector<uint32_t> data;
-	
+
 private:
 	// Non-copyable
 	vector_bitstream(vector_bitstream const&);
@@ -224,7 +224,7 @@ inline range_ibitstream<RandomAccessIterator, BufBytes>::range_ibitstream(vector
 
 struct deque_bitstream :
 	gvl::basic_ibitstream<deque_bitstream, 4>,
-	gvl::basic_obitstream<deque_bitstream, 4> 
+	gvl::basic_obitstream<deque_bitstream, 4>
 {
 	typedef gvl::basic_ibitstream<deque_bitstream, 4> ibase;
 	typedef gvl::basic_obitstream<deque_bitstream, 4> obase;
@@ -251,7 +251,7 @@ struct deque_bitstream :
 		return *this;
 	}
 #endif
-			
+
 	template<int C>
 	inline void put_chunk(unsigned int v);
 
@@ -260,24 +260,24 @@ struct deque_bitstream :
 
 	template<int C>
 	inline void ignore_chunks(std::size_t c);
-	
+
 	uint32_t size() const
 	{
 		return out_bits_written(uint32_t(data.size()));
 	}
-	
+
 #if 0
 	void swap(deque_bitstream& b)
 	{
 		gvl::basic_obitstream<deque_bitstream>::swap(b);
-		
+
 		data.swap(b.data);
 	}
 #endif
-	
+
 	// To be able to overload put
 	using gvl::basic_obitstream<deque_bitstream>::put;
-	
+
 	// NOTE: Does not consume anything from bs
 	void put(vector_bitstream const& bs)
 	{
@@ -286,15 +286,15 @@ struct deque_bitstream :
 			put_uint(bs.data[i], 32);
 		put_uint(bs.out_bits_as_uint(), bs.out_bits_in_buffer());
 	}
-	
+
 	void clear()
 	{
 		resetp();
 		data.clear();
 	}
-	
+
 	gvl::deque<uint32_t> data;
-	
+
 private:
 	// Non-copyable
 	deque_bitstream(deque_bitstream const&);

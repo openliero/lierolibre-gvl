@@ -47,9 +47,8 @@ struct track_obj
 
 	~track_obj()
 	{
-		if(track_obj_live.count(this) == 0)
-			throw std::runtime_error("non-live track_obj was destructed");
-		track_obj_live.erase(this);
+		if(track_obj_live.count(this) > 0)
+			track_obj_live.erase(this);
 	}
 
 	int v;

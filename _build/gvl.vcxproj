@@ -81,6 +81,7 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\lib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,6 +97,9 @@
       </FloatingPointExceptions>
       <StringPooling>true</StringPooling>
     </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -158,8 +162,6 @@
     <ClCompile Include="..\containers\tests\treap.cpp" />
     <ClCompile Include="..\io\tests\bitstream.cpp" />
     <ClCompile Include="..\io\tests\stream.cpp" />
-    <ClCompile Include="..\math\dtoa.c" />
-    <ClCompile Include="..\math\tests\reproducible_floats.cpp" />
     <ClCompile Include="..\sockets\socket_listener.cpp" />
     <ClCompile Include="..\support\tests\bits.cpp" />
     <ClCompile Include="..\system\mutex.c">
@@ -170,12 +172,6 @@
     </ClCompile>
     <ClCompile Include="..\test\gvl_tests.cpp" />
     <ClCompile Include="..\text\util.cpp" />
-    <ClCompile Include="..\uthread\uthread.cpp">
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</DisableLanguageExtensions>
-      <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
-    </ClCompile>
     <ClCompile Include="..\support\bits.c" />
     <ClCompile Include="..\support\debug.cpp" />
     <ClCompile Include="..\support\hash.cpp" />
@@ -194,86 +190,6 @@
     <ClCompile Include="..\resman\shared.cpp" />
     <ClCompile Include="..\math\ieee.cpp" />
     <ClCompile Include="..\math\tt800.cpp" />
-    <ClCompile Include="..\math\fdlibm\e_acos.c" />
-    <ClCompile Include="..\math\fdlibm\e_acosh.c" />
-    <ClCompile Include="..\math\fdlibm\e_asin.c" />
-    <ClCompile Include="..\math\fdlibm\e_atan2.c" />
-    <ClCompile Include="..\math\fdlibm\e_atanh.c" />
-    <ClCompile Include="..\math\fdlibm\e_cosh.c" />
-    <ClCompile Include="..\math\fdlibm\e_exp.c" />
-    <ClCompile Include="..\math\fdlibm\e_fmod.c" />
-    <ClCompile Include="..\math\fdlibm\e_gamma.c" />
-    <ClCompile Include="..\math\fdlibm\e_gamma_r.c" />
-    <ClCompile Include="..\math\fdlibm\e_hypot.c" />
-    <ClCompile Include="..\math\fdlibm\e_j0.c" />
-    <ClCompile Include="..\math\fdlibm\e_j1.c" />
-    <ClCompile Include="..\math\fdlibm\e_jn.c" />
-    <ClCompile Include="..\math\fdlibm\e_lgamma.c" />
-    <ClCompile Include="..\math\fdlibm\e_lgamma_r.c" />
-    <ClCompile Include="..\math\fdlibm\e_log.c" />
-    <ClCompile Include="..\math\fdlibm\e_log10.c" />
-    <ClCompile Include="..\math\fdlibm\e_pow.c" />
-    <ClCompile Include="..\math\fdlibm\e_rem_pio2.c" />
-    <ClCompile Include="..\math\fdlibm\e_remainder.c" />
-    <ClCompile Include="..\math\fdlibm\e_scalb.c" />
-    <ClCompile Include="..\math\fdlibm\e_sinh.c" />
-    <ClCompile Include="..\math\fdlibm\e_sqrt.c" />
-    <ClCompile Include="..\math\fdlibm\k_cos.c" />
-    <ClCompile Include="..\math\fdlibm\k_rem_pio2.c" />
-    <ClCompile Include="..\math\fdlibm\k_sin.c" />
-    <ClCompile Include="..\math\fdlibm\k_standard.c" />
-    <ClCompile Include="..\math\fdlibm\k_tan.c" />
-    <ClCompile Include="..\math\fdlibm\s_asinh.c" />
-    <ClCompile Include="..\math\fdlibm\s_atan.c" />
-    <ClCompile Include="..\math\fdlibm\s_cbrt.c" />
-    <ClCompile Include="..\math\fdlibm\s_ceil.c" />
-    <ClCompile Include="..\math\fdlibm\s_copysign.c" />
-    <ClCompile Include="..\math\fdlibm\s_cos.c" />
-    <ClCompile Include="..\math\fdlibm\s_erf.c" />
-    <ClCompile Include="..\math\fdlibm\s_expm1.c" />
-    <ClCompile Include="..\math\fdlibm\s_fabs.c" />
-    <ClCompile Include="..\math\fdlibm\s_finite.c" />
-    <ClCompile Include="..\math\fdlibm\s_floor.c" />
-    <ClCompile Include="..\math\fdlibm\s_frexp.c" />
-    <ClCompile Include="..\math\fdlibm\s_ilogb.c" />
-    <ClCompile Include="..\math\fdlibm\s_isnan.c" />
-    <ClCompile Include="..\math\fdlibm\s_ldexp.c" />
-    <ClCompile Include="..\math\fdlibm\s_lib_version.c" />
-    <ClCompile Include="..\math\fdlibm\s_log1p.c" />
-    <ClCompile Include="..\math\fdlibm\s_logb.c" />
-    <ClCompile Include="..\math\fdlibm\s_matherr.c" />
-    <ClCompile Include="..\math\fdlibm\s_modf.c" />
-    <ClCompile Include="..\math\fdlibm\s_nextafter.c" />
-    <ClCompile Include="..\math\fdlibm\s_rint.c" />
-    <ClCompile Include="..\math\fdlibm\s_scalbn.c" />
-    <ClCompile Include="..\math\fdlibm\s_signgam.c" />
-    <ClCompile Include="..\math\fdlibm\s_significand.c" />
-    <ClCompile Include="..\math\fdlibm\s_sin.c" />
-    <ClCompile Include="..\math\fdlibm\s_tan.c" />
-    <ClCompile Include="..\math\fdlibm\s_tanh.c" />
-    <ClCompile Include="..\math\fdlibm\w_acos.c" />
-    <ClCompile Include="..\math\fdlibm\w_acosh.c" />
-    <ClCompile Include="..\math\fdlibm\w_asin.c" />
-    <ClCompile Include="..\math\fdlibm\w_atan2.c" />
-    <ClCompile Include="..\math\fdlibm\w_atanh.c" />
-    <ClCompile Include="..\math\fdlibm\w_cosh.c" />
-    <ClCompile Include="..\math\fdlibm\w_exp.c" />
-    <ClCompile Include="..\math\fdlibm\w_fmod.c" />
-    <ClCompile Include="..\math\fdlibm\w_gamma.c" />
-    <ClCompile Include="..\math\fdlibm\w_gamma_r.c" />
-    <ClCompile Include="..\math\fdlibm\w_hypot.c" />
-    <ClCompile Include="..\math\fdlibm\w_j0.c" />
-    <ClCompile Include="..\math\fdlibm\w_j1.c" />
-    <ClCompile Include="..\math\fdlibm\w_jn.c" />
-    <ClCompile Include="..\math\fdlibm\w_lgamma.c" />
-    <ClCompile Include="..\math\fdlibm\w_lgamma_r.c" />
-    <ClCompile Include="..\math\fdlibm\w_log.c" />
-    <ClCompile Include="..\math\fdlibm\w_log10.c" />
-    <ClCompile Include="..\math\fdlibm\w_pow.c" />
-    <ClCompile Include="..\math\fdlibm\w_remainder.c" />
-    <ClCompile Include="..\math\fdlibm\w_scalb.c" />
-    <ClCompile Include="..\math\fdlibm\w_sinh.c" />
-    <ClCompile Include="..\math\fdlibm\w_sqrt.c" />
     <ClCompile Include="..\io\convert.cpp" />
     <ClCompile Include="..\io\device_buf.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -303,21 +219,11 @@
       <DisableLanguageExtensions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</DisableLanguageExtensions>
     </ClCompile>
     <ClCompile Include="..\crypt\curve25519.cpp" />
-    <ClCompile Include="..\zlib\adler32.c" />
-    <ClCompile Include="..\zlib\compress.c" />
-    <ClCompile Include="..\zlib\crc32.c" />
-    <ClCompile Include="..\zlib\deflate.c" />
-    <ClCompile Include="..\zlib\gzio.c" />
-    <ClCompile Include="..\zlib\infback.c" />
-    <ClCompile Include="..\zlib\inffast.c" />
-    <ClCompile Include="..\zlib\inflate.c" />
-    <ClCompile Include="..\zlib\inftrees.c" />
-    <ClCompile Include="..\zlib\trees.c" />
-    <ClCompile Include="..\zlib\uncompr.c" />
-    <ClCompile Include="..\zlib\zutil.c" />
     <ClCompile Include="..\tut\quickcheck\context.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\lib\zconf.h" />
+    <ClInclude Include="..\..\..\lib\zlib.h" />
     <ClInclude Include="..\containers\xlist.hpp" />
     <ClInclude Include="..\cstdint.hpp" />
     <ClInclude Include="..\debug.hpp" />
@@ -328,7 +234,6 @@
     <ClInclude Include="..\io\bitstream_templ.hpp" />
     <ClInclude Include="..\io\bitstream_templ_old.hpp" />
     <ClInclude Include="..\io\encoding_compat.hpp" />
-    <ClInclude Include="..\math\dtoa.hpp" />
     <ClInclude Include="..\sockets\socket_listener.hpp" />
     <ClInclude Include="..\support\platform.h" />
     <ClInclude Include="..\system\memory.hpp" />
@@ -337,8 +242,6 @@
     <ClInclude Include="..\test\gvl_tests.hpp" />
     <ClInclude Include="..\test\test.hpp" />
     <ClInclude Include="..\text\util.hpp" />
-    <ClInclude Include="..\uthread\uthread.hpp" />
-    <ClInclude Include="..\uthread\uthread_config.hpp" />
     <ClInclude Include="..\support\algorithm.hpp" />
     <ClInclude Include="..\support\align.hpp" />
     <ClInclude Include="..\support\bits.hpp" />
@@ -406,8 +309,6 @@
     <ClInclude Include="..\math\rect.hpp" />
     <ClInclude Include="..\math\tt800.hpp" />
     <ClInclude Include="..\math\vec.hpp" />
-    <ClInclude Include="..\math\fdlibm\fdlibm.h" />
-    <ClInclude Include="..\math\fdlibm\fdlibm_intern.h" />
     <CustomBuildStep Include="..\io\brigade2.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -449,20 +350,6 @@
     <ClInclude Include="..\serialization\archive.hpp" />
     <ClInclude Include="..\serialization\context.hpp" />
     <ClInclude Include="..\serialization\except.hpp" />
-    <ClInclude Include="..\zlib\crc32.h" />
-    <ClInclude Include="..\zlib\deflate.h" />
-    <ClInclude Include="..\zlib\inffast.h" />
-    <ClInclude Include="..\zlib\inffixed.h" />
-    <ClInclude Include="..\zlib\inflate.h" />
-    <ClInclude Include="..\zlib\inftrees.h" />
-    <ClInclude Include="..\zlib\trees.h" />
-    <ClInclude Include="..\zlib\zconf.h" />
-    <ClInclude Include="..\zlib\zconf.in.h" />
-    <ClInclude Include="..\zlib\zlib.h" />
-    <ClInclude Include="..\zlib\zutil.h" />
-    <ClInclude Include="..\tut\tut.hpp" />
-    <ClInclude Include="..\tut\tut_reporter.hpp" />
-    <ClInclude Include="..\tut\tut_restartable.hpp" />
     <ClInclude Include="..\tut\quickcheck\context.hpp" />
     <ClInclude Include="..\tut\quickcheck\generator.hpp" />
     <ClInclude Include="..\tut\quickcheck\property.hpp" />
@@ -475,6 +362,9 @@
     <ClInclude Include="..\linked_hash_set.hpp" />
     <ClInclude Include="..\list.hpp" />
     <ClInclude Include="..\support.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\lib\zlibstat.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

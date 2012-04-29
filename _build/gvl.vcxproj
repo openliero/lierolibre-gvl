@@ -222,8 +222,6 @@
     <ClCompile Include="..\tut\quickcheck\context.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\lib\zconf.h" />
-    <ClInclude Include="..\..\..\lib\zlib.h" />
     <ClInclude Include="..\containers\xlist.hpp" />
     <ClInclude Include="..\cstdint.hpp" />
     <ClInclude Include="..\debug.hpp" />

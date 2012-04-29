@@ -503,8 +503,6 @@
     <ClInclude Include="..\system\mutex.hpp">
       <Filter>system</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\lib\zconf.h" />
-    <ClInclude Include="..\..\..\lib\zlib.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\containers\buffer.hpp">

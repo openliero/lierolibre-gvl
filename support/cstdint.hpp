@@ -32,7 +32,7 @@
 
 #include "platform.hpp"
 
-#if GVL_GCC
+#if GVL_GCC || _MSC_VER >= 1600
 #include <stdint.h>
 #else /* !GVL_GCC */
 

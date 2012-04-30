@@ -524,7 +524,4 @@
       <Filter>sockets</Filter>
     </CustomBuildStep>
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\..\..\lib\zlibstat.lib" />
-  </ItemGroup>
 </Project>

@@ -75,7 +75,7 @@
 #endif
 
 #if !defined(GVL_LINUX)
-# if defined(__linux__) || defined(linux)
+# if defined(__linux__) || defined(linux) || defined(__GLIBC__)
 #  define GVL_LINUX 1
 # else
 #  define GVL_LINUX 0

@@ -374,7 +374,7 @@ struct octet_stream_writer
 		// inlining of the common case
 		if(std::size_t(end_ - cur_) >= len)
 		{
-#if GVL_X86 || GVL_X86_64 // TODO: A define that says whether unaligned access is allowed
+#if GVL_UNALIGNED_ACCESS
 			if(len < 64) // TODO: Tweak this limit
 			{
 				while(len > 4)

@@ -54,6 +54,8 @@ void gvl_init_ieee()
 {
 #if GVL_MSVCPP
 // Nothing needs to be done, TODO: we should however check that the x87 state is right
+#elif !GVL_X86 && !GVL_X86_64
+// No idea what to do, but run with defaults and pray it doesn't mess things up
 #elif GVL_GCC && GVL_WIN32
     unsigned int const flags = _RC_NEAR | _PC_53 | _EM_INVALID | _EM_DENORMAL | _EM_ZERODIVIDE | _EM_OVERFLOW | _EM_UNDERFLOW | _EM_INEXACT;
     _control87(flags, _MCW_EM | _MCW_PC | _MCW_RC);

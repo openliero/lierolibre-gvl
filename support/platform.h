@@ -88,12 +88,12 @@
 # elif defined(__i386__) || defined(_M_IX86) || defined(i386) || defined(i486) || defined(intel) || defined(x86) || defined(i86pc)
 #  define GVL_X86 1
 # else
-#  error "Unknown architecture, please add it"
+#  warning "Unknown architecture, please add it"
 # endif
 #endif
 
 #if !GVL_LITTLE_ENDIAN && !GVL_BIG_ENDIAN
-# if GVL_X86 || GVL_X86_64
+# if GVL_X86 || GVL_X86_64 || __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN
 #  define GVL_LITTLE_ENDIAN 1
 # else
 #  define GVL_BIG_ENDIAN 1

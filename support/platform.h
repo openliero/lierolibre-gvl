@@ -87,8 +87,6 @@
 #  define GVL_X86_64 1
 # elif defined(__i386__) || defined(_M_IX86) || defined(i386) || defined(i486) || defined(intel) || defined(x86) || defined(i86pc)
 #  define GVL_X86 1
-# else
-#  warning "Unknown architecture, please add it"
 # endif
 #endif
 
